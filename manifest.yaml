@@ -146,10 +146,34 @@ actions:
       mounts:
         main: /root/.bitcoin
       io-format: json
+  reindex-chainstate:
+    name: "Reindex Chainstate"
+    description: "Rebuilds the chainstate database using existing block index data; as the block index is not rebuilt, 'reindex_chainstate' should be strictly faster than 'reindex'. This action should only be used in the case of chainstate corruption; if the blocks stored on disk are corrupted, the 'reindex' action will need to be run instead."
+    warning: While faster than 'Reindex', 'Reindex Chainstate' can still take several days or more to complete. Pruned nodes do not allow 'reindex-chainstate'; if you are running a pruned node and suspect chainstate corruption the 'reindex' action (requiring redownloading the entire Blockchain) should be run instead.
+    allowed-statuses:
+      - running
+      - stopped
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: reindex_chainstate.sh
+      args: []
+      mounts:
+        main: /root/.bitcoin
+      io-format: json
   delete-txindex:
     name: "Delete Transaction Index"
     description: "Deletes the Transaction Index (txindex) in case it gets corrupted."
     warning: The Transaction Index will be rebuilt once Bitcoin Knots is started again, unless you deactivate it in the config settings. Please don't do this unless instructed to by Start9 support staff.
+    allowed-statuses:
+      - stopped
+    implementation:
+      type: script
+  delete-coinstatsindex:
+    name: "Delete Coinstats Index"
+    description: "Deletes the Coinstats Index (coinstatsindex) in case it gets corrupted."
+    warning: The Coinstats Index will be rebuilt once Bitcoin Core is started again, unless you deactivate it in the config settings. Please don't do this unless instructed to by Start9 support staff.
     allowed-statuses:
       - stopped
     implementation:

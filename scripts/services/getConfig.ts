@@ -329,6 +329,12 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
       description: "Enable the Transaction Index (txindex)",
       default: allowUnpruned,
     },
+    coinstatsindex: {
+      type: "boolean",
+      name: "Coinstats Index",
+      description: "Enabling Coinstats Index reduces the time for the gettxoutsetinfo RPC to complete at the cost of using additional disk space",
+      default: false,
+    },
     wallet: {
       type: "object",
       name: "Wallet",
@@ -410,7 +416,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
               type: "boolean",
               name: "Use V2 P2P Transport Protocol",
               description: "Enable or disable the use of BIP324 V2 P2P transport protocol.",
-              default: false,
+              default: true,
             },
             addnode: {
               name: "Add Nodes",
