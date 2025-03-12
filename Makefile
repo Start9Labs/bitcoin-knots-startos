@@ -1,5 +1,5 @@
-PKG_VERSION := $(shell yq e ".version" manifest.yaml)
-PKG_ID := $(shell yq e ".id" manifest.yaml)
+PKG_VERSION := $(shell yq -e ".version" manifest.yaml)
+PKG_ID := $(shell yq -e ".id" manifest.yaml)
 MANAGER_SRC := $(shell find ./manager -name '*.rs') manager/Cargo.toml manager/Cargo.lock
 VERSION_CORE := $(shell (cd bitcoin && git describe) | sed 's/^v//')
 
