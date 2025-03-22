@@ -225,6 +225,21 @@ actions:
         range: "[-1000000,1000000]"
         default: 0
         nullable: true
+  getaddress:
+    name: "Get new address"
+    description: "Get a new Bitcoin address."
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: getaddress.sh
+      args: []
+      io-format: json
+      mounts:
+        main: /root/.bitcoin
+      inject: true
 migrations:
   from:
     "*":

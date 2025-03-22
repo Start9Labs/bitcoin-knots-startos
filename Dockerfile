@@ -82,6 +82,7 @@ ENV PATH=${BITCOIN_PREFIX}/bin:$PATH
 COPY --from=bitcoin-core /opt /opt
 COPY ./manager/target/${ARCH}-unknown-linux-musl/release/bitcoind-manager \
      ./docker_entrypoint.sh \
+     ./actions/getaddress.sh \
      ./actions/reindex.sh \
      ./actions/reindex_chainstate.sh \
      ./actions/prioritise-transaction.sh \
