@@ -240,6 +240,21 @@ actions:
       mounts:
         main: /root/.bitcoin
       inject: true
+  getbalance:
+    name: "Get wallet balance"
+    description: "Get wallet balance."
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: getbalance.sh
+      args: []
+      io-format: json
+      mounts:
+        main: /root/.bitcoin
+      inject: true
 migrations:
   from:
     "*":
