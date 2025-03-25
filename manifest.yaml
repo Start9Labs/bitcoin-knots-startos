@@ -255,6 +255,44 @@ actions:
       mounts:
         main: /root/.bitcoin
       inject: true
+  sendcoin:
+    name: "Send bitcoin"
+    description: "Send bitcoin to an address."
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: sendcoin.sh
+      args: []
+      io-format: json
+      mounts:
+        main: /root/.bitcoin
+      inject: true
+    input-spec:
+      address:
+        type: string
+        name: Address
+        description: "The bitcoin address you want to send your bitcoins."
+        placeholder: ""
+        nullable: false
+      amount:
+        type: number
+        name: Amount (BTC)
+        description: "The amount of bitcoin you want to send to the address."
+        integral: false
+        range: "[0,21000000]"
+        default: 0
+        nullable: false
+      fee:
+        type: number
+        name: Fee (sat/vbytes)
+        description: "The amount of fee you want to pay for this transaction (in sat per vbytes)"
+        integral: false
+        range: "[0,1000000]"
+        default: 0
+        nullable: false
 migrations:
   from:
     "*":
