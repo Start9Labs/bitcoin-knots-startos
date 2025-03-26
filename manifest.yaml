@@ -351,7 +351,28 @@ actions:
         description: "The message to sign."
         placeholder: ""
         nullable: false
-
+  assumeutxo:
+    name: "Assume UTXO"
+    description: "Use an UTXO snapshot for instant use of your node."
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: assumeutxo.sh
+      args: []
+      io-format: json
+      mounts:
+        main: /root/.bitcoin
+      inject: true
+    input-spec:
+      location:
+        type: string
+        name: "Snapshot URL"
+        description: "The URL where we download the snapshot"
+        placeholder: ""
+        nullable: false
 migrations:
   from:
     "*":
