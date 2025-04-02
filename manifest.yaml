@@ -323,6 +323,35 @@ actions:
         range: "[0,1000000]"
         default: 0
         nullable: false
+  signmessage:
+    name: "Sign message"
+    description: "Sign a message with a bitcoin address."
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: main
+      system: false
+      entrypoint: signmessage.sh
+      args: []
+      io-format: json
+      mounts:
+        main: /root/.bitcoin
+      inject: true
+    input-spec:
+      address:
+        type: string
+        name: Address
+        description: "The bitcoin address to use to sign the message."
+        placeholder: ""
+        nullable: false
+      message:
+        type: string
+        name: Message
+        description: "The message to sign."
+        placeholder: ""
+        nullable: false
+
 migrations:
   from:
     "*":
