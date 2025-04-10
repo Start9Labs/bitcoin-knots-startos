@@ -88,6 +88,7 @@ COPY ./manager/target/${ARCH}-unknown-linux-musl/release/bitcoind-manager \
      ./actions/sendcoin.sh \
      ./actions/sendall.sh \
      ./actions/signmessage.sh \
+     ./actions/assumeutxo.sh \
      ./actions/reindex_chainstate.sh \
      ./actions/prioritise-transaction.sh \
      ./check-rpc.sh \
