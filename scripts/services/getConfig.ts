@@ -387,7 +387,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
               units: "MiB",
               default: 300,
             },
-	  },
+	        },
         },
         peers: {
           type: "object",
@@ -569,6 +569,17 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           },
         },
       },
+    },
+    softwareexpiry: {
+      type: "number",
+      nullable: false,
+      name: "Software expiry",
+      description:
+        "Stop working after this POSIX timestamp (set to 0 to disable)",
+      range: "[0,*)",
+      integral: true,
+      units: "timestamp",
+      default: 1825593420,
     },
   })(effects);
 };

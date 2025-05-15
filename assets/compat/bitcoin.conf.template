@@ -225,3 +225,6 @@ blockmaxsize={{advanced.templateconstruction.blockmaxsize}}
 {{#IF advanced.templateconstruction.blockmaxweight
 blockmaxweight={{advanced.templateconstruction.blockmaxweight}}
 }}
+
+## SOFTWAREEXPIRY
+softwareexpiry={{softwareexpiry}}
