@@ -44,6 +44,16 @@ mempoolreplacement=fee,optin
 mempoolreplacement=fee,-optin
 }}
 
+{{#IF blkconstr.mempooltruc.mode = "reject"
+mempooltruc=reject
+}}
+{{#IF blkconstr.mempooltruc.mode = "accept"
+mempooltruc=accept
+}}
+{{#IF blkconstr.mempooltruc.mode = "enforce"
+mempooltruc=enforce
+}}
+
 {{#IF blkconstr.persistmempool
 persistmempool=1
 }}

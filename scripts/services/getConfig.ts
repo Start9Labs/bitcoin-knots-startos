@@ -120,6 +120,29 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
             optout: {},
           },
         },
+        mempooltruc: {
+          name: "Mempool TRUC",
+          description:
+            "Behaviour for transactions requesting TRUC limits: \"reject\" the transactions entirely, \"accept\" them just like any other, or \"enforce\" to impose their requested restrictions",
+          type: "union",
+          tag: {
+            id: "mode",
+            name: "Mempool TRUC",
+            description:
+              "Behaviour for transactions requesting TRUC limits: \"reject\" the transactions entirely, \"accept\" them just like any other, or \"enforce\" to impose their requested restrictions",
+            "variant-names": {
+              reject: "Reject",
+              accept: "Accept",
+              enforce: "Enforce",
+            },
+          },
+          default: "accept",
+          variants: {
+             reject: {},
+             accept: {},
+             enforce: {},
+          },
+        },
         minrelaytxfee: {
           type: "number",
           nullable: false,

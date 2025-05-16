@@ -76,6 +76,7 @@ export const migration: T.ExpectedExports.migration =
           (config: any) => {
             config.coinstatsindex = false;
             config.blkconstr.mempoolreplacement = {mode: "optout",};
+            config.blkconstr.mempooltruc = {mode: "accept",};
             config.softwareexpiry = 1825593420;
             if (
               !matches
