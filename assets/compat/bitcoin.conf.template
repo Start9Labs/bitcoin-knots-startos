@@ -33,6 +33,17 @@ mempoolfullrbf=1
 {{#IF !blkconstr.mempoolfullrbf
 mempoolfullrbf=0
 }}
+
+{{#IF blkconstr.mempoolreplacement.mode = "disabled"
+mempoolreplacement=0
+}}
+{{#IF blkconstr.mempoolreplacement.mode = "optin"
+mempoolreplacement=fee,optin
+}}
+{{#IF blkconstr.mempoolreplacement.mode = "optout"
+mempoolreplacement=fee,-optin
+}}
+
 {{#IF blkconstr.persistmempool
 persistmempool=1
 }}

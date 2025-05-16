@@ -97,6 +97,29 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           type: "boolean",
           default: true,
         },
+        mempoolreplacement: {
+          name: "Mempool replacement settings",
+          description:
+            "Set to disabled to disable RBF entirely, \"fee,optin\" to honour RBF opt-out signal, or \"fee,-optin\" to always RBF aka full RBF",
+          type: "union",
+          tag: {
+            id: "mode",
+            name: "Mempool replacement settings",
+            description:
+              "Set to disabled to disable RBF entirely, \"fee,optin\" to honour RBF opt-out signal, or \"fee,-optin\" to always RBF aka full RBF",
+            "variant-names": {
+              disabled: "Disabled",
+              optin: "fee,optin",
+              optout: "fee,-optin",
+            },
+          },
+          default: "optout",
+          variants: {
+            disabled: {},
+            optin: {},
+            optout: {},
+          },
+        },
         minrelaytxfee: {
           type: "number",
           nullable: false,
