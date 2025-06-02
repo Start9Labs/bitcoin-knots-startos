@@ -12,14 +12,11 @@ const {
   discardfee,
   prune,
   dbcache,
-  zmqpubhashblock,
-  zmqpubhashtx,
-  zmqpubrawtx,
-  zmqpubrawblock,
-  zmqpubsequence,
   blockfilterindex,
   peerblockfilters,
   peerbloomfilters,
+  blockmaxweight,
+  blockmaxsize,
 } = bitcoinConfDefaults
 
 const { InputSpec, Value } = sdk
@@ -27,6 +24,15 @@ const diskUsage = utils.once(() => diskusage.check('/'))
 const archivalMin = 900_000_000_000
 
 const configSpec = sdk.InputSpec.of({
+  softwareexpiry: Value.number({
+    name: 'Software expiry',
+    description:
+      'Stop working after this POSIX timestamp (set to 0 to disable)',
+    default: 1825593420,
+    required: true,
+    integer: true,
+    units: 'timestamp',
+  }),
   zmqEnabled: Value.toggle({
     name: 'ZeroMQ Enabled',
     default: true,
@@ -43,6 +49,40 @@ const configSpec = sdk.InputSpec.of({
       disabled: disk.total < archivalMin ? 'Not enough disk space' : false,
     }
   }),
+  blocknotify: Value.text({
+    name: 'Block Notify',
+    required: false,
+    default: null,
+    description: 'Execute an arbitrary command when the best block changes',
+  }),
+  templateconstruction: Value.object(
+    {
+      name: 'Template Construction',
+      description: 'Set limits for block size/weight',
+    },
+    InputSpec.of({
+      blockmaxsize: Value.number({
+        name: 'Max Block Size',
+        description: 'Maximum block size in bytes',
+        default: blockmaxsize,
+        required: true,
+        min: 100000,
+        max: blockmaxsize,
+        integer: true,
+        units: 'Bytes',
+      }),
+      blockmaxweight: Value.number({
+        name: 'Max Block Weight',
+        description: 'Maximum block weight in vBytes',
+        default: blockmaxweight,
+        required: true,
+        min: 100000,
+        max: blockmaxweight,
+        integer: true,
+        units: 'vBytes',
+      }),
+    }),
+  ),
   coinstatsindex: Value.toggle({
     name: 'Coinstats Index',
     default: !!coinstatsindex,
@@ -136,14 +176,14 @@ const configSpec = sdk.InputSpec.of({
   }),
 })
 
-export const config = sdk.Action.withInput(
+export const other = sdk.Action.withInput(
   // id
   'config',
 
   // metadata
   async ({ effects }) => ({
-    name: 'Customize Bitcoin',
-    description: 'Edit the bitcoin.conf configuration file',
+    name: 'Other Settings',
+    description: 'Edit more values in bitcoin.conf',
     warning: null,
     allowedStatuses: 'any',
     group: 'Configuration',
@@ -180,6 +220,10 @@ async function read(effects: any): Promise<PartialConfigSpec> {
       peerblockfilters: !!bitcoinConf.peerblockfilters,
     },
     peerbloomfilters: !!bitcoinConf.peerbloomfilters,
+    templateconstruction: {
+      blockmaxsize: bitcoinConf.blockmaxsize,
+      blockmaxweight: bitcoinConf.blockmaxweight,
+    },
   }
 }
 
@@ -207,6 +251,8 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     zmqpubrawtx: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : undefined,
     zmqpubhashtx: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : undefined,
     zmqpubsequence: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : undefined,
+    blockmaxsize: input.templateconstruction.blockmaxsize,
+    blockmaxweight: input.templateconstruction.blockmaxweight,
   }
 
   await bitcoinConfFile.merge(effects, otherConfig)

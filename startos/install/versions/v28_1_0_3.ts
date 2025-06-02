@@ -6,9 +6,10 @@ import { bitcoinConfDefaults } from '../../utils'
 import { storeJson } from '../../fileModels/store.json'
 
 export const v28_1_0_3 = VersionInfo.of({
-  version: '28.1:3-alpha.0',
+  version: '#knots:29.0:0',
   releaseNotes: 'Revamped for StartOS 0.4.0',
   migrations: {
+    // @TODO update migration for Knots-specific config options
     up: async ({ effects }) => {
       await storeJson.write(effects, {
         reindexBlockchain: false,
@@ -159,4 +160,4 @@ export const v28_1_0_3 = VersionInfo.of({
     },
     down: IMPOSSIBLE,
   },
-})
+}).satisfies('28.1:3-alpha.0')

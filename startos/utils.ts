@@ -80,7 +80,7 @@ export const bitcoinConfDefaults = {
   mempoolfullrbf: true,
   permitbaremultisig: true,
   datacarrier: true,
-  datacarriersize: 83,
+  datacarriersize: 42,
 
   // Peers
   listen: true,
@@ -96,6 +96,9 @@ export const bitcoinConfDefaults = {
   discardfee: 0.0001,
 
   // Other
+  blockmaxsize: 3985000,
+  blockmaxweight: 3985000,
+  blocknotify: undefined,
   prune: 0,
   zmqpubrawblock: 'tcp://0.0.0.0:28332',
   zmqpubhashblock: 'tcp://0.0.0.0:28332',

@@ -1,9 +1,9 @@
 import { T } from '@start9labs/start-sdk'
-import { bitcoinConfFile, shape } from '../../fileModels/bitcoin.conf'
+import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { sdk } from '../../sdk'
 import { bitcoinConfDefaults, getExteralAddresses } from '../../utils'
 
-const { listen, onlynet, v2transport, externalip, addnode, connect, bind } =
+const { listen, v2transport, externalip, addnode, connect, bind } =
   bitcoinConfDefaults
 const { Value, Variants, List, InputSpec } = sdk
 
@@ -13,10 +13,18 @@ const peerSpec = sdk.InputSpec.of({
     default: !!listen,
     description: 'Allow other nodes to find your server on the network.',
   }),
-  onlyonion: Value.toggle({
-    name: 'Disable Clearnet',
-    default: !!onlynet,
-    description: 'Only connect to peers over Tor.',
+  onlynet: Value.multiselect({
+    name: 'Onlynet',
+    description:
+      'Make automatic outbound connections only to network <net> (ipv4, ipv6, onion, i2p, cjdns). Inbound and manual connections are not affected by this option',
+    values: {
+      ipv4: 'ipv4',
+      ipv6: 'ipv6',
+      onion: 'onion (Tor)',
+      i2p: 'i2p',
+      cjdns: 'cjdns',
+    },
+    default: [],
   }),
   v2transport: Value.toggle({
     name: 'Use V2 P2P Transport Protocol',
@@ -112,10 +120,6 @@ async function read(effects: any): Promise<PartialPeerSpec> {
 
   const peerSettings: PartialPeerSpec = {
     listen: !!bitcoinConf.listen,
-    onlyonion:
-      bitcoinConf.onlynet === undefined
-        ? !!onlynet
-        : bitcoinConf.onlynet === ('onion' as const),
     v2transport: !!bitcoinConf.v2transport,
     externalip:
       bitcoinConf.externalip === undefined ? 'none' : bitcoinConf.externalip,
@@ -132,17 +136,21 @@ async function read(effects: any): Promise<PartialPeerSpec> {
                 .filter((x): x is string => x !== undefined),
       },
     },
+    // @TODO fix "as any" when bitcoinConf.onlynet is of proper type
+    onlynet: [bitcoinConf.onlynet]
+      .flat()
+      .filter((x): x is string => x !== undefined) as any,
   }
 
   return peerSettings
 }
 
-async function write(effects: T.Effects, input: peerSpec) {
+async function write(effects: T.Effects, input: PeerSpec) {
   const peerSettings = {
     listen: input.listen,
     bind: input.listen ? '0.0.0.0:8333' : bind,
     v2transport: input.v2transport,
-    onlynet: input.onlyonion ? 'onion' : onlynet,
+    onlynet: input.onlynet,
     externalip: input.externalip !== 'none' ? input.externalip : externalip,
   }
 
@@ -157,5 +165,5 @@ async function write(effects: T.Effects, input: peerSpec) {
   await bitcoinConfFile.merge(effects, peerSettings)
 }
 
-type peerSpec = typeof peerSpec._TYPE
+type PeerSpec = typeof peerSpec._TYPE
 type PartialPeerSpec = typeof peerSpec._PARTIAL

@@ -1,12 +1,12 @@
 import { FileHelper, matches } from '@start9labs/start-sdk'
 import { bitcoinConfDefaults } from '../utils'
 
-const { anyOf, arrayOf, object } = matches
+const { object, anyOf } = matches
 
 const stringArray = matches.array(matches.string)
 const string = stringArray.map(([a]) => a).orParser(matches.string)
-const number = string.map((a) => Number(a)).orParser(matches.number)
-const boolean = number.map((a) => !!a).orParser(matches.boolean)
+const natural = string.map((a) => Number(a)).orParser(matches.natural)
+const boolean = natural.map((a) => !!a).orParser(matches.boolean)
 const literal = (val: string | number) => {
   return matches
     .literal([String(val)])
@@ -53,6 +53,9 @@ const {
   peerbloomfilters,
   blockfilterindex,
   peerblockfilters,
+  blocknotify,
+  blockmaxsize,
+  blockmaxweight,
 } = bitcoinConfDefaults
 
 export const shape = object({
@@ -60,18 +63,18 @@ export const shape = object({
   rpcbind: string.onMismatch(rpcbind),
   rpcallowip: string.onMismatch(rpcallowip),
   rpcauth: stringArray.orParser(string).optional().onMismatch(rpcauth),
-  rpcservertimeout: number.onMismatch(rpcservertimeout),
-  rpcthreads: number.onMismatch(rpcthreads),
-  rpcworkqueue: number.onMismatch(rpcworkqueue),
+  rpcservertimeout: natural.onMismatch(rpcservertimeout),
+  rpcthreads: natural.onMismatch(rpcthreads),
+  rpcworkqueue: natural.onMismatch(rpcworkqueue),
   rpccookiefile: literal(rpccookiefile).onMismatch(rpccookiefile),
 
   // Mempool
   mempoolfullrbf: boolean.onMismatch(mempoolfullrbf),
   persistmempool: boolean.optional().onMismatch(persistmempool),
-  maxmempool: number.optional().onMismatch(maxmempool),
-  mempoolexpiry: number.onMismatch(mempoolexpiry),
+  maxmempool: natural.optional().onMismatch(maxmempool),
+  mempoolexpiry: natural.onMismatch(mempoolexpiry),
   datacarrier: boolean.onMismatch(datacarrier),
-  datacarriersize: number.onMismatch(datacarriersize),
+  datacarriersize: natural.onMismatch(datacarriersize),
   permitbaremultisig: boolean.onMismatch(permitbaremultisig),
 
   // Peers
@@ -79,23 +82,43 @@ export const shape = object({
   bind: string.optional().onMismatch(bind),
   connect: stringArray.orParser(string).optional().onMismatch(connect),
   addnode: stringArray.orParser(string).optional().onMismatch(addnode),
-  onlynet: string.optional().onMismatch(onlynet),
+  // @TODO how to make onlynet an array of literals that type checks in the action?
+  onlynet: matches
+    .arrayOf(
+      anyOf(
+        literal('ipv4'),
+        literal('ipv6'),
+        literal('onion'),
+        literal('i2p'),
+        literal('cjdns'),
+      ),
+    )
+    .orParser(string)
+    .optional()
+    .onMismatch(onlynet),
   v2transport: boolean.onMismatch(v2transport),
   externalip: string.optional().onMismatch(externalip),
+
+  // Template Construction
+  blockmaxsize: natural.optional().onMismatch(blockmaxsize),
+  blockmaxweight: natural.optional().onMismatch(blockmaxweight),
+
+  // Blocknotify
+  blocknotify: string.optional().onMismatch(blocknotify),
 
   // Whitelist
   whitelist: stringArray.orParser(string).optional().onMismatch(whitelist),
 
   // Pruning
-  prune: number.onMismatch(prune),
+  prune: natural.onMismatch(prune),
 
   // Performance Tuning
-  dbcache: number.onMismatch(dbcache),
+  dbcache: natural.onMismatch(dbcache),
 
   // Wallet
   disablewallet: boolean.onMismatch(disablewallet),
   avoidpartialspends: boolean.onMismatch(avoidpartialspends),
-  discardfee: number.onMismatch(discardfee),
+  discardfee: natural.onMismatch(discardfee),
 
   // Zero MQ
   zmqpubrawblock: string.optional().onMismatch(zmqpubrawblock),
