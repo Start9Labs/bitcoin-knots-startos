@@ -17,6 +17,7 @@ const {
   peerbloomfilters,
   blockmaxweight,
   blockmaxsize,
+  blocknotify,
 } = bitcoinConfDefaults
 
 const { InputSpec, Value } = sdk
@@ -213,6 +214,7 @@ async function read(effects: any): Promise<PartialConfigSpec> {
       avoidpartialspends: !!bitcoinConf.avoidpartialspends,
       discardfee: bitcoinConf.discardfee,
     },
+    blocknotify: bitcoinConf.blocknotify,
     prune: bitcoinConf.prune,
     dbcache: bitcoinConf.dbcache,
     blockfilters: {
@@ -244,6 +246,7 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     peerbloomfilters: input.peerbloomfilters,
     peerblockfilters: input.blockfilters.peerblockfilters,
     blockfilterindex: input.blockfilters.blockfilterindex ? 'basic' : undefined,
+    blocknotify: input.blocknotify ? input.blocknotify : blocknotify,
     prune: input.prune ? input.prune : prune,
     dbcache: input.dbcache ? input.dbcache : dbcache,
     zmqpubrawblock: input.zmqEnabled ? 'tcp://0.0.0.0:28332' : undefined,
