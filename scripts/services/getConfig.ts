@@ -30,7 +30,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
         datacarrier: {
           type: "boolean",
           name: "Datacarrier",
-          description: "Relay and mine data carrier transactions",
+          description: "Relay and mine data carrier transactions | Pleb hint: Remove shitcoins and JPEGs from your mempool/block template.",
           default: true,
         },
         datacarriersize: {
@@ -38,7 +38,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           nullable: false,
           name: "Datacarrier Size",
           description:
-            "Maximum size of arbitrary data to relay and mine",
+            "Maximum size of arbitrary data to relay and mine | Pleb hint: The maximum size of JPEGs and other data you want to relay/mine.",
           range: "[0,100000]",
           integral: true,
           units: "bytes",
@@ -47,19 +47,19 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
         permitbaremultisig: {
           type: "boolean",
           name: "Permit Bare Multisig",
-          description: "Relay non-P2SH multisig",
+          description: "Relay non-P2SH multisig | Pleb hint: Initially used for multisig, today P2MS is used to arbitrarily add data to the chain in the worst way possible.",
           default: false,
         },
         rejectparasites: {
           type: "boolean",
           name: "Reject Parasites",
-          description: "Reject parasite transactions",
+          description: "Reject parasite transactions | Pleb hint: Relay/mine non-monetary bitcoin transactions that do NOT contain arbitrary data.",
           default: true,
         },
         rejecttokens: {
           type: "boolean",
           name: "Reject Tokens",
-          description: "Reject tokens transactions (runes)",
+          description: "Reject tokens transactions | Pleb hint: Relay/mine runes shitcoins.",
           default: false,
         },
         persistmempool: {
@@ -93,7 +93,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
         mempoolfullrbf: {
           name: "Enable Full RBF",
           description:
-            "Policy for your node to use for relaying and mining unconfirmed transactions.  For details, see https://github.com/bitcoin/bitcoin/blob/master/doc/release-notes/release-notes-24.0.md#notice-of-new-option-for-transaction-replacement-policies",
+            "Policy for your node to use for relaying and mining unconfirmed transactions. | Pleb hint: This lets you incite a miner to take your transaction faster by adding more fee to it.",
           type: "boolean",
           default: true,
         },
@@ -148,7 +148,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           nullable: false,
           name: "Min Transaction Relay Fee",
           description:
-            "Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation",
+            "Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation | Pleb hint: You won't mine/relay transactions that pay less fees than this value.",
           range: "[0,21000000]",
           integral: false,
           units: "BTC/kvB",
@@ -223,7 +223,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
         permitbarepubkey: {
           type: "boolean",
           name: "Permit Bare Pubkey",
-          description: "Relay legacy pubkey outputs",
+          description: "Relay legacy pubkey outputs | Pleb hint: Like with P2MS, it was supposed to be used to pay someone, but today it's largely used to add arbitrary data in a very bad way.",
           default: false,
         },
         maxscriptsize: {
@@ -231,7 +231,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           nullable: false,
           name: "Max Script Size",
           description:
-            "Maximum size of scripts we relay and mine, in bytes",
+            "Maximum size of scripts we relay and mine, in bytes | Pleb hint: In a Bitcoin transaction the script is the thing that define which signatures can spend the funds.",
           range: "[0,*)",
           integral: true,
           units: "Bytes",
@@ -242,7 +242,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           nullable: false,
           name: "Datacarrier cost",
           description:
-            "Treat extra data in transactions as at least N vbytes per actual byte",
+            "Treat extra data in transactions as at least N vbytes per actual byte |  Pleb hint: Apply a premium on spam. The higher the value, the more fees spam has to pay to enter your mempool.",
           range: "[0,*)",
           integral: true,
           units: undefined,
@@ -251,7 +251,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
         acceptnonstddatacarrier: {
           type: "boolean",
           name: "Accept non standard datacarrier",
-          description: "Relay and mine non-OP_RETURN datacarrier injection",
+          description: "Relay and mine non-OP_RETURN datacarrier injection | Pleb hint: Enabling this will let inscriptions still pass the datacarrier filter.",
           default: false,
         },
         dustrelayfee: {
