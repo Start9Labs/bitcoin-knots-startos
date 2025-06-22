@@ -41,6 +41,20 @@ const {
   permitbaremultisig,
   datacarrier,
   datacarriersize,
+  rejectparasites,
+  rejecttokens,
+  minrelaytxfee,
+  bytespersigop,
+  bytespersigopstrict,
+  limitancestorcount,
+  limitancestorsize,
+  limitdescendantcount,
+  limitdescendantsize,
+  permitbarepubkey,
+  maxscriptsize,
+  datacarriercost,
+  acceptnonstddatacarrier,
+  dustrelayfee,
   listen,
   onlynet,
   externalip,
@@ -50,6 +64,8 @@ const {
   disablewallet,
   avoidpartialspends,
   discardfee,
+  blockmaxsize,
+  blockmaxweight,
   blocknotify,
   prune,
   zmqpubrawblock,
@@ -83,6 +99,22 @@ export const shape = object({
   datacarrier: boolean.onMismatch(datacarrier),
   datacarriersize: natural.onMismatch(datacarriersize),
   permitbaremultisig: boolean.onMismatch(permitbaremultisig),
+  rejectparasites: boolean.optional().onMismatch(rejectparasites),
+  rejecttokens: boolean.optional().onMismatch(rejecttokens),
+  minrelaytxfee: number.optional().onMismatch(minrelaytxfee),
+  bytespersigop: natural.optional().onMismatch(bytespersigop),
+  bytespersigopstrict: natural.optional().onMismatch(bytespersigopstrict),
+  limitancestorcount: natural.optional().onMismatch(limitancestorcount),
+  limitancestorsize: natural.optional().onMismatch(limitancestorsize),
+  limitdescendantcount: natural.optional().onMismatch(limitdescendantcount),
+  limitdescendantsize: natural.optional().onMismatch(limitdescendantsize),
+  permitbarepubkey: boolean.optional().onMismatch(permitbarepubkey),
+  maxscriptsize: natural.optional().onMismatch(maxscriptsize),
+  datacarriercost: natural.optional().onMismatch(datacarriercost),
+  acceptnonstddatacarrier: boolean
+    .optional()
+    .onMismatch(acceptnonstddatacarrier),
+  dustrelayfee: number.optional().onMismatch(dustrelayfee),
 
   // Peers
   listen: boolean.onMismatch(listen),
@@ -104,6 +136,10 @@ export const shape = object({
 
   // Performance Tuning
   dbcache: natural.onMismatch(dbcache),
+
+  // Other
+  blockmaxsize: natural.optional().onMismatch(blockmaxsize),
+  blockmaxweight: natural.optional().onMismatch(blockmaxweight),
 
   // Wallet
   disablewallet: boolean.onMismatch(disablewallet),

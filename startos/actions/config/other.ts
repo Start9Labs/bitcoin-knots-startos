@@ -15,6 +15,8 @@ const {
   blockfilterindex,
   peerblockfilters,
   peerbloomfilters,
+  blockmaxweight,
+  blockmaxsize,
   blocknotify,
 } = bitcoinConfDefaults
 
@@ -23,11 +25,20 @@ const diskUsage = utils.once(() => diskusage.check('/'))
 const archivalMin = 900_000_000_000
 
 const configSpec = sdk.InputSpec.of({
+  softwareexpiry: Value.number({
+    name: 'Software expiry',
+    description:
+      'Stop working after this POSIX timestamp (set to 0 to disable)',
+    default: 1825593420,
+    required: true,
+    integer: true,
+    units: 'timestamp',
+  }),
   zmqEnabled: Value.toggle({
     name: 'ZeroMQ Enabled',
     default: true,
     description:
-      'The ZeroMQ interface is useful for some applications which might require data related to block and transaction events from Bitcoin Core. For example, LND requires ZeroMQ be enabled for LND to get the latest block data',
+      'The ZeroMQ interface is useful for some applications which might require data related to block and transaction events from Bitcoin. For example, LND requires ZeroMQ be enabled for LND to get the latest block data',
   }),
   txindex: Value.dynamicToggle(async ({ effects }) => {
     const disk = await diskUsage()
@@ -35,7 +46,7 @@ const configSpec = sdk.InputSpec.of({
       name: 'Transaction Index',
       default: disk.total >= archivalMin,
       description:
-        'By enabling Transaction Index (txindex) Bitcoin Core will build a complete transaction index. This allows Bitcoin Core to access any transaction with commands like `getrawtransaction`.',
+        'By enabling Transaction Index (txindex) Bitcoin will build a complete transaction index. This allows Bitcoin to access any transaction with commands like `getrawtransaction`.',
       disabled: disk.total < archivalMin ? 'Not enough disk space' : false,
     }
   }),
@@ -45,6 +56,34 @@ const configSpec = sdk.InputSpec.of({
     default: null,
     description: 'Execute an arbitrary command when the best block changes',
   }),
+  templateconstruction: Value.object(
+    {
+      name: 'Template Construction',
+      description: 'Set limits for block size/weight',
+    },
+    InputSpec.of({
+      blockmaxsize: Value.number({
+        name: 'Max Block Size',
+        description: 'Maximum block size in bytes',
+        default: blockmaxsize,
+        required: true,
+        min: 100_000,
+        max: blockmaxsize,
+        integer: true,
+        units: 'Bytes',
+      }),
+      blockmaxweight: Value.number({
+        name: 'Max Block Weight',
+        description: 'Maximum block weight in vBytes',
+        default: blockmaxweight,
+        required: true,
+        min: 100_000,
+        max: blockmaxweight,
+        integer: true,
+        units: 'vBytes',
+      }),
+    }),
+  ),
   coinstatsindex: Value.toggle({
     name: 'Coinstats Index',
     default: coinstatsindex,
@@ -56,12 +95,12 @@ const configSpec = sdk.InputSpec.of({
     InputSpec.of({
       enable: Value.toggle({
         name: 'Enable Wallet',
-        default: !!!disablewallet,
+        default: !disablewallet,
         description: 'Load the wallet and enable wallet RPC calls.',
       }),
       avoidpartialspends: Value.toggle({
         name: 'Avoid Partial Spends',
-        default: !!avoidpartialspends,
+        default: avoidpartialspends,
         description:
           'Group outputs by address, selecting all or none, instead of selecting on a per-output basis. This improves privacy at the expense of higher transaction fees.',
       }),
@@ -122,7 +161,7 @@ const configSpec = sdk.InputSpec.of({
       }),
       peerblockfilters: Value.toggle({
         name: 'Serve Compact Block Filters to Peers (BIP157)',
-        default: !!peerblockfilters,
+        default: peerblockfilters,
         description:
           "Serve Compact Block Filters as a peer service to other nodes on the network. This is useful if you wish to connect an SPV client to your node to make it efficient to scan transactions without having to download all block data.  'Compute Compact Block Filters (BIP158)' is required.",
       }),
@@ -130,7 +169,7 @@ const configSpec = sdk.InputSpec.of({
   ),
   peerbloomfilters: Value.toggle({
     name: 'Serve Bloom Filters to Peers',
-    default: !!peerbloomfilters,
+    default: peerbloomfilters,
     description:
       'Peers have the option of setting filters on each connection they make after the version handshake has completed. Bloom filters are for clients implementing SPV (Simplified Payment Verification) that want to check that block headers  connect together correctly, without needing to verify the full blockchain.  The client must trust that the transactions in the chain are in fact valid.  It is highly recommended AGAINST using for anything except Bisq integration.',
     warning:
@@ -138,7 +177,7 @@ const configSpec = sdk.InputSpec.of({
   }),
 })
 
-export const config = sdk.Action.withInput(
+export const other = sdk.Action.withInput(
   // id
   'config',
 
@@ -183,6 +222,10 @@ async function read(effects: any): Promise<PartialConfigSpec> {
       peerblockfilters: bitcoinConf.peerblockfilters,
     },
     peerbloomfilters: bitcoinConf.peerbloomfilters,
+    templateconstruction: {
+      blockmaxsize: bitcoinConf.blockmaxsize,
+      blockmaxweight: bitcoinConf.blockmaxweight,
+    },
   }
 }
 
@@ -211,6 +254,8 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     zmqpubrawtx: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : undefined,
     zmqpubhashtx: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : undefined,
     zmqpubsequence: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : undefined,
+    blockmaxsize: input.templateconstruction.blockmaxsize,
+    blockmaxweight: input.templateconstruction.blockmaxweight,
   }
 
   await bitcoinConfFile.merge(effects, otherConfig)

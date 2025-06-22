@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { config } from './config/other'
+import { other } from './config/other'
 import { mempoolConfig } from './config/mempool'
 import { peerConfig } from './config/peers'
 import { rpcConfig } from './config/rpc'
@@ -21,7 +21,7 @@ export const actions = sdk.Actions.of()
   .addAction(deleteTxIndex)
   .addAction(reindexBlockchain)
   .addAction(reindexChainstate)
-  .addAction(config)
+  .addAction(other)
   .addAction(rpcConfig)
   .addAction(generateRpcUser)
   .addAction(deleteRpcAuth)
