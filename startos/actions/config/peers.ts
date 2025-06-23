@@ -6,11 +6,13 @@ import { bitcoinConfDefaults, getExteralAddresses } from '../../utils'
 const { listen, v2transport, externalip, addnode, connect, bind } =
   bitcoinConfDefaults
 const { Value, Variants, List, InputSpec } = sdk
+const validNets = ['ipv4', 'ipv6', 'onion', 'i2p', 'cjdns'] as const
+type ValidNets = (typeof validNets)[number]
 
 const peerSpec = sdk.InputSpec.of({
   listen: Value.toggle({
     name: 'Make Public',
-    default: !!listen,
+    default: listen,
     description: 'Allow other nodes to find your server on the network.',
   }),
   onlynet: Value.multiselect({
@@ -28,7 +30,7 @@ const peerSpec = sdk.InputSpec.of({
   }),
   v2transport: Value.toggle({
     name: 'Use V2 P2P Transport Protocol',
-    default: !!v2transport,
+    default: v2transport,
     description:
       'Enable or disable the use of BIP324 V2 P2P transport protocol.',
   }),
@@ -119,8 +121,16 @@ async function read(effects: any): Promise<PartialPeerSpec> {
   if (!bitcoinConf) return {}
 
   const peerSettings: PartialPeerSpec = {
-    listen: !!bitcoinConf.listen,
-    v2transport: !!bitcoinConf.v2transport,
+    listen: bitcoinConf.listen,
+    onlynet: bitcoinConf.onlynet
+      ? [bitcoinConf.onlynet]
+          .flat()
+          .filter(
+            (x): x is ValidNets =>
+              x !== undefined && (validNets as readonly string[]).includes(x),
+          )
+      : onlynet,
+    v2transport: bitcoinConf.v2transport,
     externalip:
       bitcoinConf.externalip === undefined ? 'none' : bitcoinConf.externalip,
     connectpeer: {
@@ -136,10 +146,6 @@ async function read(effects: any): Promise<PartialPeerSpec> {
                 .filter((x): x is string => x !== undefined),
       },
     },
-    // @TODO fix "as any" when bitcoinConf.onlynet is of proper type
-    onlynet: [bitcoinConf.onlynet]
-      .flat()
-      .filter((x): x is string => x !== undefined) as any,
   }
 
   return peerSettings

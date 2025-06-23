@@ -5,8 +5,9 @@ const { object, anyOf } = matches
 
 const stringArray = matches.array(matches.string)
 const string = stringArray.map(([a]) => a).orParser(matches.string)
+const number = string.map((a) => Number(a)).orParser(matches.number)
 const natural = string.map((a) => Number(a)).orParser(matches.natural)
-const boolean = natural.map((a) => !!a).orParser(matches.boolean)
+const boolean = number.map((a) => !!a).orParser(matches.boolean)
 const literal = (val: string | number) => {
   return matches
     .literal([String(val)])
@@ -14,6 +15,14 @@ const literal = (val: string | number) => {
     .orParser(matches.literal(val))
     .map((a) => (typeof val === 'number' ? Number(a) : a))
 }
+
+const onlyNetOptions = anyOf(
+  matches.literal('ipv4'),
+  matches.literal('ipv6'),
+  matches.literal('onion'),
+  matches.literal('i2p'),
+  matches.literal('cjdns'),
+)
 
 const {
   rpcbind,
@@ -32,6 +41,20 @@ const {
   permitbaremultisig,
   datacarrier,
   datacarriersize,
+  rejectparasites,
+  rejecttokens,
+  minrelaytxfee,
+  bytespersigop,
+  bytespersigopstrict,
+  limitancestorcount,
+  limitancestorsize,
+  limitdescendantcount,
+  limitdescendantsize,
+  permitbarepubkey,
+  maxscriptsize,
+  datacarriercost,
+  acceptnonstddatacarrier,
+  dustrelayfee,
   listen,
   onlynet,
   externalip,
@@ -41,6 +64,9 @@ const {
   disablewallet,
   avoidpartialspends,
   discardfee,
+  blockmaxsize,
+  blockmaxweight,
+  blocknotify,
   prune,
   zmqpubrawblock,
   zmqpubhashblock,
@@ -76,32 +102,31 @@ export const shape = object({
   datacarrier: boolean.onMismatch(datacarrier),
   datacarriersize: natural.onMismatch(datacarriersize),
   permitbaremultisig: boolean.onMismatch(permitbaremultisig),
+  rejectparasites: boolean.optional().onMismatch(rejectparasites),
+  rejecttokens: boolean.optional().onMismatch(rejecttokens),
+  minrelaytxfee: number.optional().onMismatch(minrelaytxfee),
+  bytespersigop: natural.optional().onMismatch(bytespersigop),
+  bytespersigopstrict: natural.optional().onMismatch(bytespersigopstrict),
+  limitancestorcount: natural.optional().onMismatch(limitancestorcount),
+  limitancestorsize: natural.optional().onMismatch(limitancestorsize),
+  limitdescendantcount: natural.optional().onMismatch(limitdescendantcount),
+  limitdescendantsize: natural.optional().onMismatch(limitdescendantsize),
+  permitbarepubkey: boolean.optional().onMismatch(permitbarepubkey),
+  maxscriptsize: natural.optional().onMismatch(maxscriptsize),
+  datacarriercost: natural.optional().onMismatch(datacarriercost),
+  acceptnonstddatacarrier: boolean
+    .optional()
+    .onMismatch(acceptnonstddatacarrier),
+  dustrelayfee: number.optional().onMismatch(dustrelayfee),
 
   // Peers
   listen: boolean.onMismatch(listen),
   bind: string.optional().onMismatch(bind),
   connect: stringArray.orParser(string).optional().onMismatch(connect),
   addnode: stringArray.orParser(string).optional().onMismatch(addnode),
-  // @TODO how to make onlynet an array of literals that type checks in the action?
-  onlynet: matches
-    .arrayOf(
-      anyOf(
-        literal('ipv4'),
-        literal('ipv6'),
-        literal('onion'),
-        literal('i2p'),
-        literal('cjdns'),
-      ),
-    )
-    .orParser(string)
-    .optional()
-    .onMismatch(onlynet),
+  onlynet: arrayOf(onlyNetOptions.optional().onMismatch(undefined)).optional(),
   v2transport: boolean.onMismatch(v2transport),
   externalip: string.optional().onMismatch(externalip),
-
-  // Template Construction
-  blockmaxsize: natural.optional().onMismatch(blockmaxsize),
-  blockmaxweight: natural.optional().onMismatch(blockmaxweight),
 
   // Blocknotify
   blocknotify: string.optional().onMismatch(blocknotify),
@@ -114,6 +139,10 @@ export const shape = object({
 
   // Performance Tuning
   dbcache: natural.onMismatch(dbcache),
+
+  // Other
+  blockmaxsize: natural.optional().onMismatch(blockmaxsize),
+  blockmaxweight: natural.optional().onMismatch(blockmaxweight),
 
   // Wallet
   disablewallet: boolean.onMismatch(disablewallet),

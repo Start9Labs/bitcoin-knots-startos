@@ -1,5 +1,7 @@
+import { mainMounts } from '../main'
 import { sdk } from '../sdk'
 import * as fs from 'fs/promises'
+import { rootDir } from '../utils'
 
 export const deleteTxIndex = sdk.Action.withoutInput(
   // id
@@ -11,7 +13,7 @@ export const deleteTxIndex = sdk.Action.withoutInput(
     description:
       'Deletes the Transaction Index (txindex) in the event it gets corrupted.',
     warning:
-      "The Transaction Index will be rebuilt once Bitcoin Core is started again, unless 'Coinstats Index' is disabled in the config settings. Please don't do this unless you fully understand what you are doing.",
+      "The Transaction Index will be rebuilt once Bitcoin is started again, unless 'Coinstats Index' is disabled in the config settings. Please don't do this unless you fully understand what you are doing.",
     allowedStatuses: 'only-stopped',
     group: 'Delete Corrupted Files',
     visibility: 'enabled',
@@ -19,7 +21,17 @@ export const deleteTxIndex = sdk.Action.withoutInput(
 
   // execution function
   async ({ effects }) => {
-    await fs.rmdir('/root/.bitcoin/indexes/txindex', { recursive: true })
+    await sdk.SubContainer.withTemp(
+      effects,
+      { imageId: 'bitcoind' },
+      mainMounts,
+      'delete-txindex',
+      async (subc) => {
+        await fs.rmdir(`${subc.rootfs}/${rootDir}/indexes/txindex`, {
+          recursive: true,
+        })
+      },
+    )
 
     return {
       version: '1',

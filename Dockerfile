@@ -54,6 +54,8 @@ RUN ./configure LDFLAGS=-L`ls -d /opt/db*`/lib/ CPPFLAGS=-I`ls -d /opt/db*`/incl
 RUN make -j$(nproc)
 RUN make install
 RUN strip ${BITCOIN_PREFIX}/bin/*
+RUN strip ${BITCOIN_PREFIX}/lib/libbitcoinconsensus.a
+RUN strip ${BITCOIN_PREFIX}/lib/libbitcoinconsensus.so.0.0.0
 
 # Build stage for compiled artifacts
 FROM alpine:3.21
@@ -72,7 +74,7 @@ RUN apk --no-cache add \
   sqlite-dev \
   tini \
   yq \
-  RUN rm -rf /var/cache/apk/*
+RUN rm -rf /var/cache/apk/*
 
 ARG ARCH
 

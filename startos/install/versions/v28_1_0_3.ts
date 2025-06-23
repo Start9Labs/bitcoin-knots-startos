@@ -6,14 +6,16 @@ import { bitcoinConfDefaults } from '../../utils'
 import { storeJson } from '../../fileModels/store.json'
 
 export const v28_1_0_3 = VersionInfo.of({
-  version: '#knots:29.0:0',
+  version: '#knots:28.1:3-alpha.0',
   releaseNotes: 'Revamped for StartOS 0.4.0',
   migrations: {
-    // @TODO update migration for Knots-specific config options
+    // @TODO knots specific migrations - should be able to just use the file helper to read the existing bitcoin.conf
     up: async ({ effects }) => {
       await storeJson.write(effects, {
         reindexBlockchain: false,
         reindexChainstate: false,
+        fullySynced: false,
+        snapshotInUse: false,
       })
       try {
         const configYaml = load(
@@ -117,7 +119,7 @@ export const v28_1_0_3 = VersionInfo.of({
 
           // Peers
           listen: listen,
-          onlynet: onlyonion ? 'onion' : undefined,
+          onlynet: onlyonion ? ['onion'] : undefined,
           v2transport: v2transport,
 
           // Wallet
@@ -160,4 +162,5 @@ export const v28_1_0_3 = VersionInfo.of({
     },
     down: IMPOSSIBLE,
   },
-}).satisfies('28.1:3-alpha.0')
+}).satisfies('28.1:3-alpha.3')
+

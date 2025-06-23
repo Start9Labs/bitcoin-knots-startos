@@ -1,7 +1,10 @@
-import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
-import { bitcoinConfFile } from './fileModels/bitcoin.conf'
 import { sdk } from './sdk'
-import { peerInterfaceId } from './interfaces'
+export const rpcInterfaceId = 'rpc'
+export const peerInterfaceId = 'peer'
+export const zmqInterfaceId = 'zmq'
+export const zmqPort = 28332
+export const peerPort = 8333
+export const rpcPort = 8332
 
 export const rootDir = '/data'
 
@@ -51,16 +54,6 @@ export type GetBlockchainInfo = {
   warnings: string
 }
 
-export async function getRpcUsers(effects: Effects) {
-  const rpcauth = await getRpcAuth(effects)
-  if (!rpcauth) return
-  return [rpcauth].flat().map((e) => e.split(':', 2)[0])
-}
-
-export async function getRpcAuth(effects: Effects) {
-  return (await bitcoinConfFile.read().const(effects))?.rpcauth
-}
-
 export const bitcoinConfDefaults = {
   // RPC
   rpcbind: '0.0.0.0:8332',
@@ -78,9 +71,23 @@ export const bitcoinConfDefaults = {
   maxmempool: 300,
   mempoolexpiry: 336,
   mempoolfullrbf: true,
-  permitbaremultisig: true,
+  permitbaremultisig: false,
   datacarrier: true,
   datacarriersize: 42,
+  rejectparasites: true,
+  rejecttokens: false,
+  minrelaytxfee: 0.00001,
+  bytespersigop: 20,
+  bytespersigopstrict: 20,
+  limitancestorcount: 25,
+  limitancestorsize: 101,
+  limitdescendantcount: 25,
+  limitdescendantsize: 101,
+  permitbarepubkey: false,
+  maxscriptsize: 1_650,
+  datacarriercost: 1,
+  acceptnonstddatacarrier: false,
+  dustrelayfee: 0.00003,
 
   // Peers
   listen: true,
@@ -96,8 +103,8 @@ export const bitcoinConfDefaults = {
   discardfee: 0.0001,
 
   // Other
-  blockmaxsize: 3985000,
-  blockmaxweight: 3985000,
+  blockmaxsize: 3_985_000,
+  blockmaxweight: 3_985_000,
   blocknotify: undefined,
   prune: 0,
   zmqpubrawblock: 'tcp://0.0.0.0:28332',
