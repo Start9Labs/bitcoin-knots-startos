@@ -1,7 +1,7 @@
 import { FileHelper, matches } from '@start9labs/start-sdk'
 import { bitcoinConfDefaults } from '../utils'
 
-const { anyOf, arrayOf, object } = matches
+const { object, anyOf } = matches
 
 const stringArray = matches.array(matches.string)
 const string = stringArray.map(([a]) => a).orParser(matches.string)
@@ -79,6 +79,9 @@ const {
   peerbloomfilters,
   blockfilterindex,
   peerblockfilters,
+  blocknotify,
+  blockmaxsize,
+  blockmaxweight,
 } = bitcoinConfDefaults
 
 export const shape = object({
@@ -144,7 +147,7 @@ export const shape = object({
   // Wallet
   disablewallet: boolean.onMismatch(disablewallet),
   avoidpartialspends: boolean.onMismatch(avoidpartialspends),
-  discardfee: number.onMismatch(discardfee),
+  discardfee: natural.onMismatch(discardfee),
 
   // Zero MQ
   zmqpubrawblock: string.optional().onMismatch(zmqpubrawblock),

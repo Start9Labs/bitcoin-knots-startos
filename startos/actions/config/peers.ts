@@ -3,7 +3,7 @@ import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { sdk } from '../../sdk'
 import { bitcoinConfDefaults, getExteralAddresses } from '../../utils'
 
-const { listen, onlynet, v2transport, externalip, addnode, connect, bind } =
+const { listen, v2transport, externalip, addnode, connect, bind } =
   bitcoinConfDefaults
 const { Value, Variants, List, InputSpec } = sdk
 const validNets = ['ipv4', 'ipv6', 'onion', 'i2p', 'cjdns'] as const
