@@ -1,7 +1,7 @@
 import { FileHelper, matches } from '@start9labs/start-sdk'
 import { bitcoinConfDefaults } from '../utils'
 
-const { object, anyOf } = matches
+const { object, anyOf, arrayOf } = matches
 
 const stringArray = matches.array(matches.string)
 const string = stringArray.map(([a]) => a).orParser(matches.string)
@@ -79,9 +79,6 @@ const {
   peerbloomfilters,
   blockfilterindex,
   peerblockfilters,
-  blocknotify,
-  blockmaxsize,
-  blockmaxweight,
 } = bitcoinConfDefaults
 
 export const shape = object({
