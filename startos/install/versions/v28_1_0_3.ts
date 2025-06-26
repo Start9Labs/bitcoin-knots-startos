@@ -10,9 +10,26 @@ export const v28_1_0_3 = VersionInfo.of({
   migrations: {
     other: {
       [bitcoinCoreCurrent.options.version]: async ({ effects }) => {
-        // merge knots defaults into bitcoin.conf
-        await bitcoinConfFile.merge(effects, bitcoinConfDefaults)
-      }
+        /*
+          We want to merge bitcoin knots defaults into bitcoin.conf if those options
+          were not present in bitcoin.conf at flavor migration
+        */
+        const existingBitcoinConf = await bitcoinConfFile.read().once()
+        const nonConstDefaults: Record<string, any> = { ...bitcoinConfDefaults }
+
+        if (existingBitcoinConf) {
+          const newOptions: Record<string, any> = {}
+          for (const k in nonConstDefaults) {
+            if (!(k in existingBitcoinConf)) {
+              newOptions[k] = nonConstDefaults[k]
+            }
+          }
+          await bitcoinConfFile.merge(effects, newOptions)
+        } else {
+          // Write the bitcoin.conf if it doesn't exist
+          await bitcoinConfFile.write(effects, bitcoinConfDefaults)
+        }
+      },
     },
     up: async ({ effects }) => {
       await storeJson.write(effects, {
@@ -25,4 +42,3 @@ export const v28_1_0_3 = VersionInfo.of({
     down: IMPOSSIBLE,
   },
 }).satisfies(bitcoinCoreCurrent.options.version)
-
