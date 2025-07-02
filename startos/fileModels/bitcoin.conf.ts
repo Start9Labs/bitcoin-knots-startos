@@ -163,7 +163,7 @@ export const shape = object({
   peerbloomfilters: boolean.onMismatch(peerbloomfilters),
 
   // BIP157
-  blockfilterindex: string.optional().onMismatch(blockfilterindex),
+  blockfilterindex: anyOf(matches.literal("basic"), boolean).optional().onMismatch(blockfilterindex),
   peerblockfilters: boolean.onMismatch(peerblockfilters),
 })
 
