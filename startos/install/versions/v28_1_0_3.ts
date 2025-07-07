@@ -4,6 +4,7 @@ import { coreCurrent as coreV28_1_3 } from 'bitcoind-startos/startos/install/ver
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { bitcoinConfDefaults } from '../../utils'
 import { bitcoinConfDefaults as coreDefaults } from '../../utils'
+import { nocow } from '../versionGraph'
 
 export const v28_1_0_3 = VersionInfo.of({
   version: '#knots:28.1:3-alpha.4',
@@ -59,6 +60,7 @@ export const v28_1_0_3 = VersionInfo.of({
       },
     },
     up: async ({ effects }) => {
+      await nocow('/media/startos/volumes/main/')
       await storeJson.write(effects, {
         reindexBlockchain: false,
         reindexChainstate: false,
