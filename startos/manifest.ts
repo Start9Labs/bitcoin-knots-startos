@@ -9,6 +9,7 @@ export const manifest = setupManifest({
   upstreamRepo: 'https://github.com/bitcoinknots/bitcoin',
   supportSite: 'https://github.com/retropex/bitcoin-knots-startos',
   marketingSite: 'https://bitcoinknots.org/',
+  docsUrl: 'https://github.com/Start9Labs/bitcoin-knots-startos/blob/update/040/instructions.md',
   description: {
     short: 'A Bitcoin Full Node by Bitcoin Knots',
     // @TODO better description for Knots
