@@ -15,6 +15,10 @@ import { runtimeInfo } from './runtimeInfo'
 import { assumeutxo } from './assumeutxo'
 import { prioritiseTransaction } from './prioritiseTransaction'
 import { signMessage } from './sign'
+import { getaddress } from './getaddress'
+import { getbalance } from './getbalance'
+import { sendAllCoin } from './sendallcoin'
+import { sendCoin } from './sendcoin'
 
 export const actions = sdk.Actions.of()
   .addAction(runtimeInfo)
@@ -33,3 +37,7 @@ export const actions = sdk.Actions.of()
   .addAction(assumeutxo)
   .addAction(prioritiseTransaction)
   .addAction(signMessage)
+  .addAction(getaddress)
+  .addAction(getbalance)
+  .addAction(sendAllCoin)
+  .addAction(sendCoin)
