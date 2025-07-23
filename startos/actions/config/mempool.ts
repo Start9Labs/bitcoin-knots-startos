@@ -68,13 +68,13 @@ export const mempoolSpec = InputSpec.of({
     description: 'Relay non-P2SH multisig transactions',
   }),
   datacarrier: Value.toggle({
-    name: 'Relay OP_RETURN Transactions',
+    name: 'Relay and mine data carrier transactions.',
     default: datacarrier,
-    description: 'Relay transactions with OP_RETURN outputs',
+    description: 'Relay and mine data carrier transactions.',
   }),
   datacarriersize: Value.number({
-    name: 'Max OP_RETURN Size',
-    description: 'Maximum size of data in OP_RETURN or witness data to relay',
+    name: 'Maximum size of data in data carrier transactions',
+    description: 'Maximum size of data in data carrier transactions we relay and mine, in bytes.',
     required: false,
     default: datacarriersize,
     min: 0,
