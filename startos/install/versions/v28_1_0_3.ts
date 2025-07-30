@@ -59,14 +59,12 @@ export const v28_1_0_3 = VersionInfo.of({
       },
     },
     up: async ({ effects }) => {
-      console.log("Running #knots:28.1:3-alpha.3 migration")
       await storeJson.write(effects, {
         reindexBlockchain: false,
         reindexChainstate: false,
         fullySynced: false,
         snapshotInUse: false,
       })
-      console.log("Migration complete")
     },
     down: IMPOSSIBLE,
   },
