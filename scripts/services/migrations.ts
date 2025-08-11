@@ -78,6 +78,7 @@ export const migration: T.ExpectedExports.migration =
             config.blkconstr.mempoolreplacement = {mode: "optout",};
             config.blkconstr.mempooltruc = {mode: "accept",};
             config.softwareexpiry = 1825593420;
+            config.advanced.natpmp = false;
             if (
               !matches
                 .shape({

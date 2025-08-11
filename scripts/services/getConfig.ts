@@ -614,6 +614,12 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
             },
           },
         },
+        natpmp: {
+          type: "boolean",
+          name: "natpmp",
+          description: "Use PCP or NAT-PMP to map the listening port.",
+          default: false,
+        },
       },
     },
     softwareexpiry: {
