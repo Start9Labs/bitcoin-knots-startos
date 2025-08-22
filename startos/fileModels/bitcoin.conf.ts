@@ -79,6 +79,7 @@ const {
   peerbloomfilters,
   blockfilterindex,
   peerblockfilters,
+  natpmp,
 } = bitcoinConfDefaults
 
 export const shape = object({
@@ -167,6 +168,7 @@ export const shape = object({
   // BIP157
   blockfilterindex: anyOf(matches.literal("basic"), boolean).optional().onMismatch(blockfilterindex),
   peerblockfilters: boolean.onMismatch(peerblockfilters),
+  natpmp: boolean.onMismatch(natpmp)
 })
 
 function onWrite(a: unknown): any {

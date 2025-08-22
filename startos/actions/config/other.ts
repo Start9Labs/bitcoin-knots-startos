@@ -175,6 +175,12 @@ const configSpec = sdk.InputSpec.of({
     warning:
       'This is ONLY for use with Bisq integration, please use Block Filters for all other applications.',
   }),
+  natpmp: Value.toggle({
+    name: 'natpmp',
+    default: false,
+    description:
+      'Use PCP or NAT-PMP to map the listening port.',
+  }),
 })
 
 export const other = sdk.Action.withInput(
@@ -236,6 +242,7 @@ async function read(effects: any): Promise<PartialConfigSpec> {
       blockmaxsize: bitcoinConf.blockmaxsize,
       blockmaxweight: bitcoinConf.blockmaxweight,
     },
+    natpmp: bitcoinConf.natpmp,
   }
 }
 
@@ -266,6 +273,7 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     zmqpubsequence: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : '',
     blockmaxsize: input.templateconstruction.blockmaxsize,
     blockmaxweight: input.templateconstruction.blockmaxweight,
+    natpmp: input.natpmp,
   }
 
   await bitcoinConfFile.merge(effects, otherConfig)
