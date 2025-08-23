@@ -258,3 +258,8 @@ natpmp=1
 {{#IF !advanced.natpmp
 natpmp=0
 }}
+
+## MAXUPLOADTARGET
+{{#IF advanced.maxuploadtarget
+maxuploadtarget={{advanced.maxuploadtarget}}
+}}

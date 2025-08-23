@@ -620,6 +620,15 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           description: "Use PCP or NAT-PMP to map the listening port.",
           default: false,
         },
+        maxuploadtarget: {
+          type: "number",
+          name: "Max upload target",
+          description: "Tries to keep outbound traffic under the given target in MiB per 24h. Limit does not apply to peers with 'download' permission or blocks created within past week. 0 = no limit.",
+          integral: true,
+          range: "[0,*)",
+          default: 0,
+          nullable: true,
+        }
       },
     },
     softwareexpiry: {

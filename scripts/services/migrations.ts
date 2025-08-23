@@ -79,6 +79,7 @@ export const migration: T.ExpectedExports.migration =
             config.blkconstr.mempooltruc = {mode: "accept",};
             config.softwareexpiry = 1825593420;
             config.advanced.natpmp = false;
+            config.maxuploadtarget = 0;
             if (
               !matches
                 .shape({
@@ -101,6 +102,7 @@ export const migration: T.ExpectedExports.migration =
         ),
         down: compat.migrations.updateConfig((config: any) => {
           delete config.softwareexpiry;
+          delete config.maxuploadtarget;
 
           return config;
         },
