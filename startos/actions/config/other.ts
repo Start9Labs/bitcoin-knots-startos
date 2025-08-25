@@ -18,6 +18,7 @@ const {
   blockmaxweight,
   blockmaxsize,
   blocknotify,
+  maxuploadtarget
 } = bitcoinConfDefaults
 
 const { InputSpec, Value } = sdk
@@ -181,6 +182,17 @@ const configSpec = sdk.InputSpec.of({
     description:
       'Use PCP or NAT-PMP to map the listening port.',
   }),
+  maxuploadtarget: Value.number({
+    name: 'Max upload target',
+    description:
+      "Tries to keep outbound traffic under the given target in MiB per 24h. Limit does not apply to peers with 'download' permission or blocks created within past week. 0 = no limit.",
+    required: false,
+    default: null,
+    min: 0,
+    integer: true,
+    units: 'MiB',
+    placeholder: '0',
+  })
 })
 
 export const other = sdk.Action.withInput(
@@ -243,6 +255,7 @@ async function read(effects: any): Promise<PartialConfigSpec> {
       blockmaxweight: bitcoinConf.blockmaxweight,
     },
     natpmp: bitcoinConf.natpmp,
+    maxuploadtarget: bitcoinConf.maxuploadtarget,
   }
 }
 
@@ -274,6 +287,7 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     blockmaxsize: input.templateconstruction.blockmaxsize,
     blockmaxweight: input.templateconstruction.blockmaxweight,
     natpmp: input.natpmp,
+    maxuploadtarget: input.maxuploadtarget ? input.maxuploadtarget : maxuploadtarget
   }
 
   await bitcoinConfFile.merge(effects, otherConfig)

@@ -80,6 +80,7 @@ const {
   blockfilterindex,
   peerblockfilters,
   natpmp,
+  maxuploadtarget,
 } = bitcoinConfDefaults
 
 export const shape = object({
@@ -168,7 +169,8 @@ export const shape = object({
   // BIP157
   blockfilterindex: anyOf(matches.literal("basic"), boolean).optional().onMismatch(blockfilterindex),
   peerblockfilters: boolean.onMismatch(peerblockfilters),
-  natpmp: boolean.onMismatch(natpmp)
+  natpmp: boolean.onMismatch(natpmp),
+  maxuploadtarget: natural.onMismatch(maxuploadtarget)
 })
 
 function onWrite(a: unknown): any {

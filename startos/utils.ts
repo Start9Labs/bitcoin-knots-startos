@@ -113,6 +113,7 @@ export const bitcoinConfDefaults = {
   zmqpubhashtx: 'tcp://0.0.0.0:28333',
   zmqpubsequence: 'tcp://0.0.0.0:28333',
   natpmp: false,
+  maxuploadtarget: 0,
 
   coinstatsindex: false,
   txindex: false,
