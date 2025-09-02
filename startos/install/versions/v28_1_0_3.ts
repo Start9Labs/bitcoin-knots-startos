@@ -3,7 +3,7 @@ import { storeJson } from '../../fileModels/store.json'
 import { coreCurrent as coreV28_1_3 } from 'bitcoind-startos/startos/install/versions'
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { bitcoinConfDefaults } from '../../utils'
-import { bitcoinConfDefaults as coreDefaults } from 'bitcoind-startos/startos/utils'
+import { bitcoinConfDefaults as coreDefaults } from '../../utils'
 
 export const v28_1_0_3 = VersionInfo.of({
   version: '#knots:28.1:3-alpha.4',
