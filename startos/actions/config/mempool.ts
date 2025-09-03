@@ -25,9 +25,11 @@ const {
   datacarriercost,
   acceptnonstddatacarrier,
   dustrelayfee,
+  mempooltruc,
+  mempoolreplacement,
 } = bitcoinConfDefaults
 
-const { Value, InputSpec } = sdk
+const { Value, InputSpec, Variants } = sdk
 
 export const mempoolSpec = InputSpec.of({
   persistmempool: Value.toggle({
@@ -95,35 +97,34 @@ export const mempoolSpec = InputSpec.of({
     description: 'Reject tokens transactions (runes)',
     warning: null,
   }),
-  // @TODO while mempoolreplacement and mempooltruc appear in the 0.3.5.1 package getConfig.ts, they were never implemented in the resulting bitcoin.conf
-  // mempoolreplacement: Value.union(
-  //   {
-  //     name: 'Mempool replacement settings',
-  //     description:
-  //       'Set to disabled to disable RBF entirely, "fee,optin" to honour RBF opt-out signal, or "fee,-optin" to always RBF aka full RBF',
-  //     warning: null,
-  //     default: 'optout',
-  //   },
-  //   Variants.of({
-  //     disabled: { name: 'Disabled', spec: InputSpec.of({}) },
-  //     optin: { name: 'fee,optin', spec: InputSpec.of({}) },
-  //     optout: { name: 'fee,-optin', spec: InputSpec.of({}) },
-  //   }),
-  // ),
-  // mempooltruc: Value.union(
-  //   {
-  //     name: 'Mempool TRUC',
-  //     description:
-  //       'Behaviour for transactions requesting TRUC limits: "reject" the transactions entirely, "accept" them just like any other, or "enforce" to impose their requested restrictions',
-  //     warning: null,
-  //     default: 'accept',
-  //   },
-  //   Variants.of({
-  //     reject: { name: 'Reject', spec: InputSpec.of({}) },
-  //     accept: { name: 'Accept', spec: InputSpec.of({}) },
-  //     enforce: { name: 'Enforce', spec: InputSpec.of({}) },
-  //   }),
-  // ),
+  mempoolreplacement: Value.union(
+    {
+      name: 'Mempool replacement settings',
+      description:
+        'Set to disabled to disable RBF entirely, "fee,optin" to honour RBF opt-out signal, or "fee,-optin" to always RBF aka full RBF',
+      warning: null,
+      default: 'optout',
+      variants: Variants.of({
+        disabled: { name: 'Disabled', spec: InputSpec.of({}) },
+        optin: { name: 'fee,optin', spec: InputSpec.of({}) },
+        optout: { name: 'fee,-optin', spec: InputSpec.of({}) },
+      }),
+    },
+  ),
+  mempooltruc: Value.union(
+    {
+      name: 'Mempool TRUC',
+      description:
+        'Behaviour for transactions requesting TRUC limits: "reject" the transactions entirely, "accept" them just like any other, or "enforce" to impose their requested restrictions',
+      warning: null,
+      default: 'accept',
+      variants: Variants.of({
+        reject: { name: 'Reject', spec: InputSpec.of({}) },
+        accept: { name: 'Accept', spec: InputSpec.of({}) },
+        enforce: { name: 'Enforce', spec: InputSpec.of({}) },
+      }),
+    },
+  ),
   minrelaytxfee: Value.number({
     name: 'Min Transaction Relay Fee',
     description:
@@ -326,11 +327,29 @@ async function read(effects: any): Promise<PartialMempoolSpec> {
     datacarriercost: bitcoinConf.datacarriercost,
     acceptnonstddatacarrier: bitcoinConf.acceptnonstddatacarrier,
     dustrelayfee: bitcoinConf.dustrelayfee,
+    mempooltruc: bitcoinConf.mempooltruc
+      ? { selection: bitcoinConf.mempooltruc, value: {} }
+      : undefined,
+    mempoolreplacement: bitcoinConf.mempoolreplacement
+      ? { 
+          selection: bitcoinConf.mempoolreplacement === "fee,-optin" ? "optout" : 
+                     bitcoinConf.mempoolreplacement === "0" ? "disabled" :
+                     bitcoinConf.mempoolreplacement === "fee,optin" ? "optin" : undefined,
+          value: {} 
+        }
+      : undefined,
   }
   return mempoolSettings
 }
 
 async function write(effects: T.Effects, input: MempoolSpec) {
+  const mempoolReplacementValue: "fee,-optin" | "0" | "fee,optin" | undefined = 
+    input.mempoolreplacement?.selection === "optout" ? "fee,-optin" :
+    input.mempoolreplacement?.selection === "disabled" ? "0" : 
+    input.mempoolreplacement?.selection === "optin" ? "fee,optin" : undefined;
+  
+  const mempoolTrucValue: "accept" | undefined = input.mempooltruc?.selection as "accept" | undefined;
+  
   const mempoolSettings = {
     mempoolfullrbf: input.mempoolfullrbf,
     persistmempool: input.persistmempool,
@@ -353,6 +372,8 @@ async function write(effects: T.Effects, input: MempoolSpec) {
     datacarriercost: input.datacarriercost,
     acceptnonstddatacarrier: input.acceptnonstddatacarrier,
     dustrelayfee: input.dustrelayfee,
+    mempooltruc: mempoolTrucValue,
+    mempoolreplacement: mempoolReplacementValue,
   }
 
   await bitcoinConfFile.merge(effects, mempoolSettings)

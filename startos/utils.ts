@@ -88,6 +88,8 @@ export const bitcoinConfDefaults = {
   datacarriercost: 1,
   acceptnonstddatacarrier: false,
   dustrelayfee: 0.00003,
+  mempoolreplacement: 'fee,-optin',
+  mempooltruc: 'accept',
 
   // Peers
   listen: true,

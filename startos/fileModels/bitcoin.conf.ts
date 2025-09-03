@@ -55,6 +55,8 @@ const {
   datacarriercost,
   acceptnonstddatacarrier,
   dustrelayfee,
+  mempoolreplacement,
+  mempooltruc,
   listen,
   onlynet,
   externalip,
@@ -119,6 +121,16 @@ export const shape = object({
     .optional()
     .onMismatch(acceptnonstddatacarrier),
   dustrelayfee: number.optional().onMismatch(dustrelayfee),
+  mempoolreplacement: anyOf(
+    matches.literal('0'),
+    matches.literal('fee,-optin'),
+    matches.literal('fee,optin'),
+  ).optional().onMismatch(mempoolreplacement),
+  mempooltruc: anyOf(
+    matches.literal('reject'),
+    matches.literal('accept'),
+    matches.literal('enforce'),
+  ).optional().onMismatch(mempooltruc),
 
   // Peers
   listen: boolean.onMismatch(listen),
