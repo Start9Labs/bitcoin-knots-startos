@@ -9,7 +9,7 @@ export const manifest = setupManifest({
   upstreamRepo: 'https://github.com/bitcoinknots/bitcoin',
   supportSite: 'https://github.com/Retropex/knots-startos/issues',
   marketingSite: 'https://bitcoinknots.org/',
-  docsUrl: 'https://github.com/Start9Labs/bitcoin-knots-startos/blob/update/040/instructions.md',
+  docsUrl: 'https://github.com/Retropex/knots-startos/blob/next/docs/instructions.md',
   description: {
     short: 'A Bitcoin Full Node by Bitcoin Knots',
     long: 'Take control of your digital sovereignty by choosing Bitcoin Knots to run your node! With Bitcoin Knots enhanced configuration options, you can fine-tune your node to help keep the network clean and resilient, actively reducing unnecessary load from spam or parasitic transactions.',
