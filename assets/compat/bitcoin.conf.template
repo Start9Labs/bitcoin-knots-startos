@@ -279,3 +279,6 @@ natpmp=0
 {{#IF advanced.maxuploadtarget
 maxuploadtarget={{advanced.maxuploadtarget}}
 }}
+
+blockreconstructionextratxn={{advanced.blockreconstructionextratxn}}
+blockreconstructionextratxnsize={{advanced.blockreconstructionextratxnsize}}
