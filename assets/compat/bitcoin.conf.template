@@ -223,13 +223,31 @@ dustrelayfee={{blkconstr.dustrelayfee}}
 permitephemeral={{blkconstr.permitephemeral}}
 }}
 
-permitbareanchor={{blkconstr.permitbareanchor}}
+## PERMITBAREANCHOR
+{{#IF blkconstr.permitbareanchor
+permitbareanchor=1
+}}
+{{#IF !blkconstr.permitbareanchor
+permitbareanchor=0
+}}
 
-permitbaredatacarrier={{blkconstr.permitbaredatacarrier}}
+## PERMITBAREDATACARRIER
+{{#IF blkconstr.permitbaredatacarrier
+permitbaredatacarrier=1
+}}
+{{#IF !blkconstr.permitbaredatacarrier
+permitbaredatacarrier=0
+}}
 
 maxtxlegacysigops={{blkconstr.maxtxlegacysigops}}
 
-acceptunknownwitness={{blkconstr.acceptunknownwitness}}
+## ACCEPTUNKNOWNWITNESS
+{{#IF blkconstr.acceptunknownwitness
+acceptunknownwitness=1
+}}
+{{#IF !blkconstr.acceptunknownwitness
+acceptunknownwitness=0
+}}
 
 minrelaycoinblocks={{blkconstr.minrelaycoinblocks}}
 
