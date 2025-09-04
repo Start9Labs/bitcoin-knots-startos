@@ -219,6 +219,22 @@ datacarriercost={{blkconstr.datacarriercost}}
 
 dustrelayfee={{blkconstr.dustrelayfee}}
 
+{{#IF blkconstr.permitephemeral
+permitephemeral={{blkconstr.permitephemeral}}
+}}
+
+permitbareanchor={{blkconstr.permitbareanchor}}
+
+permitbaredatacarrier={{blkconstr.permitbaredatacarrier}}
+
+maxtxlegacysigops={{blkconstr.maxtxlegacysigops}}
+
+acceptunknownwitness={{blkconstr.acceptunknownwitness}}
+
+minrelaycoinblocks={{blkconstr.minrelaycoinblocks}}
+
+minrelaymaturity={{blkconstr.minrelaymaturity}}
+
 ## BAREPUBKEY
 {{#IF blkconstr.permitbarepubkey
 permitbarepubkey=1

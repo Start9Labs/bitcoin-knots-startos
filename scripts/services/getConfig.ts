@@ -265,6 +265,64 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           units: "BTC/kvB",
           default: 0.00003,
         },
+        permitephemeral: {
+          type: "string",
+          nullable: true,
+          name: "Permit ephemeral",
+          description:
+            "Relay transaction packages that include ephemeral outputs defined by comma-separated options (prefix each by '-' to force off): \"anchor\" to allow minimal anyone-can-spend anchors, \"send\" to allow ordinary output types to be considered ephemeral, and \"dust\" to allow for dust-amount outputs rather than strictly zero-value.",
+        },
+        permitbareanchor: {
+          type: "boolean",
+          name: "Permit bare anchor",
+          description: "Relay transactions that only have ephemeral anchor outputs.",
+          default: true,
+        },
+        permitbaredatacarrier: {
+          type: "boolean",
+          name: "Permit bare datacarrier",
+          description: "Relay transactions that only have data carrier outputs.",
+          default: false,
+        },
+        maxtxlegacysigops: {
+          type: "number",
+          nullable: false,
+          name: "Max tx legacy sigops",
+          description:
+            "Maximum number of legacy sigops allowed in transactions we relay and mine, as measured by BIP54.",
+          range: "[0,*)",
+          integral: true,
+          units: undefined,
+          default: 2500,
+        },
+        acceptunknownwitness: {
+          type: "boolean",
+          name: "Accept unknown witness",
+          description: "Relay transactions sending to unknown/future witness script versions",
+          default: true,
+        },
+        minrelaycoinblocks: {
+          type: "number",
+          nullable: false,
+          name: "Min relay coin blocks",
+          description:
+            "Minimum \"coin blocks\" (measured in sat per block) that a transaction must be spending to be relayed.",
+          range: "[0,*)",
+          integral: true,
+          units: undefined,
+          default: 0,
+        },
+        minrelaymaturity: {
+          type: "number",
+          nullable: false,
+          name: "Min relay maturity",
+          description:
+            "Minimum number of blocks that inputs must mature before being spent in transactions we relay.",
+          range: "[0,*)",
+          integral: true,
+          units: undefined,
+          default: 0,
+        }
       }
     },
     rpc: {
