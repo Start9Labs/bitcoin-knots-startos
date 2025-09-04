@@ -113,10 +113,11 @@ export const migration: T.ExpectedExports.migration =
         down: compat.migrations.updateConfig((config: any) => {
           delete config.blkconstr.mempoolreplacement;
           delete config.blkconstr.mempooltruc;
-          delete config.advanced.softwareexpiry;
+          delete config.softwareexpiry;
+          delete config.advanced.natpmp;
           delete config.advanced.maxuploadtarget;
           delete config.advanced.blockreconstructionextratxn;
-          delete config.advnaced.blockreconstructionextratxnsize;
+          delete config.advanced.blockreconstructionextratxnsize;
           
           delete config.blkconstr.permitephemeral;
           delete config.blkconstr.permitbareanchor;
