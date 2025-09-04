@@ -219,6 +219,40 @@ datacarriercost={{blkconstr.datacarriercost}}
 
 dustrelayfee={{blkconstr.dustrelayfee}}
 
+{{#IF blkconstr.permitephemeral
+permitephemeral={{blkconstr.permitephemeral}}
+}}
+
+## PERMITBAREANCHOR
+{{#IF blkconstr.permitbareanchor
+permitbareanchor=1
+}}
+{{#IF !blkconstr.permitbareanchor
+permitbareanchor=0
+}}
+
+## PERMITBAREDATACARRIER
+{{#IF blkconstr.permitbaredatacarrier
+permitbaredatacarrier=1
+}}
+{{#IF !blkconstr.permitbaredatacarrier
+permitbaredatacarrier=0
+}}
+
+maxtxlegacysigops={{blkconstr.maxtxlegacysigops}}
+
+## ACCEPTUNKNOWNWITNESS
+{{#IF blkconstr.acceptunknownwitness
+acceptunknownwitness=1
+}}
+{{#IF !blkconstr.acceptunknownwitness
+acceptunknownwitness=0
+}}
+
+minrelaycoinblocks={{blkconstr.minrelaycoinblocks}}
+
+minrelaymaturity={{blkconstr.minrelaymaturity}}
+
 ## BAREPUBKEY
 {{#IF blkconstr.permitbarepubkey
 permitbarepubkey=1
@@ -249,3 +283,20 @@ blockmaxweight={{advanced.templateconstruction.blockmaxweight}}
 
 ## SOFTWAREEXPIRY
 softwareexpiry={{softwareexpiry}}
+
+
+## NATPMP
+{{#IF advanced.natpmp
+natpmp=1
+}}
+{{#IF !advanced.natpmp
+natpmp=0
+}}
+
+## MAXUPLOADTARGET
+{{#IF advanced.maxuploadtarget
+maxuploadtarget={{advanced.maxuploadtarget}}
+}}
+
+blockreconstructionextratxn={{advanced.blockreconstructionextratxn}}
+blockreconstructionextratxnsize={{advanced.blockreconstructionextratxnsize}}
