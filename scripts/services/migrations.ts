@@ -71,7 +71,7 @@ export const migration: T.ExpectedExports.migration =
           type: "down",
         }),
       },
-      "29.0": {
+      "29.1.0.1": {
         up: compat.migrations.updateConfig(
           (config: any) => {
             config.coinstatsindex = false;
@@ -79,7 +79,17 @@ export const migration: T.ExpectedExports.migration =
             config.blkconstr.mempooltruc = {mode: "accept",};
             config.softwareexpiry = 1825593420;
             config.advanced.natpmp = false;
-            config.maxuploadtarget = 0;
+            config.advanced.maxuploadtarget = 0;
+            config.advanced.blockreconstructionextratxn = 32768;
+            config.advanced.blockreconstructionextratxnsize = 10;
+            
+            config.blkconstr.permitephemeral = null;
+            config.blkconstr.permitbareanchor = true;
+            config.blkconstr.permitbaredatacarrier = false;
+            config.blkconstr.maxtxlegacysigops = 2500;
+            config.blkconstr.acceptunknownwitness = true;
+            config.blkconstr.minrelaycoinblocks = 0;
+            config.blkconstr.minrelaymaturity = 0;
             if (
               !matches
                 .shape({
@@ -96,22 +106,34 @@ export const migration: T.ExpectedExports.migration =
           },
           true,
           {
-            version: "29.0",
+            version: "29.1.0.1",
             type: "up",
           }
         ),
         down: compat.migrations.updateConfig((config: any) => {
-          delete config.softwareexpiry;
-          delete config.maxuploadtarget;
+          delete config.blkconstr.mempoolreplacement;
+          delete config.blkconstr.mempooltruc;
+          delete config.advanced.softwareexpiry;
+          delete config.advanced.maxuploadtarget;
+          delete config.advanced.blockreconstructionextratxn;
+          delete config.advnaced.blockreconstructionextratxnsize;
+          
+          delete config.blkconstr.permitephemeral;
+          delete config.blkconstr.permitbareanchor;
+          delete config.blkconstr.permitbaredatacarrier;
+          delete config.blkconstr.maxtxlegacysigops;
+          delete config.blkconstr.acceptunknownwitness;
+          delete config.blkconstr.minrelaycoinblocks;
+          delete config.blkconstr.minrelaymaturity;
 
           return config;
         },
         true,
         {
-          version: "29.0",
+          version: "29.1.0.1",
           type: "down",
         }),
       }
     },
-    "29.0.0"
+    "29.1.0.1"
   );
