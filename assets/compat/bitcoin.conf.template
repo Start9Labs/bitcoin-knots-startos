@@ -249,9 +249,13 @@ acceptunknownwitness=1
 acceptunknownwitness=0
 }}
 
+{{#IF blkconstr.minrelaycoinblocks
 minrelaycoinblocks={{blkconstr.minrelaycoinblocks}}
+}}
 
+{{#IF blkconstr.minrelaymaturity
 minrelaymaturity={{blkconstr.minrelaymaturity}}
+}}
 
 ## BAREPUBKEY
 {{#IF blkconstr.permitbarepubkey

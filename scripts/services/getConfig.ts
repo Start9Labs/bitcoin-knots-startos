@@ -303,7 +303,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
         },
         minrelaycoinblocks: {
           type: "number",
-          nullable: false,
+          nullable: true,
           name: "Min relay coin blocks",
           description:
             "Minimum \"coin blocks\" (measured in sat per block) that a transaction must be spending to be relayed.",
@@ -314,7 +314,7 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
         },
         minrelaymaturity: {
           type: "number",
-          nullable: false,
+          nullable: true,
           name: "Min relay maturity",
           description:
             "Minimum number of blocks that inputs must mature before being spent in transactions we relay.",
