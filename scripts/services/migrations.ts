@@ -71,7 +71,7 @@ export const migration: T.ExpectedExports.migration =
           type: "down",
         }),
       },
-      "29.1.0.1": {
+      "29.1.0": {
         up: compat.migrations.updateConfig(
           (config: any) => {
             config.coinstatsindex = false;
@@ -106,7 +106,7 @@ export const migration: T.ExpectedExports.migration =
           },
           true,
           {
-            version: "29.1.0.1",
+            version: "29.1.0",
             type: "up",
           }
         ),
@@ -131,10 +131,10 @@ export const migration: T.ExpectedExports.migration =
         },
         true,
         {
-          version: "29.1.0.1",
+          version: "29.1.0",
           type: "down",
         }),
       }
     },
-    "29.1.0.1"
+    "29.1.0"
   );
