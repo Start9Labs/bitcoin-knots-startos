@@ -18,7 +18,9 @@ const {
   blockmaxweight,
   blockmaxsize,
   blocknotify,
-  maxuploadtarget
+  maxuploadtarget,
+  blockreconstructionextratxn,
+  blockreconstructionextratxnsize
 } = bitcoinConfDefaults
 
 const { InputSpec, Value } = sdk
@@ -82,6 +84,31 @@ const configSpec = sdk.InputSpec.of({
         max: blockmaxweight,
         integer: true,
         units: 'vBytes',
+      }),
+    }),
+  ),
+  blockreconstruction: Value.object(
+    {
+      name: 'Compact block reconstructions',
+      description: 'Settings for compact block reconstructions',
+    },
+    InputSpec.of({
+      blockreconstructionextratxn: Value.number({
+        name: 'Block reconstruction extra TXN',
+        description: 'Extra transactions to keep in memory for compact block reconstructions',
+        default: blockreconstructionextratxn,
+        required: true,
+        min: 0,
+        integer: true,
+      }),
+      blockreconstructionextratxnsize: Value.number({
+        name: 'Block reconstruction extra TXN size',
+        description: 'Upper limit of memory usage (in megabytes) for keeping extra transactions in memory for compact block reconstructions',
+        default: blockreconstructionextratxnsize,
+        required: true,
+        min: 0,
+        integer: true,
+        units: 'MB',
       }),
     }),
   ),
@@ -254,6 +281,10 @@ async function read(effects: any): Promise<PartialConfigSpec> {
       blockmaxsize: bitcoinConf.blockmaxsize,
       blockmaxweight: bitcoinConf.blockmaxweight,
     },
+    blockreconstruction: {
+      blockreconstructionextratxn: bitcoinConf.blockreconstructionextratxn,
+      blockreconstructionextratxnsize: bitcoinConf.blockreconstructionextratxnsize,
+    },
     natpmp: bitcoinConf.natpmp,
     maxuploadtarget: bitcoinConf.maxuploadtarget,
   }
@@ -286,6 +317,8 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     zmqpubsequence: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : '',
     blockmaxsize: input.templateconstruction.blockmaxsize,
     blockmaxweight: input.templateconstruction.blockmaxweight,
+    blockreconstructionextratxn: input.blockreconstruction.blockreconstructionextratxn,
+    blockreconstructionextratxnsize: input.blockreconstruction.blockreconstructionextratxnsize,
     natpmp: input.natpmp,
     maxuploadtarget: input.maxuploadtarget ? input.maxuploadtarget : maxuploadtarget
   }

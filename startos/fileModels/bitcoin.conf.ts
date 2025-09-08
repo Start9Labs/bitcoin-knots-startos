@@ -68,6 +68,8 @@ const {
   discardfee,
   blockmaxsize,
   blockmaxweight,
+  blockreconstructionextratxn,
+  blockreconstructionextratxnsize,
   blocknotify,
   prune,
   zmqpubrawblock,
@@ -156,6 +158,8 @@ export const shape = object({
   // Other
   blockmaxsize: natural.optional().onMismatch(blockmaxsize),
   blockmaxweight: natural.optional().onMismatch(blockmaxweight),
+  blockreconstructionextratxn: natural.optional().onMismatch(blockreconstructionextratxn),
+  blockreconstructionextratxnsize: natural.optional().onMismatch(blockreconstructionextratxnsize),
 
   // Wallet
   disablewallet: boolean.onMismatch(disablewallet),

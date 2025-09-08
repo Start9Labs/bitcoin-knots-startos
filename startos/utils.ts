@@ -107,6 +107,8 @@ export const bitcoinConfDefaults = {
   // Other
   blockmaxsize: 3_985_000,
   blockmaxweight: 3_985_000,
+  blockreconstructionextratxn: 32768,
+  blockreconstructionextratxnsize: 10,
   blocknotify: undefined,
   prune: 0,
   zmqpubrawblock: 'tcp://0.0.0.0:28332',
