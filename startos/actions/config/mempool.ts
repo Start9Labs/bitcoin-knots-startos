@@ -27,6 +27,13 @@ const {
   dustrelayfee,
   mempooltruc,
   mempoolreplacement,
+  permitephemeral,
+  permitbareanchor,
+  permitbaredatacarrier,
+  maxtxlegacysigops,
+  acceptunknownwitness,
+  minrelaycoinblocks,
+  minrelaymaturity
 } = bitcoinConfDefaults
 
 const { Value, InputSpec, Variants } = sdk
@@ -85,6 +92,11 @@ export const mempoolSpec = InputSpec.of({
     units: 'bytes',
     placeholder: datacarriersize.toString(),
   }),
+  permitbaredatacarrier: Value.toggle({
+    name: 'Permit Bare Datacarrier',
+    default: permitbaredatacarrier,
+    description: 'Relay transactions that only have data carrier outputs',
+  }),
   rejectparasites: Value.toggle({
     name: 'Reject Parasites',
     default: rejectparasites,
@@ -125,6 +137,17 @@ export const mempoolSpec = InputSpec.of({
       }),
     },
   ),
+  permitbareanchor: Value.toggle({
+    name: 'Permit Bare Anchor',
+    default: permitbareanchor,
+    description: 'Relay transactions that only have ephemeral anchor outputs',
+  }),
+  permitephemeral: Value.text({
+    name: 'Permite Ephemeral',
+    description: 'Relay transaction packages that include ephemeral outputs defined by comma-separated options (prefix each by \'-\' to force off): \"anchor\" to allow minimal anyone-can-spend anchors, \"send\" to allow ordinary output types to be considered ephemeral, and \"dust\" to allow for dust-amount outputs rather than strictly zero-value',
+    required: false,
+    default: null,
+  }),
   minrelaytxfee: Value.number({
     name: 'Min Transaction Relay Fee',
     description:
@@ -164,6 +187,19 @@ export const mempoolSpec = InputSpec.of({
     step: null,
     integer: true,
     units: 'bytes',
+    placeholder: null,
+  }),
+  maxtxlegacysigops: Value.number({
+    name: 'Max Legacy Sigops',
+    description: 'Maximum number of legacy sigops allowed in transactions we relay and mine, as measured by BIP54',
+    warning: null,
+    default: maxtxlegacysigops,
+    required: true,
+    min: 0,
+    max: null,
+    step: null,
+    integer: true,
+    units: null,
     placeholder: null,
   }),
   limitancestorcount: Value.number({
@@ -275,6 +311,38 @@ export const mempoolSpec = InputSpec.of({
     units: 'BTC/kvB',
     placeholder: null,
   }),
+  acceptunknownwitness: Value.toggle({
+    name: 'Accept Unknown Witness',
+    default: acceptunknownwitness,
+    description: 'Relay transactions sending to unknown witness script versions',
+    warning: null,
+  }),
+  minrelaycoinblocks: Value.number({
+    name: 'Min Relay Coin Blocks',
+    description: 'Minimum coin blocks (measured in sat per block) that a transaction must be spending to be relayed',
+    warning: null,
+    default: minrelaycoinblocks,
+    required: true,
+    min: 0,
+    max: null,
+    step: null,
+    integer: true,
+    units: null,
+    placeholder: null,
+  }),
+  minrelaymaturity: Value.number({
+    name: 'Min Relay Maturity',
+    description: 'Minimum number of blocks that inputs must mature before being spent in transactions we relay',
+    warning: null,
+    default: minrelaymaturity,
+    required: true,
+    min: 0,
+    max: null,
+    step: null,
+    integer: true,
+    units: 'Blocks',
+    placeholder: null,
+  }),
 })
 
 export const mempoolConfig = sdk.Action.withInput(
@@ -327,6 +395,13 @@ async function read(effects: any): Promise<PartialMempoolSpec> {
     datacarriercost: bitcoinConf.datacarriercost,
     acceptnonstddatacarrier: bitcoinConf.acceptnonstddatacarrier,
     dustrelayfee: bitcoinConf.dustrelayfee,
+    permitephemeral: bitcoinConf.permitephemeral,
+    permitbareanchor: bitcoinConf.permitbareanchor,
+    permitbaredatacarrier: bitcoinConf.permitbaredatacarrier,
+    maxtxlegacysigops: bitcoinConf.maxtxlegacysigops,
+    acceptunknownwitness: bitcoinConf.acceptunknownwitness,
+    minrelaycoinblocks: bitcoinConf.minrelaycoinblocks,
+    minrelaymaturity: bitcoinConf.minrelaymaturity,
     mempooltruc: bitcoinConf.mempooltruc
       ? { selection: bitcoinConf.mempooltruc, value: {} }
       : undefined,
@@ -372,6 +447,13 @@ async function write(effects: T.Effects, input: MempoolSpec) {
     datacarriercost: input.datacarriercost,
     acceptnonstddatacarrier: input.acceptnonstddatacarrier,
     dustrelayfee: input.dustrelayfee,
+    permitephemeral: input.permitephemeral || undefined,
+    permitbareanchor: input.permitbareanchor,
+    permitbaredatacarrier: input.permitbaredatacarrier,
+    maxtxlegacysigops: input.maxtxlegacysigops,
+    acceptunknownwitness: input.acceptunknownwitness,
+    minrelaycoinblocks: input.minrelaycoinblocks,
+    minrelaymaturity: input.minrelaymaturity,
     mempooltruc: mempoolTrucValue,
     mempoolreplacement: mempoolReplacementValue,
   }

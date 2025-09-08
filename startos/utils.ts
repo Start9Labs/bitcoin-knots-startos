@@ -88,6 +88,13 @@ export const bitcoinConfDefaults = {
   datacarriercost: 1,
   acceptnonstddatacarrier: false,
   dustrelayfee: 0.00003,
+  permitephemeral: undefined,
+  permitbareanchor: true,
+  permitbaredatacarrier: false,
+  maxtxlegacysigops: 2500,
+  acceptunknownwitness: true,
+  minrelaycoinblocks: 0,
+  minrelaymaturity: 0,
   mempoolreplacement: 'fee,-optin',
   mempooltruc: 'accept',
 
