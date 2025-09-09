@@ -65,6 +65,11 @@ export const v28_1_0_3 = VersionInfo.of({
         fullySynced: false,
         snapshotInUse: false,
       })
+      const existingConf = await bitcoinConfFile.read().once()
+
+      if (existingConf) return // Only write conf defaults if no existing bitcoin.conf found
+
+      await bitcoinConfFile.write(effects, bitcoinConfDefaults)
     },
     down: IMPOSSIBLE,
   },

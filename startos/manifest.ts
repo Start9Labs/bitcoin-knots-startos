@@ -1,4 +1,10 @@
 import { setupManifest } from '@start9labs/start-sdk'
+import { SDKImageInputSpec } from '@start9labs/start-sdk/base/lib/types/ManifestTypes'
+
+const BUILD = process.env.BUILD || ''
+
+const arch =
+  BUILD === 'x86_64' || BUILD === 'aarch64' ? [BUILD] : ['x86_64', 'aarch64']
 
 export const manifest = setupManifest({
   id: 'bitcoind',
@@ -23,19 +29,22 @@ export const manifest = setupManifest({
           dockerfile: 'Dockerfile',
         },
       },
-    },
+      arch,
+    } as SDKImageInputSpec,
     proxy: {
       source: {
         dockerTag: 'ghcr.io/start9labs/btc-rpc-proxy',
       },
-    },
+      arch,
+    } as SDKImageInputSpec,
     python: {
       source: {
         dockerTag: 'python:3.13.2-alpine',
       },
-    },
+      arch,
+    } as SDKImageInputSpec,
   },
-  hardwareRequirements: {},
+  hardwareRequirements: { arch },
   alerts: {
     install: null,
     update: null,

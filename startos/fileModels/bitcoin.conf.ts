@@ -65,7 +65,6 @@ const {
   mempoolreplacement,
   mempooltruc,
   listen,
-  onlynet,
   externalip,
   v2transport,
   connect,
@@ -201,7 +200,7 @@ export const shape = object({
   peerblockfilters: boolean.onMismatch(peerblockfilters),
   natpmp: boolean.onMismatch(natpmp),
   maxuploadtarget: natural.onMismatch(maxuploadtarget)
-})
+}).onMismatch(bitcoinConfDefaults)
 
 function onWrite(a: unknown): any {
   if (a && typeof a === 'object') {
