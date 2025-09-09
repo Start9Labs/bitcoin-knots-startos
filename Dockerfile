@@ -58,7 +58,10 @@ RUN . /tmp/bdb_prefix.sh && \
   -DBUILD_CLI=ON \
   -DBUILD_BITCOINCONSENSUS_LIB=ON \
   -DWITH_SQLITE=ON \
-  -DBUILD_DAEMON=ON
+  -DBUILD_DAEMON=ON \
+  -DENABLE_HARDENING=ON \
+  -DREDUCE_EXPORTS=ON \
+  -DWITH_ZMQ=ON
 RUN cmake --build build -j$(nproc)
 RUN cmake --install build
 RUN strip ${BITCOIN_PREFIX}/bin/*
