@@ -2,7 +2,7 @@
 FROM lncm/berkeleydb as berkeleydb
 
 # Build stage for Bitcoin Knots
-FROM alpine:3.18 as bitcoin-knots
+FROM alpine:3.21 as bitcoin-knots
 
 COPY --from=berkeleydb /opt /opt
 
@@ -68,7 +68,7 @@ RUN strip ${BITCOIN_PREFIX}/bin/*
 RUN strip ${BITCOIN_PREFIX}/lib/libbitcoinconsensus.so.0.0.0
 
 # Build stage for compiled artifacts
-FROM alpine:3.18
+FROM alpine:3.21
 
 RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
 RUN apk --no-cache add \
