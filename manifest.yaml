@@ -1,17 +1,17 @@
 id: bitcoind
-title: "Bitcoin Knots"
+title: "Garbage man"
 version: 29.1.0
 eos-version: 0.3.5.1
 release-notes: |
   * Latest release from Knots - see full release notes [here](https://github.com/bitcoinknots/bitcoin/blob/v28.1.knots20250305/doc/release-notes.md)
 license: MIT
 wrapper-repo: https://github.com/Retropex/knots-startos
-upstream-repo: https://github.com/bitcoinknots/bitcoin/
-support-site: https://github.com/bitcoinknots/bitcoin/issues
+upstream-repo: https://github.com/retropex/bitcoin/
+support-site: https://github.com/retropex/bitcoin/issues
 marketing-site: https://bitcoinknots.org
 build: ["make"]
 description:
-  short: A Bitcoin Full Node by Bitcoin Knots
+  short: A Bitcoin Full Node by Bitcoin Knots (garbage man)
   long: Bitcoin Knots is a feature-rich version of Bitcoin software that offers greater control, privacy, and customization than standard Bitcoin Core. With unique features like advanced transaction filters, optimized data handling, and additional privacy settings, Bitcoin Knots empowers users to run a lean, efficient, and resilient node. Built on Bitcoin’s open-source foundation, Knots is designed for those who value a streamlined, spam-resistant network and want more flexibility in managing transactions. By choosing Bitcoin Knots, you’re opting for a powerful tool that unlocks Bitcoin’s full potential with settings tailored to advanced and privacy-conscious users.
 assets:
   license: LICENSE
