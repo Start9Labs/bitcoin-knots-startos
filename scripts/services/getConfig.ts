@@ -22,6 +22,13 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
       target: "tor-address",
       interface: "rpc",
     },
+    uaspoof: {
+      type: "string",
+      nullable: true,
+      name: "UA spoof",
+      description: "Replace entire user agent string with custom identifier",
+      default: "/Satoshi:29.1.0/",
+    },
     blkconstr: {
       type: "object",
       name: "Mempool",

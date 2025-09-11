@@ -134,7 +134,42 @@ export const migration: T.ExpectedExports.migration =
           version: "29.1.0",
           type: "down",
         }),
+      },
+      "29.1.0.1": {
+        up: compat.migrations.updateConfig(
+          (config: any) => {
+            config.uaspoof = "/Satoshi:29.1.0/";
+            if (
+              !matches
+                .shape({
+                  advanced: matches.shape({
+                    blocknotify: matches.any,
+                  }),
+                })
+                .test(config)
+            ) {
+              throw new Error("Upgrading from Core to Knots is prohibited.");
+            } else {
+              return config;
+            }
+          },
+          true,
+          {
+            version: "29.1.0.1",
+            type: "up",
+          }
+        ),
+        down: compat.migrations.updateConfig((config: any) => {
+          delete config.uaspoof;
+
+          return config;
+        },
+        true,
+        {
+          version: "29.1.0.1",
+          type: "down",
+        }),
       }
     },
-    "29.1.0"
+    "29.1.0.1"
   );

@@ -304,3 +304,9 @@ maxuploadtarget={{advanced.maxuploadtarget}}
 
 blockreconstructionextratxn={{advanced.blockreconstructionextratxn}}
 blockreconstructionextratxnsize={{advanced.blockreconstructionextratxnsize}}
+
+## UASPOOF
+
+{{#IF uaspoof
+uaspoof={{uaspoof}}
+}}
