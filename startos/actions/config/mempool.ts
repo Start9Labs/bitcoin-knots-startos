@@ -328,7 +328,7 @@ export const mempoolSpec = InputSpec.of({
     step: null,
     integer: true,
     units: null,
-    placeholder: null,
+    placeholder: minrelaycoinblocks.toString(),
   }),
   minrelaymaturity: Value.number({
     name: 'Min Relay Maturity',
@@ -341,7 +341,7 @@ export const mempoolSpec = InputSpec.of({
     step: null,
     integer: true,
     units: 'Blocks',
-    placeholder: null,
+    placeholder: minrelaymaturity.toString(),
   }),
 })
 
