@@ -159,7 +159,7 @@ export const shape = object({
   // Blocknotify
   blocknotify: string.optional().onMismatch(blocknotify),
 
-  // Whitelist
+  // Whitebind
   whitebind: stringArray.orParser(string).optional().onMismatch(whitebind),
 
   // Pruning
