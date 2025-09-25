@@ -32,7 +32,7 @@ const {
   rpcthreads,
   rpcworkqueue,
   rpccookiefile,
-  whitelist,
+  whitebind,
   bind,
   persistmempool,
   maxmempool,
@@ -159,8 +159,8 @@ export const shape = object({
   // Blocknotify
   blocknotify: string.optional().onMismatch(blocknotify),
 
-  // Whitelist
-  whitelist: stringArray.orParser(string).optional().onMismatch(whitelist),
+  // Whitebind
+  whitebind: stringArray.orParser(string).optional().onMismatch(whitebind),
 
   // Pruning
   prune: natural.onMismatch(prune),
