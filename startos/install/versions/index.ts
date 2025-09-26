@@ -1,3 +1,4 @@
-export { v29_1_0_B1 as knotsCurrent } from './v29_1_0_B1'
+export { v29_1_0_B3 as knotsCurrent } from './v29_1_0_B3'
+import { v29_1_0_B1 } from './v29_1_0_B1'
 
-export const other = []
+export const other = [v29_1_0_B1]
