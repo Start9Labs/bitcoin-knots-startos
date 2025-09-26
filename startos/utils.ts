@@ -149,6 +149,11 @@ export function getExteralAddresses() {
 
     const urls = peerInterface?.addressInfo?.publicUrls || []
 
+    const nonOnionUrl = urls.find((u) => !u.includes('onion'))
+    if (nonOnionUrl && !nonOnionUrl.endsWith(':8333')) {
+      urls.push(nonOnionUrl.replace(/:.*/, ':8333'))
+    }
+
     if (urls.length === 0) {
       return {
         name: 'External Address',

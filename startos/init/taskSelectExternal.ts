@@ -11,11 +11,16 @@ export const taskSetExternal = sdk.setupOnInit(async (effects, kind) => {
   const externalIp = await bitcoinConfFile.read((b) => b.externalip).once()
 
   if (externalIp && !publicPeerUrls.includes(externalIp)) {
-    await bitcoinConfFile.merge(effects, { externalip: undefined })
-
-    await sdk.action.createOwnTask(effects, peerConfig, 'important', {
-      reason:
-        'External address removed. Your node can only make outbound connections. Select a new external address to re-enable inbound connections.',
-    })
+    const publicPeerUrls8333 = publicPeerUrls
+      .filter(url => !url.includes('onion'))
+      .map(url => url.replace(/:.*/, ':8333'));
+    if (!publicPeerUrls8333.includes(externalIp)) {
+      await bitcoinConfFile.merge(effects, { externalip: undefined })
+      
+      await sdk.action.createOwnTask(effects, peerConfig, 'important', {
+        reason:
+          'External address removed. Your node can only make outbound connections. Select a new external address to re-enable inbound connections.',
+      })
+    }
   }
 })
