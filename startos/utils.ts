@@ -131,6 +131,7 @@ export const bitcoinConfDefaults = {
   zmqpubsequence: 'tcp://0.0.0.0:28333',
   natpmp: false,
   maxuploadtarget: 0,
+  uaspoof: '/Satoshi:29.1.0/',
 
   coinstatsindex: false,
   txindex: false,

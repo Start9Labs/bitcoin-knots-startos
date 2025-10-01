@@ -20,7 +20,8 @@ const {
   blocknotify,
   maxuploadtarget,
   blockreconstructionextratxn,
-  blockreconstructionextratxnsize
+  blockreconstructionextratxnsize,
+  uaspoof
 } = bitcoinConfDefaults
 
 const { InputSpec, Value } = sdk
@@ -219,7 +220,13 @@ const configSpec = sdk.InputSpec.of({
     integer: true,
     units: 'MiB',
     placeholder: '0',
-  })
+  }),
+  uaspoof: Value.text({
+    name: 'User Agent Spoof',
+    description: 'User agent to advertise in the network.',
+    required: false,
+    default: uaspoof,
+  }),
 })
 
 export const other = sdk.Action.withInput(
@@ -287,6 +294,7 @@ async function read(effects: any): Promise<PartialConfigSpec> {
     },
     natpmp: bitcoinConf.natpmp,
     maxuploadtarget: bitcoinConf.maxuploadtarget,
+    uaspoof: bitcoinConf.uaspoof,
   }
 }
 
@@ -320,7 +328,8 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     blockreconstructionextratxn: input.blockreconstruction.blockreconstructionextratxn,
     blockreconstructionextratxnsize: input.blockreconstruction.blockreconstructionextratxnsize,
     natpmp: input.natpmp,
-    maxuploadtarget: input.maxuploadtarget ? input.maxuploadtarget : maxuploadtarget
+    maxuploadtarget: input.maxuploadtarget ? input.maxuploadtarget : maxuploadtarget,
+    uaspoof: input.uaspoof ? input.uaspoof : uaspoof
   }
 
   await bitcoinConfFile.merge(effects, otherConfig)

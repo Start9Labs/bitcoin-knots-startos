@@ -8,7 +8,7 @@ import { nocow } from '../versionGraph'
 
 
 export const v29_1_0_B1 = VersionInfo.of({
-  version: '#knots:29.1:2-beta.2',
+  version: '#garbageman:29.1:2-beta.2',
   releaseNotes: 'Revamped for StartOS 0.4.0',
   migrations: {
       other: {
