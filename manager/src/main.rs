@@ -402,7 +402,7 @@ fn inner_main(reindex: bool, reindex_chainstate: bool) -> Result<(), Box<dyn Err
     let rpc_addr = var("RPC_TOR_ADDRESS")?;
     let mut btc_args = vec![
         format!("-onion={}:9050", var("EMBASSY_IP")?),
-        format!("-externalip={}", peer_addr),
+        format!("-externalip={}", if peer_addr.contains(":") { peer_addr.to_string() } else { format!("{}:8334", peer_addr) }),
         "-datadir=/root/.bitcoin".to_owned(),
         "-deprecatedrpc=warnings".to_owned(),
         "-conf=/root/.bitcoin/bitcoin.conf".to_owned(),

@@ -67,6 +67,7 @@ mempoolexpiry={{blkconstr.mempoolexpiry}}
 {{#IF advanced.peers.listen
 listen=1
 bind=0.0.0.0:8333
+bind=0.0.0.0:8334=onion
 }}
 {{#IF !advanced.peers.listen
 listen=0
