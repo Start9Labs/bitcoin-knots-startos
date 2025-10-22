@@ -597,7 +597,6 @@ export const getConfig: T.ExpectedExports.getConfig = async (effects) => {
           description:
             "How much RAM to allocate for caching the TXO set. Higher values improve syncing performance, but may result in some re-work in the event of an ungraceful shutdown. 4-7GB is high enough to get most of the peformance benefit during IBD. Consider reducing this setting for lower resource devices (or a device with less available RAM)",
           range: "(0,*)",
-          default: 5_000,
           integral: true,
           units: "MiB",
         },
