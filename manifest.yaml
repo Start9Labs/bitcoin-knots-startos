@@ -1,6 +1,6 @@
 id: bitcoind
 title: "Bitcoin Knots"
-version: 29.2.0
+version: 29.2.0.1
 eos-version: 0.3.5.1
 release-notes: |
   * Latest release from Knots - see full release notes [here](https://github.com/bitcoinknots/bitcoin/releases/tag/v29.2.knots20251010)
@@ -91,6 +91,20 @@ interfaces:
     protocols:
       - tcp
       - bitcoin
+  main:
+    name: Web UI
+    description: Dashboard Bitcoin Knots
+    tor-config:
+      port-mapping:
+        80: "3000"
+    lan-config:
+      443:
+        ssl: true
+        internal: 3000
+    ui: true
+    protocols:
+      - tcp
+      - http
   zmq:
     name: ZeroMQ Interface
     description: Listens for subscriptions to the ZeroMQ raw block and raw transaction event streams

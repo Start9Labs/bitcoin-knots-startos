@@ -70,6 +70,8 @@ RUN strip ${BITCOIN_PREFIX}/lib/libbitcoinconsensus.so.0.0.0
 # Build stage for compiled artifacts
 FROM alpine:3.21
 
+COPY ./umbrel-bitcoin umbrel-bitcoin
+
 RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
 RUN apk --no-cache add \
   bash \
@@ -80,7 +82,15 @@ RUN apk --no-cache add \
   sqlite-dev \
   tini \
   yq \
+  nodejs npm
 RUN rm -rf /var/cache/apk/*
+
+RUN (cd umbrel-bitcoin && \
+     npm ci --workspaces --include-workspace-root --install-strategy=hoisted && \
+     PATH="/umbrel-bitcoin/node_modules/.bin:$PATH" && \
+     tsc -b libs/shared-types libs/settings apps/backend  && npm run --workspace apps/ui build && \
+     mv apps/backend/dist/ dist && \
+     mv apps/ui/dist/ dist/public)
 
 ARG ARCH
 
