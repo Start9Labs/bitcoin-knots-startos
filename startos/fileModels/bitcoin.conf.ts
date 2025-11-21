@@ -161,6 +161,7 @@ export const shape = object({
 
   // Whitebind
   whitebind: stringArray.orParser(string).optional().onMismatch(whitebind),
+  whitelist: stringArray.orParser(string).optional().onMismatch(undefined),
 
   // Pruning
   prune: natural.onMismatch(prune),

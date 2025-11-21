@@ -1,0 +1,51 @@
+import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
+import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
+import { bitcoinConfDefaults } from '../../utils'
+import { coreCurrent as corev29_2_0_2 } from 'bitcoind-startos/startos/install/versions'
+import { storeJson } from '../../fileModels/store.json'
+import { sdk } from '../../sdk'
+import { mainMounts } from '../../main'
+const { whitebind, bind } = bitcoinConfDefaults
+
+export const v29_2_0_7 = VersionInfo.of({
+  version: '#knots:29.2:7-beta.0',
+  releaseNotes: 'Revamped for StartOS 0.4.0',
+  migrations: {
+    up: async ({ effects }) => {
+      await sdk.SubContainer.withTemp(
+        effects,
+        { imageId: 'bitcoind' },
+        mainMounts,
+        'nocow',
+        async (subc) => {
+          await subc.execFail(['chattr', '-R', '+C', '/.bitcoin'])
+        },
+      )
+      const store = await storeJson.read().once()
+
+      if (!store) {
+        await storeJson.write(effects, {
+          reindexBlockchain: false,
+          reindexChainstate: false,
+          fullySynced: false,
+          snapshotInUse: false,
+        })
+      }
+      const existingConf = await bitcoinConfFile.read().once()
+
+      if (existingConf) {
+        await bitcoinConfFile.merge(effects, {
+          rpcuser: undefined,
+          rpcpassword: undefined,
+          bind,
+          whitebind,
+          whitelist: undefined,
+        })
+        return
+      } // Only write conf defaults if no existing bitcoin.conf found
+
+      await bitcoinConfFile.write(effects, bitcoinConfDefaults)
+    },
+    down: IMPOSSIBLE,
+  },
+}).satisfies(corev29_2_0_2.options.version)
