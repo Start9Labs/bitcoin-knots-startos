@@ -7,8 +7,8 @@ import { sdk } from '../../sdk'
 import { mainMounts } from '../../main'
 const { whitebind, bind } = bitcoinConfDefaults
 
-export const v29_2_0_7 = VersionInfo.of({
-  version: '#knots:29.2:7-beta.0',
+export const v29_2_0_8 = VersionInfo.of({
+  version: '#knots:29.2:8-beta.0',
   releaseNotes: 'Revamped for StartOS 0.4.0',
   migrations: {
     up: async ({ effects }) => {
