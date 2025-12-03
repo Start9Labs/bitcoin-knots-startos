@@ -71,6 +71,7 @@ export const bitcoinConfDefaults = {
   rpccookiefile: '.cookie',
   whitebind: '0.0.0.0:8333',
   bind: undefined,
+  deprecatedrpc: 'create_bdb',
 
   // Mempool
   persistmempool: true,

@@ -104,6 +104,7 @@ export const shape = object({
   rpccookiefile: literal(rpccookiefile).onMismatch(rpccookiefile),
   rpcuser: matches.literal(undefined).optional().onMismatch(undefined),
   rpcpassword: matches.literal(undefined).optional().onMismatch(undefined),
+  deprecatedrpc: matches.literal('create_bdb').onMismatch('create_bdb'),
 
   // Mempool
   mempoolfullrbf: boolean.onMismatch(mempoolfullrbf),
