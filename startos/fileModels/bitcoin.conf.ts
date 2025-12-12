@@ -141,19 +141,25 @@ export const shape = object({
     matches.literal('0'),
     matches.literal('fee,-optin'),
     matches.literal('fee,optin'),
-  ).optional().onMismatch(mempoolreplacement),
+  )
+    .optional()
+    .onMismatch(mempoolreplacement),
   mempooltruc: anyOf(
     matches.literal('reject'),
     matches.literal('accept'),
     matches.literal('enforce'),
-  ).optional().onMismatch(mempooltruc),
+  )
+    .optional()
+    .onMismatch(mempooltruc),
 
   // Peers
   listen: boolean.onMismatch(listen),
   bind: string.optional().onMismatch(bind),
   connect: stringArray.orParser(string).optional().onMismatch(connect),
   addnode: stringArray.orParser(string).optional().onMismatch(addnode),
-  onlynet: onlyNetOptions.orParser(arrayOf(onlyNetOptions.optional().onMismatch(undefined))).optional(),
+  onlynet: onlyNetOptions
+    .orParser(arrayOf(onlyNetOptions.optional().onMismatch(undefined)))
+    .optional(),
   v2transport: boolean.onMismatch(v2transport),
   externalip: string.optional().onMismatch(externalip),
 
@@ -173,8 +179,12 @@ export const shape = object({
   // Other
   blockmaxsize: natural.optional().onMismatch(blockmaxsize),
   blockmaxweight: natural.optional().onMismatch(blockmaxweight),
-  blockreconstructionextratxn: natural.optional().onMismatch(blockreconstructionextratxn),
-  blockreconstructionextratxnsize: natural.optional().onMismatch(blockreconstructionextratxnsize),
+  blockreconstructionextratxn: natural
+    .optional()
+    .onMismatch(blockreconstructionextratxn),
+  blockreconstructionextratxnsize: natural
+    .optional()
+    .onMismatch(blockreconstructionextratxnsize),
 
   // Wallet
   disablewallet: boolean.onMismatch(disablewallet),
@@ -198,10 +208,12 @@ export const shape = object({
   peerbloomfilters: boolean.onMismatch(peerbloomfilters),
 
   // BIP157
-  blockfilterindex: anyOf(matches.literal("basic"), boolean).optional().onMismatch(blockfilterindex),
+  blockfilterindex: anyOf(matches.literal('basic'), boolean)
+    .optional()
+    .onMismatch(blockfilterindex),
   peerblockfilters: boolean.onMismatch(peerblockfilters),
   natpmp: boolean.onMismatch(natpmp),
-  maxuploadtarget: natural.onMismatch(maxuploadtarget)
+  maxuploadtarget: natural.onMismatch(maxuploadtarget),
 }).onMismatch(bitcoinConfDefaults)
 
 function onWrite(a: unknown): any {

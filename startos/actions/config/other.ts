@@ -20,7 +20,7 @@ const {
   blocknotify,
   maxuploadtarget,
   blockreconstructionextratxn,
-  blockreconstructionextratxnsize
+  blockreconstructionextratxnsize,
 } = bitcoinConfDefaults
 
 const { InputSpec, Value } = sdk
@@ -95,7 +95,8 @@ const configSpec = sdk.InputSpec.of({
     InputSpec.of({
       blockreconstructionextratxn: Value.number({
         name: 'Block reconstruction extra TXN',
-        description: 'Extra transactions to keep in memory for compact block reconstructions',
+        description:
+          'Extra transactions to keep in memory for compact block reconstructions',
         default: blockreconstructionextratxn,
         required: true,
         min: 0,
@@ -103,7 +104,8 @@ const configSpec = sdk.InputSpec.of({
       }),
       blockreconstructionextratxnsize: Value.number({
         name: 'Block reconstruction extra TXN size',
-        description: 'Upper limit of memory usage (in megabytes) for keeping extra transactions in memory for compact block reconstructions',
+        description:
+          'Upper limit of memory usage (in megabytes) for keeping extra transactions in memory for compact block reconstructions',
         default: blockreconstructionextratxnsize,
         required: true,
         min: 0,
@@ -153,7 +155,8 @@ const configSpec = sdk.InputSpec.of({
       name: 'Pruning',
       description:
         'Set the maximum size of the blockchain you wish to store on disk. If your disk is larger than .9TB this value can be set to zero (0) to maintain a full archival node.',
-      warning: 'If your node is already pruned increasing this value will require re-syncing your node. Switching from a full archival node to pruned will disable txindex (if enabled)',
+      warning:
+        'If your node is already pruned increasing this value will require re-syncing your node. Switching from a full archival node to pruned will disable txindex (if enabled)',
       placeholder: 'Enter max blockchain size',
       required: disk.total < archivalMin,
       default: disk.total < archivalMin ? 550 : null,
@@ -206,8 +209,7 @@ const configSpec = sdk.InputSpec.of({
   natpmp: Value.toggle({
     name: 'natpmp',
     default: false,
-    description:
-      'Use PCP or NAT-PMP to map the listening port.',
+    description: 'Use PCP or NAT-PMP to map the listening port.',
   }),
   maxuploadtarget: Value.number({
     name: 'Max upload target',
@@ -219,12 +221,12 @@ const configSpec = sdk.InputSpec.of({
     integer: true,
     units: 'MiB',
     placeholder: '0',
-  })
+  }),
 })
 
-export const other = sdk.Action.withInput(
+export const otherConfig = sdk.Action.withInput(
   // id
-  'config',
+  'other-config',
 
   // metadata
   async ({ effects }) => ({
@@ -283,7 +285,8 @@ async function read(effects: any): Promise<PartialConfigSpec> {
     },
     blockreconstruction: {
       blockreconstructionextratxn: bitcoinConf.blockreconstructionextratxn,
-      blockreconstructionextratxnsize: bitcoinConf.blockreconstructionextratxnsize,
+      blockreconstructionextratxnsize:
+        bitcoinConf.blockreconstructionextratxnsize,
     },
     natpmp: bitcoinConf.natpmp,
     maxuploadtarget: bitcoinConf.maxuploadtarget,
@@ -306,7 +309,9 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     coinstatsindex: input.coinstatsindex,
     peerbloomfilters: input.peerbloomfilters,
     peerblockfilters: input.blockfilters.peerblockfilters,
-    blockfilterindex: input.blockfilters.blockfilterindex ? 'basic' as const : false,
+    blockfilterindex: input.blockfilters.blockfilterindex
+      ? ('basic' as const)
+      : false,
     blocknotify: input.blocknotify ? input.blocknotify : blocknotify,
     prune: input.prune ? input.prune : prune,
     dbcache: input.dbcache ? input.dbcache : dbcache,
@@ -317,10 +322,14 @@ async function write(effects: T.Effects, input: ConfigSpec) {
     zmqpubsequence: input.zmqEnabled ? 'tcp://0.0.0.0:28333' : '',
     blockmaxsize: input.templateconstruction.blockmaxsize,
     blockmaxweight: input.templateconstruction.blockmaxweight,
-    blockreconstructionextratxn: input.blockreconstruction.blockreconstructionextratxn,
-    blockreconstructionextratxnsize: input.blockreconstruction.blockreconstructionextratxnsize,
+    blockreconstructionextratxn:
+      input.blockreconstruction.blockreconstructionextratxn,
+    blockreconstructionextratxnsize:
+      input.blockreconstruction.blockreconstructionextratxnsize,
     natpmp: input.natpmp,
-    maxuploadtarget: input.maxuploadtarget ? input.maxuploadtarget : maxuploadtarget
+    maxuploadtarget: input.maxuploadtarget
+      ? input.maxuploadtarget
+      : maxuploadtarget,
   }
 
   await bitcoinConfFile.merge(effects, otherConfig)

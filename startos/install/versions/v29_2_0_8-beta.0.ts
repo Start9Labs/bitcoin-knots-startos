@@ -1,7 +1,7 @@
 import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { bitcoinConfDefaults } from '../../utils'
-import { coreCurrent as corev29_2_0_2 } from 'bitcoind-startos/startos/install/versions'
+import { v29_2_0_2 } from 'bitcoin-core-startos/startos/install/versions/v29_2_0_2-beta.1'
 import { storeJson } from '../../fileModels/store.json'
 import { sdk } from '../../sdk'
 import { mainMounts } from '../../main'
@@ -48,4 +48,4 @@ export const v29_2_0_8 = VersionInfo.of({
     },
     down: IMPOSSIBLE,
   },
-}).satisfies(corev29_2_0_2.options.version)
+}).satisfies(v29_2_0_2.options.version)
