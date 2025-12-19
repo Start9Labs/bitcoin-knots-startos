@@ -6,14 +6,14 @@ import { peerInterfaceId } from '../utils'
 export const taskSetExternal = sdk.setupOnInit(async (effects, kind) => {
   const publicPeerUrls =
     (await sdk.serviceInterface.getOwn(effects, peerInterfaceId).const())
-      ?.addressInfo?.publicUrls || []
+      ?.addressInfo?.public.format() || []
 
   const externalIp = await bitcoinConfFile.read((b) => b.externalip).once()
 
   if (externalIp && !publicPeerUrls.includes(externalIp)) {
     const publicPeerUrls8333 = publicPeerUrls
-      .filter(url => !url.includes('onion'))
-      .map(url => url.replace(/:.*/, ':8333'));
+      .filter((url: string) => !url.includes('onion'))
+      .map((url: string) => url.replace(/:.*/, ':8333'));
     if (!publicPeerUrls8333.includes(externalIp)) {
       await bitcoinConfFile.merge(effects, { externalip: undefined })
       

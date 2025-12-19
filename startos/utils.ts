@@ -148,9 +148,9 @@ export function getExteralAddresses() {
       .getOwn(effects, peerInterfaceId)
       .const()
 
-    const urls = peerInterface?.addressInfo?.publicUrls || []
+    const urls = peerInterface?.addressInfo?.public.format() || []
 
-    const nonOnionUrl = urls.find((u) => !u.includes('onion'))
+    const nonOnionUrl = urls.find((u: string) => !u.includes('onion'))
     if (nonOnionUrl && !nonOnionUrl.endsWith(':8333')) {
       urls.push(nonOnionUrl.replace(/:.*/, ':8333'))
     }
@@ -166,7 +166,7 @@ export function getExteralAddresses() {
     }
 
     const urlsWithNone = urls.reduce(
-      (obj, url) => ({ ...obj, [url]: url }),
+      (obj: Record<string, string>, url: string) => ({ ...obj, [url]: url }),
       {} as Record<string, string>,
     )
 
@@ -177,7 +177,7 @@ export function getExteralAddresses() {
       description:
         "Address at which your node can be reached by peers. Select 'none' if you do not want your node to be reached by peers.",
       values: urlsWithNone,
-      default: urls.find((u) => u.endsWith('.onion')) || '',
+      default: urls.find((u: string) => u.endsWith('.onion')) || '',
     }
   })
 }

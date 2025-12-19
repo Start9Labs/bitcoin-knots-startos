@@ -1,6 +1,6 @@
 import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { storeJson } from '../../fileModels/store.json'
-import { v30_0_0_1_beta3 } from 'bitcoin-core-startos/startos/install/versions/v30_0_0_1-beta.3'
+import { v30_0_0_1 } from 'bitcoin-core-startos/startos/install/versions/v30.0.0_1-beta.6'
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { bitcoinConfDefaults } from '../../utils'
 import { bitcoinConfDefaults as coreDefaults } from '../../utils'
@@ -10,7 +10,7 @@ export const v29_1_0_B1 = VersionInfo.of({
   releaseNotes: 'Revamped for StartOS 0.4.0',
   migrations: {
     other: {
-      [v30_0_0_1_beta3.options.version]: {
+      [v30_0_0_1.options.version]: {
         // Core -> Knots
         up: async ({ effects }) => {
           /*
@@ -74,4 +74,4 @@ export const v29_1_0_B1 = VersionInfo.of({
     },
     down: IMPOSSIBLE,
   },
-}).satisfies(v30_0_0_1_beta3.options.version)
+}).satisfies(v30_0_0_1.options.version)

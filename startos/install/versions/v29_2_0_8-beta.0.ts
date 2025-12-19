@@ -1,7 +1,7 @@
 import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { bitcoinConfDefaults } from '../../utils'
-import { v29_2_0_2 } from 'bitcoin-core-startos/startos/install/versions/v29_2_0_2-beta.1'
+import { v29_2_0_2 } from 'bitcoin-core-startos/startos/install/versions/v29.2.0_2-beta.3'
 import { storeJson } from '../../fileModels/store.json'
 import { sdk } from '../../sdk'
 import { mainMounts } from '../../main'
