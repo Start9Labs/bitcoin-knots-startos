@@ -1,5 +1,5 @@
 import { sdk } from '../sdk'
-import { other } from './config/other'
+import { otherConfig } from './config/other'
 import { mempoolConfig } from './config/mempool'
 import { peerConfig } from './config/peers'
 import { rpcConfig } from './config/rpc'
@@ -7,7 +7,7 @@ import { deleteCoinstatsIndex } from './deleteCoinstatsIndex'
 import { deletePeers } from './deletePeers'
 import { deleteRpcAuth } from './deleteRpcAuth'
 import { deleteTxIndex } from './deleteTxIndex'
-import { generateRpcUser } from './generateRpcAuth'
+import { generateRpcUser } from './generateRpcUser'
 import { generateRpcUserDependent } from './generateRpcUserDependent'
 import { reindexBlockchain } from './reindexBlockchain'
 import { reindexChainstate } from './reindexChainstate'
@@ -21,23 +21,23 @@ import { sendAllCoin } from './sendallcoin'
 import { sendCoin } from './sendcoin'
 
 export const actions = sdk.Actions.of()
-  .addAction(runtimeInfo)
+  .addAction(assumeutxo)
   .addAction(deleteCoinstatsIndex)
   .addAction(deletePeers)
-  .addAction(deleteTxIndex)
-  .addAction(reindexBlockchain)
-  .addAction(reindexChainstate)
-  .addAction(other)
-  .addAction(rpcConfig)
-  .addAction(generateRpcUser)
   .addAction(deleteRpcAuth)
-  .addAction(mempoolConfig)
-  .addAction(peerConfig)
+  .addAction(deleteTxIndex)
+  .addAction(generateRpcUser)
   .addAction(generateRpcUserDependent)
-  .addAction(assumeutxo)
-  .addAction(prioritiseTransaction)
-  .addAction(signMessage)
   .addAction(getaddress)
   .addAction(getbalance)
+  .addAction(mempoolConfig)
+  .addAction(otherConfig)
+  .addAction(peerConfig)
+  .addAction(prioritiseTransaction)
+  .addAction(reindexBlockchain)
+  .addAction(reindexChainstate)
+  .addAction(rpcConfig)
+  .addAction(runtimeInfo)
   .addAction(sendAllCoin)
   .addAction(sendCoin)
+  .addAction(signMessage)
