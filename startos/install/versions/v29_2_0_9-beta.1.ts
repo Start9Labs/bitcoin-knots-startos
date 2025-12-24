@@ -1,7 +1,8 @@
 import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
+import { bitcoinConfFile as coreBitcoinConfFile } from 'bitcoin-core-startos/startos/fileModels/bitcoin.conf'
 import { bitcoinConfDefaults } from '../../utils'
-import { bitcoinConfDefaults as coreDefaults } from '../../utils'
+import { bitcoinConfDefaults as coreDefaults } from 'bitcoin-core-startos/startos/utils'
 import { v29_2_0_2 } from 'bitcoin-core-startos/startos/install/versions/v29.2.0_2-beta.4'
 import { v30_0_0_1 } from 'bitcoin-core-startos/startos/install/versions/v30.0.0_1-beta.7'
 import { storeJson } from '../../fileModels/store.json'
@@ -94,7 +95,7 @@ export const v29_2_0_9 = VersionInfo.of({
             await bitcoinConfFile.merge(effects, newOptions)
           } else {
             // Write the bitcoin.conf if it doesn't exist
-            await bitcoinConfFile.write(effects, coreDefaults)
+            await coreBitcoinConfFile.write(effects, coreDefaults)
           }
         },
       },
@@ -142,7 +143,7 @@ export const v29_2_0_9 = VersionInfo.of({
             await bitcoinConfFile.merge(effects, newOptions)
           } else {
             // Write the bitcoin.conf if it doesn't exist
-            await bitcoinConfFile.write(effects, coreDefaults)
+            await coreBitcoinConfFile.write(effects, coreDefaults)
           }
         },
       },
