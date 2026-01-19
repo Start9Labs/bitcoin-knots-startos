@@ -66,6 +66,7 @@ const {
   mempooltruc,
   listen,
   externalip,
+  maxconnections,
   v2transport,
   connect,
   addnode,
@@ -162,6 +163,7 @@ export const shape = object({
     .optional(),
   v2transport: boolean.onMismatch(v2transport),
   externalip: string.optional().onMismatch(externalip),
+  maxconnections: natural.optional().onMismatch(maxconnections),
 
   // Blocknotify
   blocknotify: string.optional().onMismatch(blocknotify),

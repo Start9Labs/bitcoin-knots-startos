@@ -112,6 +112,7 @@ export const bitcoinConfDefaults = {
   v2transport: true,
   connect: undefined,
   addnode: undefined,
+  maxconnections: 125,
 
   // Wallet
   disablewallet: false,

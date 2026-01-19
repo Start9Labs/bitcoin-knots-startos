@@ -3,7 +3,7 @@ import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { sdk } from '../../sdk'
 import { bitcoinConfDefaults, getExteralAddresses } from '../../utils'
 
-const { listen, v2transport, externalip, addnode, connect, bind, onlynet } =
+const { listen, v2transport, externalip, addnode, connect, bind, onlynet, maxconnections } =
   bitcoinConfDefaults
 const { Value, Variants, List, InputSpec } = sdk
 const validNets = ['ipv4', 'ipv6', 'onion', 'i2p', 'cjdns'] as const
@@ -91,6 +91,19 @@ const peerSpec = sdk.InputSpec.of({
       },
     }),
   }),
+  maxconnections: Value.number({
+    name: 'Maximum connections',
+    description: 'Set the maximum number of connections to maintain with peers.',
+    warning: null,
+    default: maxconnections,
+    required: true,
+    min: 0,
+    max: null,
+    step: null,
+    integer: true,
+    units: null,
+    placeholder: null,
+  }),
 })
 
 export const peerConfig = sdk.Action.withInput(
@@ -134,6 +147,7 @@ async function read(effects: any): Promise<PartialPeerSpec> {
     v2transport: bitcoinConf.v2transport,
     externalip:
       bitcoinConf.externalip === undefined ? 'none' : bitcoinConf.externalip,
+      maxconnections: bitcoinConf.maxconnections,
     connectpeer: {
       selection: bitcoinConf.connect !== undefined ? 'connect' : 'addnode',
       value: {
@@ -159,6 +173,7 @@ async function write(effects: T.Effects, input: PeerSpec) {
     v2transport: input.v2transport,
     onlynet: input.onlynet,
     externalip: input.externalip !== 'none' ? input.externalip : externalip,
+    maxconnections: input.maxconnections,
   }
 
   if (input.connectpeer.selection === 'connect') {
