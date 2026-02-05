@@ -1,3 +1,4 @@
+import { short, long, alertUninstall, alertRestore } from './i18n'
 import { setupManifest } from '@start9labs/start-sdk'
 
 export const manifest = setupManifest({
@@ -11,10 +12,7 @@ export const manifest = setupManifest({
   marketingSite: 'https://bitcoinknots.org/',
   docsUrl:
     'https://github.com/Retropex/knots-startos/blob/next/docs/instructions.md',
-  description: {
-    short: 'A Bitcoin Full Node by Bitcoin Knots',
-    long: 'Take control of your digital sovereignty by choosing Bitcoin Knots to run your node! With Bitcoin Knots enhanced configuration options, you can fine-tune your node to help keep the network clean and resilient, actively reducing unnecessary load from spam or parasitic transactions.',
-  },
+  description: { short, long },
   volumes: ['main'],
   images: {
     bitcoind: {
@@ -39,10 +37,8 @@ export const manifest = setupManifest({
   alerts: {
     install: null,
     update: null,
-    uninstall:
-      "Uninstalling Bitcoin Knots will result in permanent loss of data. Without a backup, any funds stored on your node's default hot wallet will be lost forever. If you are unsure, we recommend making a backup, just to be safe.",
-    restore:
-      'Restoring Bitcoin Knots will overwrite its current data. You will lose any transactions recorded in watch-only wallets, and any funds you have received to the hot wallet, since the last backup.',
+    uninstall: alertRestore,
+    restore: alertUninstall,
     start: null,
     stop: null,
   },

@@ -1,3 +1,4 @@
+import { i18n } from './i18n'
 import { bitcoinConfFile } from './fileModels/bitcoin.conf'
 import { sdk } from './sdk'
 import {
@@ -21,9 +22,9 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
     preferredExternalPort: rpcPort,
   })
   const rpc = sdk.createInterface(effects, {
-    name: 'RPC Interface',
+    name: i18n('RPC Interface'),
     id: rpcInterfaceId,
-    description: 'Listens for JSON-RPC commands',
+    description: i18n('Listens for JSON-RPC commands'),
     type: 'api',
     masked: false,
     schemeOverride: null,
@@ -44,10 +45,10 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
     secure: { ssl: false },
   })
   const peer = sdk.createInterface(effects, {
-    name: 'Peer Interface',
+    name: i18n('Peer Interface'),
     id: peerInterfaceId,
     description:
-      'Listens for incoming connections from peers on the bitcoin network',
+      i18n('Listens for incoming connections from peers on the bitcoin network'),
     type: 'p2p',
     masked: false,
     schemeOverride: { ssl: null, noSsl: null },
@@ -69,10 +70,10 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
       protocol: null,
     })
     const zmq = sdk.createInterface(effects, {
-      name: 'ZeroMQ Interface',
+      name: i18n('ZeroMQ Interface'),
       id: zmqInterfaceId,
       description:
-        'Listens for incoming connections from peers on the bitcoin network',
+        i18n('Listens for incoming connections from peers on the bitcoin network'),
       type: 'api',
       masked: false,
       schemeOverride: null,

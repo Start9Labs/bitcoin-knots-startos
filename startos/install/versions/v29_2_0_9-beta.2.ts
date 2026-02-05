@@ -3,16 +3,19 @@ import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { bitcoinConfFile as coreBitcoinConfFile } from 'bitcoin-core-startos/startos/fileModels/bitcoin.conf'
 import { bitcoinConfDefaults } from '../../utils'
 import { bitcoinConfDefaults as coreDefaults } from 'bitcoin-core-startos/startos/utils'
-import { v29_2_0_2 } from 'bitcoin-core-startos/startos/install/versions/v29.2.0_2-beta.4'
-import { v30_0_0_1 } from 'bitcoin-core-startos/startos/install/versions/v30.0.0_1-beta.7'
+import { v29_2_0_2 } from 'bitcoin-core-startos/startos/install/versions/v29.2.0_2'
+import { v30_2_0_1 } from 'bitcoin-core-startos/startos/install/versions/v30.2.0_1'
 import { storeJson } from '../../fileModels/store.json'
 import { sdk } from '../../sdk'
 import { mainMounts } from '../../main'
 const { whitebind, bind } = bitcoinConfDefaults
 
 export const v29_2_0_9 = VersionInfo.of({
-  version: '#knots:29.2:9-beta.1',
-  releaseNotes: 'Revamped for StartOS 0.4.0',
+  version: '#knots:29.2:9-beta.2',
+  releaseNotes: {
+    en_US: 'Add translations and update to SDK 48',
+    fr_FR: 'Ajoute les traductions and met à jour le SDK à la version 48',
+  },
   migrations: {
     up: async ({ effects }) => {
       await sdk.SubContainer.withTemp(
@@ -99,7 +102,7 @@ export const v29_2_0_9 = VersionInfo.of({
           }
         },
       },
-      [v30_0_0_1.options.version]: {
+      [v30_2_0_1.options.version]: {
         // Core -> Knots
         up: async ({ effects }) => {
           /*
