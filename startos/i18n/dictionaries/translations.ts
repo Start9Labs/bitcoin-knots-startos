@@ -238,7 +238,7 @@ export default {
     1530: 'Autoriser les éphémères',
     1531: 'Les paquets de transactions relais incluent des sorties éphémères définies par des options séparées par des virgules (préfixez chaque option par "-" pour la désactiver): "anchor" pour autoriser les ancres minimales depensable par tous, "send" pour que les types de sorties ordinaires soient considérés comme éphémères, et "dust" pour autoriser les sorties de valeur pousière plutôt que de valeur nulle.',
     1532: 'Frais minimum de transaction',
-    1533: 'Taux de frais minimum (en BTC/Ko) pour ne pas être considéré sans frais pour le relaye et le minage.',
+    1533: 'Taux de frais minimum (en BTC/Ko) pour ne pas être considéré sans frais pour le relai et le minage.',
     1534: 'Octets par opération de signature',
     1535: 'Équivalent d\'octets par opération de signatures dans une transaction qui l\'on relaye et mine.',
     1536: 'Octets par opération de signature stricte',
