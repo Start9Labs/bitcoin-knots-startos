@@ -3,6 +3,7 @@ import { sdk } from '../sdk'
 import { rootDir } from '../utils'
 import { rpcPort } from '../utils'
 import { mainMounts } from '../main'
+import { i18n } from '../i18n'
 
 export const getbalance = sdk.Action.withoutInput(
   // id
@@ -10,9 +11,9 @@ export const getbalance = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Get Balance',
+    name: i18n('Get Balance'),
     description:
-      'Get the balance of your Bitcoin wallet.',
+      i18n('Get the balance of your Bitcoin wallet.'),
     warning: null,
     allowedStatuses: 'any',
     group: 'Wallet',

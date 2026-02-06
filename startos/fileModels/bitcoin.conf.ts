@@ -1,5 +1,6 @@
 import { FileHelper, matches } from '@start9labs/start-sdk'
 import { bitcoinConfDefaults } from '../utils'
+import { sdk } from '../sdk'
 
 const { object, anyOf, arrayOf } = matches
 
@@ -67,6 +68,8 @@ const {
   listen,
   externalip,
   maxconnections,
+  i2psam,
+  i2pacceptincoming,
   v2transport,
   connect,
   addnode,
@@ -164,6 +167,8 @@ export const shape = object({
   v2transport: boolean.onMismatch(v2transport),
   externalip: string.optional().onMismatch(externalip),
   maxconnections: natural.optional().onMismatch(maxconnections),
+  i2psam: string.optional().onMismatch(i2psam),
+  i2pacceptincoming: boolean.optional().onMismatch(true).defaultTo(i2pacceptincoming),
 
   // Blocknotify
   blocknotify: string.optional().onMismatch(blocknotify),
@@ -234,7 +239,7 @@ function onWrite(a: unknown): any {
 
 export const bitcoinConfFile = FileHelper.ini(
   {
-    volumeId: 'main',
+    base: sdk.volumes.main,
     subpath: '/bitcoin.conf',
   },
   shape,

@@ -3,35 +3,36 @@ import { rootDir } from '../utils'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { rpcPort } from '../utils'
 import { sdk } from '../sdk'
+import { i18n } from '../i18n'
 const { InputSpec, Value } = sdk
 
 export const inputSpec = InputSpec.of({
   txid: Value.dynamicText(async ({ effects }) => {
     return {
       name: 'txid',
-      description: 'Transaction ID',
+      description: i18n('Transaction ID'),
       required: true,
       default: null,
       patterns: [
         {
           regex: '^[a-zA-Z0-9]+$',
-          description: 'Must be alphanumeric.',
+          description: i18n('Must be alphanumeric.'),
         },
       ],
     }
   }),
   prioritydelta: Value.dynamicText(async ({ effects }) => {
     return {
-      name: 'priority_delta',
-      description: 'The transaction selection algorithm considers the tx as it would have a higher priority',
+      name: i18n('priority_delta'),
+      description: i18n('The transaction selection algorithm considers the tx as it would have a higher priority'),
       required: true,
       default: '1',
     }
   }),
   deltafee: Value.dynamicText(async ({ effects }) => {
     return {
-      name: 'Fee delta',
-      description: 'The fee value (in satoshis) to add (or subtract, if negative).',
+      name: i18n('Fee delta'),
+      description: i18n('The fee value (in satoshis) to add (or subtract, if negative).'),
       required: true,
       default: '1',
     }
@@ -44,9 +45,9 @@ export const prioritiseTransaction = sdk.Action.withInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Prioritize Transaction',
+    name: i18n('Prioritize Transaction'),
     description:
-      'Prioritize transaction with a specific fee delta.',
+      i18n('Prioritize transaction with a specific fee delta.'),
     warning: null,
     allowedStatuses: 'any',
     group: null,
@@ -87,14 +88,16 @@ export const prioritiseTransaction = sdk.Action.withInput(
       return {
         version: '1',
         title: 'Success',
-        message: `${txid} has been prioritzed.`,
+        message: i18n('${txid} has been prioritzed.', {
+          txid: txid as string,
+        }),
         result: null,
       }
     } else {
       return {
         version: '1',
         title: 'Failure',
-        message: `Prioritize transaction has failed`,
+        message: i18n('Prioritize transaction has failed'),
         result: null,
       }
     }

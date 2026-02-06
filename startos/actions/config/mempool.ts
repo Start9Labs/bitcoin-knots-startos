@@ -2,6 +2,7 @@ import { T } from '@start9labs/start-sdk'
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { sdk } from '../../sdk'
 import { bitcoinConfDefaults } from '../../utils'
+import { i18n } from '../../i18n'
 
 const {
   persistmempool,
@@ -38,15 +39,15 @@ const {
 
 const { Value, InputSpec, Variants } = sdk
 
-export const mempoolSpec = InputSpec.of({
+const mempoolSpec = sdk.InputSpec.of({
   persistmempool: Value.toggle({
-    name: 'Persist Mempool',
+    name: i18n('Persist Mempool'),
     default: persistmempool,
-    description: 'Save the mempool on shutdown and load on restart.',
+    description: i18n('Save the mempool on shutdown and load on restart.'),
   }),
   maxmempool: Value.number({
-    name: 'Max Mempool Size',
-    description: 'Keep the transaction memory pool below <n> megabytes.',
+    name: i18n('Max Mempool Size'),
+    description: i18n('Keep the transaction memory pool below <n> megabytes.'),
     required: false,
     default: maxmempool,
     min: 1,
@@ -55,65 +56,66 @@ export const mempoolSpec = InputSpec.of({
     placeholder: maxmempool.toString(),
   }),
   mempoolexpiry: Value.number({
-    name: 'Mempool Expiration',
-    description:
+    name: i18n('Mempool Expiration'),
+    description: i18n(
       'Do not keep transactions in the mempool longer than <n> hours.',
+    ),
     required: false,
     default: mempoolexpiry,
     min: 1,
     integer: true,
-    units: 'Hr',
+    units: i18n('Hr'),
     placeholder: mempoolexpiry.toString(),
   }),
   mempoolfullrbf: Value.toggle({
-    name: 'Enable Full RBF',
+    name: i18n('Enable Full RBF'),
     default: mempoolfullrbf,
     description:
-      'Policy for your node to use for relaying and mining unconfirmed transactions.  For details, see https://github.com/bitcoin/bitcoin/blob/master/doc/release-notes/release-notes-24.0.1.md#notice-of-new-option-for-transaction-replacement-policies',
+      i18n('Policy for your node to use for relaying and mining unconfirmed transactions.'),
   }),
   permitbaremultisig: Value.toggle({
-    name: 'Permit Bare Multisig',
+    name: i18n('Permit Bare Multisig'),
     default: permitbaremultisig,
-    description: 'Relay non-P2SH multisig transactions',
+    description: i18n('Relay non-P2SH multisig transactions'),
   }),
   datacarrier: Value.toggle({
-    name: 'Relay and mine data carrier transactions.',
+    name: i18n('Relay OP_RETURN Transactions'),
     default: datacarrier,
-    description: 'Relay and mine data carrier transactions.',
+    description: i18n('Relay transactions with OP_RETURN outputs'),
   }),
   datacarriersize: Value.number({
-    name: 'Maximum size of data in data carrier transactions',
-    description: 'Maximum size of data in data carrier transactions we relay and mine, in bytes.',
+    name: i18n('Max OP_RETURN Size'),
+    description: i18n('Maximum size of data in OP_RETURN outputs to relay'),
     required: false,
     default: datacarriersize,
     min: 0,
     max: 10_000,
     integer: true,
-    units: 'bytes',
+    units: i18n('bytes'),
     placeholder: datacarriersize.toString(),
   }),
   permitbaredatacarrier: Value.toggle({
-    name: 'Permit Bare Datacarrier',
+    name: i18n('Permit Bare Datacarrier'),
     default: permitbaredatacarrier,
-    description: 'Relay transactions that only have data carrier outputs',
+    description: i18n('Relay transactions that only have data carrier outputs'),
   }),
   rejectparasites: Value.toggle({
-    name: 'Reject Parasites',
+    name: i18n('Reject Parasites'),
     default: rejectparasites,
-    description: 'Reject parasite transactions',
+    description: i18n('Reject parasite transactions'),
     warning: null,
   }),
   rejecttokens: Value.toggle({
-    name: 'Reject Tokens',
+    name: i18n('Reject Tokens'),
     default: rejecttokens,
-    description: 'Reject tokens transactions (runes)',
+    description: i18n('Reject tokens transactions (runes)'),
     warning: null,
   }),
   mempoolreplacement: Value.union(
     {
-      name: 'Mempool replacement settings',
+      name: i18n('Mempool replacement settings'),
       description:
-        'Set to disabled to disable RBF entirely, "fee,optin" to honour RBF opt-out signal, or "fee,-optin" to always RBF aka full RBF',
+        i18n('Set to disabled to disable RBF entirely, "fee,optin" to honour RBF opt-out signal, or "fee,-optin" to always RBF aka full RBF'),
       warning: null,
       default: 'optout',
       variants: Variants.of({
@@ -125,7 +127,7 @@ export const mempoolSpec = InputSpec.of({
   ),
   mempooltruc: Value.union(
     {
-      name: 'Mempool TRUC',
+      name: i18n('Mempool TRUC'),
       description:
         'Behaviour for transactions requesting TRUC limits: "reject" the transactions entirely, "accept" them just like any other, or "enforce" to impose their requested restrictions',
       warning: null,
@@ -138,20 +140,20 @@ export const mempoolSpec = InputSpec.of({
     },
   ),
   permitbareanchor: Value.toggle({
-    name: 'Permit Bare Anchor',
+    name: i18n('Permit Bare Anchor'),
     default: permitbareanchor,
-    description: 'Relay transactions that only have ephemeral anchor outputs',
+    description: i18n('Relay transactions that only have ephemeral anchor outputs'),
   }),
   permitephemeral: Value.text({
-    name: 'Permite Ephemeral',
-    description: 'Relay transaction packages that include ephemeral outputs defined by comma-separated options (prefix each by \'-\' to force off): \"anchor\" to allow minimal anyone-can-spend anchors, \"send\" to allow ordinary output types to be considered ephemeral, and \"dust\" to allow for dust-amount outputs rather than strictly zero-value',
+    name: i18n('Permite Ephemeral'),
+    description: i18n('Relay transaction packages that include ephemeral outputs defined by comma-separated options (prefix each by \'-\' to force off): \"anchor\" to allow minimal anyone-can-spend anchors, \"send\" to allow ordinary output types to be considered ephemeral, and \"dust\" to allow for dust-amount outputs rather than strictly zero-value'),
     required: false,
     default: null,
   }),
   minrelaytxfee: Value.number({
-    name: 'Min Transaction Relay Fee',
+    name: i18n('Min Transaction Relay Fee'),
     description:
-      'Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation',
+      i18n('Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation'),
     warning: null,
     default: minrelaytxfee,
     required: true,
@@ -163,9 +165,9 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   bytespersigop: Value.number({
-    name: 'Bytes Per Sigop',
+    name: i18n('Bytes Per Sigop'),
     description:
-      'Equivalent bytes per sigop in transactions for relay and mining',
+      i18n('Equivalent bytes per sigop in transactions for relay and mining'),
     warning: null,
     default: bytespersigop,
     required: true,
@@ -177,8 +179,8 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   bytespersigopstrict: Value.number({
-    name: 'Bytes Per Sigop Strict',
-    description: 'Minimum bytes per sigop in transactions we relay and mine',
+    name: i18n('Bytes Per Sigop Strict'),
+    description: i18n('Minimum bytes per sigop in transactions we relay and mine'),
     warning: null,
     default: bytespersigopstrict,
     required: true,
@@ -190,8 +192,8 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   maxtxlegacysigops: Value.number({
-    name: 'Max Legacy Sigops',
-    description: 'Maximum number of legacy sigops allowed in transactions we relay and mine, as measured by BIP54',
+    name: i18n('Max Legacy Sigops'),
+    description: i18n('Maximum number of legacy sigops allowed in transactions we relay and mine, as measured by BIP54'),
     warning: null,
     default: maxtxlegacysigops,
     required: true,
@@ -203,9 +205,9 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   limitancestorcount: Value.number({
-    name: 'Max Ancestor Count',
+    name: i18n('Max Ancestor Count'),
     description:
-      'Do not accept transactions if number of in-mempool ancestors is <n> or more',
+      i18n('Do not accept transactions if number of in-mempool ancestors is <n> or more'),
     warning: null,
     default: limitancestorcount,
     required: true,
@@ -217,9 +219,9 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   limitancestorsize: Value.number({
-    name: 'Max Ancestor Size',
+    name: i18n('Max Ancestor Size'),
     description:
-      'Do not accept transactions whose size with all in-mempool ancestors exceeds <n> kilobytes',
+      i18n('Do not accept transactions whose size with all in-mempool ancestors exceeds <n> kilobytes'),
     warning: null,
     default: limitancestorsize,
     required: true,
@@ -231,9 +233,9 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   limitdescendantcount: Value.number({
-    name: 'Max descendants count',
+    name: i18n('Max descendants count'),
     description:
-      'Do not accept transactions if any ancestor would have <n> or more in-mempool descendants',
+      i18n('Do not accept transactions if any ancestor would have <n> or more in-mempool descendants'),
     warning: null,
     default: limitdescendantcount,
     required: true,
@@ -245,9 +247,9 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   limitdescendantsize: Value.number({
-    name: 'Max descendants size',
+    name: i18n('Max descendants size'),
     description:
-      'Do not accept transactions if any ancestor would have more than <n> kilobytes of in-mempool descendants',
+      i18n('Do not accept transactions if any ancestor would have more than <n> kilobytes of in-mempool descendants'),
     warning: null,
     default: limitdescendantsize,
     required: true,
@@ -259,14 +261,14 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   permitbarepubkey: Value.toggle({
-    name: 'Permit Bare Pubkey',
+    name: i18n('Permit Bare Pubkey'),
     default: permitbarepubkey,
-    description: 'Relay legacy pubkey outputs',
+    description: i18n('Relay legacy pubkey outputs'),
     warning: null,
   }),
   maxscriptsize: Value.number({
-    name: 'Max Script Size',
-    description: 'Maximum size of scripts we relay and mine, in bytes',
+    name: i18n('Max Script Size'),
+    description: i18n('Maximum size of scripts we relay and mine, in bytes'),
     warning: null,
     default: maxscriptsize,
     required: true,
@@ -278,9 +280,9 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   datacarriercost: Value.number({
-    name: 'Datacarrier cost',
+    name: i18n('Datacarrier cost'),
     description:
-      'Treat extra data in transactions as at least N vbytes per actual byte',
+      i18n('Treat extra data in transactions as at least N vbytes per actual byte'),
     warning: null,
     default: datacarriercost,
     required: true,
@@ -292,15 +294,15 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   acceptnonstddatacarrier: Value.toggle({
-    name: 'Accept non standard datacarrier',
+    name: i18n('Accept non standard datacarrier'),
     default: acceptnonstddatacarrier,
-    description: 'Relay and mine non-OP_RETURN datacarrier injection',
+    description: i18n('Relay and mine non-OP_RETURN datacarrier injection'),
     warning: null,
   }),
   dustrelayfee: Value.number({
-    name: 'Dust Relay Fee',
+    name: i18n('Dust Relay Fee'),
     description:
-      'Fee rate (in BTC/kvB) used to define dust, the value of an output such that it will cost more than its value in fees at this fee rate to spend it.',
+      i18n('Fee rate (in BTC/kvB) used to define dust, the value of an output such that it will cost more than its value in fees at this fee rate to spend it.'),
     warning: null,
     default: dustrelayfee,
     required: true,
@@ -312,14 +314,14 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   acceptunknownwitness: Value.toggle({
-    name: 'Accept Unknown Witness',
+    name: i18n('Accept Unknown Witness'),
     default: acceptunknownwitness,
-    description: 'Relay transactions sending to unknown witness script versions',
+    description: i18n('Relay transactions sending to unknown witness script versions'),
     warning: null,
   }),
   minrelaycoinblocks: Value.number({
-    name: 'Min Relay Coin Blocks',
-    description: 'Minimum coin blocks (measured in sat per block) that a transaction must be spending to be relayed',
+    name: i18n('Min Relay Coin Blocks'),
+    description: i18n('Minimum coin blocks (measured in sat per block) that a transaction must be spending to be relayed'),
     warning: null,
     default: null,
     required: false,
@@ -331,8 +333,8 @@ export const mempoolSpec = InputSpec.of({
     placeholder: null,
   }),
   minrelaymaturity: Value.number({
-    name: 'Min Relay Maturity',
-    description: 'Minimum number of blocks that inputs must mature before being spent in transactions we relay',
+    name: i18n('Min Relay Maturity'),
+    description: i18n('Minimum number of blocks that inputs must mature before being spent in transactions we relay'),
     warning: null,
     default: null,
     required: false,
@@ -351,11 +353,11 @@ export const mempoolConfig = sdk.Action.withInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Mempool Settings',
-    description: 'Edit the Mempool settings in bitcoin.conf',
+    name: i18n('Mempool Settings'),
+    description: i18n('Edit the Mempool settings in bitcoin.conf'),
     warning: null,
     allowedStatuses: 'any',
-    group: 'Configuration',
+    group: i18n('Configuration'),
     visibility: 'enabled',
   }),
 

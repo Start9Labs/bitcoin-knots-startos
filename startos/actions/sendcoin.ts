@@ -3,35 +3,36 @@ import { sdk } from '../sdk'
 import { rootDir } from '../utils'
 import { rpcPort } from '../utils'
 import { mainMounts } from '../main'
+import { i18n } from '../i18n'
 const { InputSpec, Value } = sdk
 
 export const inputSpec = InputSpec.of({
   address: Value.dynamicText(async ({ effects }) => {
     return {
-      name: 'Address',
-      description: 'The Bitcoin address you want to send the funds.',
+      name: i18n('Address'),
+      description: i18n('The Bitcoin address you want to send the funds.'),
       required: true,
       default: null,
       patterns: [
         {
           regex: '^[a-zA-Z0-9]+$',
-          description: 'Must be alphanumeric.',
+          description: i18n('Must be alphanumeric.'),
         },
       ],
     }
   }),
   amount: Value.dynamicText(async ({ effects }) => {
     return {
-      name: 'Amount',
-      description: 'Amount of the transaction. (in BTC)',
+      name: i18n('Amount'),
+      description: i18n('Amount of the transaction. (in BTC)'),
       required: true,
       default: null,
     }
   }),
   fee: Value.dynamicText(async ({ effects }) => {
     return {
-      name: 'Fee',
-      description: 'Fees in sat/vbytes you want to pay for the transaction.',
+      name: i18n('Fee'),
+      description: i18n('Fees in sat/vbytes you want to pay for the transaction.'),
       required: true,
       default: null,
     }
@@ -44,9 +45,9 @@ export const sendCoin = sdk.Action.withInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Send Coins',
+    name: i18n('Send Coins'),
     description:
-      'Send coins to a Bitcoin address.',
+      i18n('Send coins to a Bitcoin address.'),
     warning: null,
     allowedStatuses: 'any',
     group: 'Wallet',

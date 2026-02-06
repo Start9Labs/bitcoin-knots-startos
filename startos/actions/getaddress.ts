@@ -3,6 +3,7 @@ import { sdk } from '../sdk'
 import { rootDir } from '../utils'
 import { rpcPort } from '../utils'
 import { mainMounts } from '../main'
+import { i18n } from '../i18n'
 
 export const getaddress = sdk.Action.withoutInput(
   // id
@@ -10,9 +11,9 @@ export const getaddress = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Get Address',
+    name: i18n('Get Address'),
     description:
-      'Get a new segwit address.',
+      i18n('Get a new segwit address.'),
     warning: null,
     allowedStatuses: 'any',
     group: 'Wallet',
@@ -49,7 +50,9 @@ export const getaddress = sdk.Action.withoutInput(
     return {
       version: '1',
       title: 'Sucess',
-      message: `Your new address: ${res.stdout}`,
+      message: i18n('Your new address: ${stdout}', {
+        stdout: res.stdout as string,
+      }),
       result: null,
     }
   },

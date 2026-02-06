@@ -3,6 +3,7 @@ import { sdk } from '../sdk'
 import { rootDir } from '../utils'
 import { rpcPort } from '../utils'
 import { mainMounts } from '../main'
+import { i18n } from '../i18n'
 const { InputSpec, Value } = sdk
 
 export const inputSpec = InputSpec.of({
@@ -36,9 +37,9 @@ export const sendAllCoin = sdk.Action.withInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Send All Coins',
+    name: i18n('Send All Coins'),
     description:
-      'Send all coins to a Bitcoin address.',
+      i18n('Send all coins to a Bitcoin address.'),
     warning: null,
     allowedStatuses: 'any',
     group: 'Wallet',
