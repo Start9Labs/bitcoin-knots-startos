@@ -4,6 +4,7 @@ import * as diskusage from 'diskusage'
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 import { bitcoinConfDefaults } from '../../utils'
 import { T } from '@start9labs/start-sdk'
+import { i18n } from '../../i18n'
 
 const {
   coinstatsindex,
@@ -29,45 +30,47 @@ const archivalMin = 900_000_000_000
 
 const configSpec = sdk.InputSpec.of({
   softwareexpiry: Value.number({
-    name: 'Software expiry',
+    name: i18n('Software expiry'),
     description:
-      'Stop working after this POSIX timestamp (set to 0 to disable)',
+      i18n('Stop working after this POSIX timestamp (set to 0 to disable)'),
     default: 1825593420,
     required: true,
     integer: true,
     units: 'timestamp',
   }),
   zmqEnabled: Value.toggle({
-    name: 'ZeroMQ Enabled',
+    name: i18n('ZeroMQ Enabled'),
     default: true,
-    description:
-      'The ZeroMQ interface is useful for some applications which might require data related to block and transaction events from Bitcoin. For example, LND requires ZeroMQ be enabled for LND to get the latest block data',
+    description: i18n(
+      'The ZeroMQ interface is useful for some applications which might require data related to block and transaction events from Bitcoin Knots. For example, LND requires ZeroMQ be enabled for LND to get the latest block data',
+    ),
   }),
   txindex: Value.dynamicToggle(async ({ effects }) => {
     const disk = await diskUsage()
     return {
-      name: 'Transaction Index',
+      name: i18n('Transaction Index'),
       default: disk.total >= archivalMin,
-      description:
-        'By enabling Transaction Index (txindex) Bitcoin will build a complete transaction index. This allows Bitcoin to access any transaction with commands like `getrawtransaction`.',
-      disabled: disk.total < archivalMin ? 'Not enough disk space' : false,
+      description: i18n(
+        'By enabling Transaction Index (txindex) Bitcoin Knots will build a complete transaction index. This allows Bitcoin Knots to access any transaction with commands like `getrawtransaction`.',
+      ),
+      disabled: disk.total < archivalMin ? i18n('Not enough disk space') : false,
     }
   }),
   blocknotify: Value.text({
-    name: 'Block Notify',
+    name: i18n('Block Notify'),
     required: false,
     default: null,
     description: 'Execute an arbitrary command when the best block changes',
   }),
   templateconstruction: Value.object(
     {
-      name: 'Template Construction',
-      description: 'Set limits for block size/weight',
+      name: i18n('Template Construction'),
+      description: i18n('Set limits for block size/weight'),
     },
     InputSpec.of({
       blockmaxsize: Value.number({
-        name: 'Max Block Size',
-        description: 'Maximum block size in bytes',
+        name: i18n('Max Block Size'),
+        description: i18n('Maximum block size in bytes'),
         default: blockmaxsize,
         required: true,
         min: 100_000,
@@ -76,8 +79,8 @@ const configSpec = sdk.InputSpec.of({
         units: 'Bytes',
       }),
       blockmaxweight: Value.number({
-        name: 'Max Block Weight',
-        description: 'Maximum block weight in vBytes',
+        name: i18n('Max Block Weight'),
+        description: i18n('Maximum block weight in vBytes'),
         default: blockmaxweight,
         required: true,
         min: 100_000,
@@ -89,23 +92,23 @@ const configSpec = sdk.InputSpec.of({
   ),
   blockreconstruction: Value.object(
     {
-      name: 'Compact block reconstructions',
-      description: 'Settings for compact block reconstructions',
+      name: i18n('Compact block reconstructions'),
+      description: i18n('Settings for compact block reconstructions'),
     },
     InputSpec.of({
       blockreconstructionextratxn: Value.number({
-        name: 'Block reconstruction extra TXN',
+        name: i18n('Block reconstruction extra TXN'),
         description:
-          'Extra transactions to keep in memory for compact block reconstructions',
+          i18n('Extra transactions to keep in memory for compact block reconstructions'),
         default: blockreconstructionextratxn,
         required: true,
         min: 0,
         integer: true,
       }),
       blockreconstructionextratxnsize: Value.number({
-        name: 'Block reconstruction extra TXN size',
+        name: i18n('Block reconstruction extra TXN size'),
         description:
-          'Upper limit of memory usage (in megabytes) for keeping extra transactions in memory for compact block reconstructions',
+          i18n('Upper limit of memory usage (in megabytes) for keeping extra transactions in memory for compact block reconstructions'),
         default: blockreconstructionextratxnsize,
         required: true,
         min: 0,
@@ -115,35 +118,38 @@ const configSpec = sdk.InputSpec.of({
     }),
   ),
   coinstatsindex: Value.toggle({
-    name: 'Coinstats Index',
+    name: i18n('Coinstats Index'),
     default: coinstatsindex,
-    description:
+    description: i18n(
       'Enabling Coinstats Index reduces the time for the gettxoutsetinfo RPC to complete at the cost of using additional disk space',
+    ),
   }),
   wallet: Value.object(
-    { name: 'Wallet', description: 'Wallet Settings' },
+    { name: i18n('Wallet'), description: i18n('Wallet Settings') },
     InputSpec.of({
       enable: Value.toggle({
-        name: 'Enable Wallet',
-        default: !disablewallet,
-        description: 'Load the wallet and enable wallet RPC calls.',
+        name: i18n('Enable Wallet'),
+        default: !!!disablewallet,
+        description: i18n('Load the wallet and enable wallet RPC calls.'),
       }),
       avoidpartialspends: Value.toggle({
-        name: 'Avoid Partial Spends',
-        default: avoidpartialspends,
-        description:
+        name: i18n('Avoid Partial Spends'),
+        default: !!avoidpartialspends,
+        description: i18n(
           'Group outputs by address, selecting all or none, instead of selecting on a per-output basis. This improves privacy at the expense of higher transaction fees.',
+        ),
       }),
       discardfee: Value.number({
-        name: 'Discard Change Tolerance',
-        description:
+        name: i18n('Discard Change Tolerance'),
+        description: i18n(
           'The fee rate (in BTC/kB) that indicates your tolerance for discarding change by adding it to the fee.',
+        ),
         required: false,
         default: null,
         min: 0,
         max: 0.01,
         integer: false,
-        units: 'BTC/kB',
+        units: i18n('BTC/kB'),
         placeholder: '.0001',
       }),
     }),
@@ -152,12 +158,14 @@ const configSpec = sdk.InputSpec.of({
     const disk = await diskUsage()
 
     return {
-      name: 'Pruning',
-      description:
+      name: i18n('Pruning'),
+      description: i18n(
         'Set the maximum size of the blockchain you wish to store on disk. If your disk is larger than .9TB this value can be set to zero (0) to maintain a full archival node.',
-      warning:
+      ),
+      warning: i18n(
         'If your node is already pruned increasing this value will require re-syncing your node. Switching from a full archival node to pruned will disable txindex (if enabled)',
-      placeholder: 'Enter max blockchain size',
+      ),
+      placeholder: i18n('Enter max blockchain size'),
       required: disk.total < archivalMin,
       default: disk.total < archivalMin ? 550 : null,
       integer: true,
@@ -166,13 +174,12 @@ const configSpec = sdk.InputSpec.of({
     }
   }),
   dbcache: Value.number({
-    name: 'Database Cache',
-    description:
-      "How much RAM to allocate for caching the TXO set. Higher values improve syncing performance, but increase your chance of using up all your system's memory or corrupting your database in the event of an ungraceful shutdown. Set this high but comfortably below your system's total RAM during IBD, then turn down to 450 (or leave blank) once the sync completes.",
-    warning:
-      'WARNING: Increasing this value results in a higher chance of ungraceful shutdowns, which can leave your node unusable if it happens during the initial block download. Use this setting with caution. Be sure to set this back to the default (450 or leave blank) once your node is synced. DO NOT press the STOP button if your dbcache is large. Instead, set this number back to the default, hit save, and wait for bitcoind to restart on its own.',
+    name: i18n('Database Cache'),
+    description: i18n(
+      'How much RAM to allocate for caching the TXO set. Higher values improve syncing performance, but may result in some re-work in the event of an ungraceful shutdown. 4-7GB is high enough to get most of the peformance benefit during IBD. Consider reducing this setting for lower resource devices (or a device with less available RAM)',
+    ),
     required: false,
-    default: null,
+    default: dbcache,
     min: 0,
     integer: true,
     units: 'MiB',
@@ -180,36 +187,40 @@ const configSpec = sdk.InputSpec.of({
   }),
   blockfilters: Value.object(
     {
-      name: 'Block Filters',
-      description: 'Settings for storing and serving compact block filters',
+      name: i18n('Block Filters'),
+      description: i18n('Settings for storing and serving compact block filters'),
     },
     InputSpec.of({
       blockfilterindex: Value.toggle({
-        name: 'Compute Compact Block Filters (BIP158)',
+        name: i18n('Compute Compact Block Filters (BIP158)'),
         default: !!blockfilterindex,
-        description:
+        description: i18n(
           "Generate Compact Block Filters during initial sync (IBD) to enable 'getblockfilter' RPC. This is useful if dependent services need block filters to efficiently scan for addresses/transactions etc.",
+        ),
       }),
       peerblockfilters: Value.toggle({
-        name: 'Serve Compact Block Filters to Peers (BIP157)',
-        default: peerblockfilters,
-        description:
+        name: i18n('Serve Compact Block Filters to Peers (BIP157)'),
+        default: !!peerblockfilters,
+        description: i18n(
           "Serve Compact Block Filters as a peer service to other nodes on the network. This is useful if you wish to connect an SPV client to your node to make it efficient to scan transactions without having to download all block data.  'Compute Compact Block Filters (BIP158)' is required.",
+        ),
       }),
     }),
   ),
   peerbloomfilters: Value.toggle({
-    name: 'Serve Bloom Filters to Peers',
-    default: peerbloomfilters,
-    description:
+    name: i18n('Serve Bloom Filters to Peers'),
+    default: !!peerbloomfilters,
+    description: i18n(
       'Peers have the option of setting filters on each connection they make after the version handshake has completed. Bloom filters are for clients implementing SPV (Simplified Payment Verification) that want to check that block headers  connect together correctly, without needing to verify the full blockchain.  The client must trust that the transactions in the chain are in fact valid.  It is highly recommended AGAINST using for anything except Bisq integration.',
-    warning:
+    ),
+    warning: i18n(
       'This is ONLY for use with Bisq integration, please use Block Filters for all other applications.',
+    )
   }),
   natpmp: Value.toggle({
     name: 'natpmp',
     default: false,
-    description: 'Use PCP or NAT-PMP to map the listening port.',
+    description: i18n('Use PCP or NAT-PMP to map the listening port.'),
   }),
   maxuploadtarget: Value.number({
     name: 'Max upload target',
@@ -230,11 +241,11 @@ export const otherConfig = sdk.Action.withInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Other Settings',
-    description: 'Edit more values in bitcoin.conf',
+    name: i18n('Other Settings'),
+    description: i18n('Edit more values in bitcoin.conf'),
     warning: null,
     allowedStatuses: 'any',
-    group: 'Configuration',
+    group: i18n('Configuration'),
     visibility: 'enabled',
   }),
 

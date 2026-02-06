@@ -3,27 +3,28 @@ import { sdk } from '../sdk'
 import { rootDir } from '../utils'
 import { rpcPort } from '../utils'
 import { mainMounts } from '../main'
+import { i18n } from '../i18n'
 const { InputSpec, Value } = sdk
 
 export const inputSpec = InputSpec.of({
   address: Value.dynamicText(async ({ effects }) => {
     return {
-      name: 'Address',
-      description: 'The Bitcoin address you want to use to sign the message.',
+      name: i18n('Address'),
+      description: i18n('The Bitcoin address you want to use to sign the message.'),
       required: true,
       default: null,
       patterns: [
         {
           regex: '^[a-zA-Z0-9]+$',
-          description: 'Must be alphanumeric.',
+          description: i18n('Must be alphanumeric.'),
         },
       ],
     }
   }),
   message: Value.dynamicText(async ({ effects }) => {
     return {
-      name: 'Message',
-      description: 'The message you want to sign.',
+      name: i18n('Message'),
+      description: i18n('The message you want to sign.'),
       required: true,
       default: null,
     }
@@ -36,9 +37,9 @@ export const signMessage = sdk.Action.withInput(
 
   // metadata
   async ({ effects }) => ({
-    name: 'Sign Message',
+    name: i18n('Sign Message'),
     description:
-      'Sign a message with one of your Bitcoin addresses.',
+      i18n('Sign a message with one of your Bitcoin addresses.'),
     warning: null,
     allowedStatuses: 'any',
     group: 'Wallet',
@@ -84,7 +85,9 @@ export const signMessage = sdk.Action.withInput(
     return {
       version: '1',
       title: 'Sucess',
-      message: `Your signature: ${res.stdout}`,
+      message: i18n('Your signature: ${stdout}',{
+        stdout: res.stdout as string,
+      }),
       result: null,
     }
   },

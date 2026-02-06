@@ -19,7 +19,7 @@ RUN apk --no-cache add \
     # Remove ZeroMQ cmake config - it has hardcoded absolute paths that break cross-compilation
     rm -rf /usr/lib/cmake/ZeroMQ
 
-# Build stage for Bitcoin Core - runs on build platform
+# Build stage for Bitcoin Knots - runs on build platform
 FROM --platform=$BUILDPLATFORM alpine:3.22 AS builder
 
 ARG TARGETARCH
