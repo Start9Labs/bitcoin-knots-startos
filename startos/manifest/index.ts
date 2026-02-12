@@ -48,8 +48,8 @@ export const manifest = setupManifest({
   alerts: {
     install: null,
     update: null,
-    uninstall: alertRestore,
-    restore: alertUninstall,
+    uninstall: alertUninstall,
+    restore: alertRestore,
     start: null,
     stop: null,
   },
