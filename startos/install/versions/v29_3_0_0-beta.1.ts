@@ -10,11 +10,11 @@ import { sdk } from '../../sdk'
 import { mainMounts } from '../../main'
 const { whitebind, bind } = bitcoinConfDefaults
 
-export const v29_3_0_0 = VersionInfo.of({
-  version: '#knots:29.3:0-beta.0',
+export const v29_3_0_1 = VersionInfo.of({
+  version: '#knots:29.3:0-beta.1',
   releaseNotes: {
-    en_US: 'Update to Bitcoin Knots v29.3.knots20260210',
-    fr_FR: 'Met à jour vers Bitcoin Knots v29.3.knots20260210',
+    en_US: 'Add new wallet actions',
+    fr_FR: 'Ajout de nouvelles actions pour le portefeuille',
   },
   migrations: {
     up: async ({ effects }) => {
