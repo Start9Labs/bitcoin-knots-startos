@@ -379,6 +379,11 @@ const dict = {
   'Prioritize transaction with a specific fee delta.': 2406,
   '${txid} has been prioritzed.': 2407,
   'Prioritize transaction has failed': 2408,
+
+  // actions/backupwallet.ts
+  'Backup wallet': 2500,
+  'Backup wallet in a file for startOS system backup': 2501,
+  'Your wallet has backup in coin.dat': 2502,
 } as const
 
 /**

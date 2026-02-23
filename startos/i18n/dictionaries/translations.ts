@@ -382,5 +382,10 @@ export default {
     2406: 'Prioriser une transaction avec un certain delta de frais.',
     2407: 'La transaction ${txid} a été priorisée',
     2408: 'La priorisation a échoué',
+
+    // actions/backupwallet.ts
+    2500: 'Sauvegarder le portefeuille',
+    2501: 'Sauvegarder le portefeuille dans un fichier pour la sauvegarde du système startOS',
+    2502: 'Votre portefeuille est sauvegardé dans coin.dat',
   } satisfies LangDict,
 }

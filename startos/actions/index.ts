@@ -19,6 +19,7 @@ import { getaddress } from './getaddress'
 import { getbalance } from './getbalance'
 import { sendAllCoin } from './sendallcoin'
 import { sendCoin } from './sendcoin'
+import { backupwallet } from './backupwallet'
 
 export const actions = sdk.Actions.of()
   .addAction(assumeutxo)
@@ -41,3 +42,4 @@ export const actions = sdk.Actions.of()
   .addAction(sendAllCoin)
   .addAction(sendCoin)
   .addAction(signMessage)
+  .addAction(backupwallet)
