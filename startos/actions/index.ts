@@ -20,6 +20,7 @@ import { getbalance } from './getbalance'
 import { sendAllCoin } from './sendallcoin'
 import { sendCoin } from './sendcoin'
 import { backupwallet } from './backupwallet'
+import { restorewallet } from './restorewallet'
 
 export const actions = sdk.Actions.of()
   .addAction(assumeutxo)
@@ -43,3 +44,4 @@ export const actions = sdk.Actions.of()
   .addAction(sendCoin)
   .addAction(signMessage)
   .addAction(backupwallet)
+  .addAction(restorewallet)

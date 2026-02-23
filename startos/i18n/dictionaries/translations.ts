@@ -387,5 +387,9 @@ export default {
     2500: 'Sauvegarder le portefeuille',
     2501: 'Sauvegarder le portefeuille dans un fichier pour la sauvegarde du système startOS',
     2502: 'Votre portefeuille est sauvegardé dans coin.dat',
+    
+    2600: 'Restorer le portefeuille',
+    2601: 'Restorer le portefeuille depuis la sauvegarde',
+    2602: 'Le portefeuille a été restauré',
   } satisfies LangDict,
 }

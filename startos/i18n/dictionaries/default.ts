@@ -384,6 +384,11 @@ const dict = {
   'Backup wallet': 2500,
   'Backup wallet in a file for startOS system backup': 2501,
   'Your wallet has backup in coin.dat': 2502,
+
+  // actions/restorewallet.ts
+  'Restore wallet': 2600,
+  'Restore wallet from the backup': 2601,
+  'Your wallet has been restored': 2602,
 } as const
 
 /**
