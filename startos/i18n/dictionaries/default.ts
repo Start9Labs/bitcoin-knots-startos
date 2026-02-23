@@ -389,6 +389,12 @@ const dict = {
   'Restore wallet': 2600,
   'Restore wallet from the backup': 2601,
   'Your wallet has been restored': 2602,
+
+  // actions/removewallet.ts
+  'Remove wallet': 2700,
+  'Remove the wallet in Bitcoin Knots': 2701,
+  '⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.': 2702,
+  'Your wallet has been removed.': 2703
 } as const
 
 /**

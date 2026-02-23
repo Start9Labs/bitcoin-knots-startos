@@ -21,6 +21,7 @@ import { sendAllCoin } from './sendallcoin'
 import { sendCoin } from './sendcoin'
 import { backupwallet } from './backupwallet'
 import { restorewallet } from './restorewallet'
+import { removewallet } from './removewallet'
 
 export const actions = sdk.Actions.of()
   .addAction(assumeutxo)
@@ -45,3 +46,4 @@ export const actions = sdk.Actions.of()
   .addAction(signMessage)
   .addAction(backupwallet)
   .addAction(restorewallet)
+  .addAction(removewallet)

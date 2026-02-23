@@ -387,9 +387,16 @@ export default {
     2500: 'Sauvegarder le portefeuille',
     2501: 'Sauvegarder le portefeuille dans un fichier pour la sauvegarde du système startOS',
     2502: 'Votre portefeuille est sauvegardé dans coin.dat',
-    
+
+    // actions/restorewallet.ts
     2600: 'Restorer le portefeuille',
     2601: 'Restorer le portefeuille depuis la sauvegarde',
     2602: 'Le portefeuille a été restauré',
+
+    // actions/removewallet.ts
+    2700: 'Supprimer le portefeuille',
+    2701: 'Supprimer le portefeuille dans Bitcoin Knots',
+    2702: '⚠️ Veuillez vous assurer que votre portefeuille est vide ou que vous disposez d\'une sauvegarde. Sans sauvegarde, vous perdrez définitivement vos fonds.',
+    2703: 'Votre portefeuille a été supprimé',
   } satisfies LangDict,
 }
