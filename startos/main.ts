@@ -1,38 +1,44 @@
-import { i18n } from './i18n'
 import { sdk } from './sdk'
 import { bitcoinConfFile } from './fileModels/bitcoin.conf'
 import {
-  bitcoinConfDefaults,
   GetBlockchainInfo,
   rootDir,
-  isEmbeddedI2P,
+  rpccookiefile,
+  bitcoinMounts,
+  i2pSamPort,
 } from './utils'
 import { rpcPort } from './utils'
 import { storeJson } from './fileModels/store.json'
 import { access, rm, writeFile } from 'fs/promises'
 import { TOML } from '@start9labs/start-sdk'
 import { i2pdConfFile } from './fileModels/i2pd.conf'
-
-export const mainMounts = sdk.Mounts.of().mountVolume({
-  volumeId: 'main',
-  subpath: null,
-  mountpoint: rootDir,
-  readonly: false,
-})
+import { i18n } from './i18n'
 
 export const main = sdk.setupMain(async ({ effects }) => {
   /**
-   * ======================== Setup (optional) ========================
+   * ======================== Setup ========================
    */
-  const osIp = await sdk.getOsIp(effects)
+  console.log('Starting Bitcoin!')
 
-  const bitcoinArgs: string[] = []
+  // get store.json but don't watch for changes
+  const store = await storeJson.read().once()
+  if (!store) {
+    throw new Error('No store')
+  }
+  // get bitcoin.conf and watch for changes
+  const bitcoinConf = await bitcoinConfFile.read().const(effects)
+  if (!bitcoinConf) {
+    throw new Error('No bitcoin.conf')
+  }
 
-  bitcoinArgs.push(`-onion=${osIp}:9050`)
+  // get i2pd.conf and watch for changes
+  const i2pdConf = await i2pdConfFile.read().const(effects)
 
-  const { reindexBlockchain, reindexChainstate } = (await storeJson
-    .read()
-    .once()) || { reindexBlockchain: false, reindexChainstate: false }
+  const { reindexBlockchain, reindexChainstate } = store
+
+  // get Tor container IP and watch for changes
+  const torIp = await sdk.getContainerIp(effects, { packageId: 'tor' }).const()
+  const bitcoinArgs: string[] = torIp ? [`-onion=${torIp}:9050`] : []
 
   if (reindexBlockchain) {
     bitcoinArgs.push('-reindex')
@@ -42,83 +48,103 @@ export const main = sdk.setupMain(async ({ effects }) => {
     await storeJson.merge(effects, { reindexChainstate: false })
   }
 
-  const conf = await bitcoinConfFile.read().const(effects)
-  if (!conf) {
-    throw new Error('bticoin.conf not found')
-  }
-
   const bitcoindSub = await sdk.SubContainer.of(
     effects,
     { imageId: 'bitcoind' },
-    mainMounts,
+    bitcoinMounts,
     'bitcoind-sub',
   )
 
+  const rpcCookiePath = `${rootDir}/${rpccookiefile}`
+
+  // remove cookie file
+  await rm(`${bitcoindSub.rootfs}${rpcCookiePath}`, {
+    force: true,
+    recursive: true,
+  })
+
   /**
    * ======================== Daemons ========================
+   *
+   * Unconditional daemons are chained synchronously on baseDaemons.
+   * Conditional daemons (i2pd, proxy) use async factories that return
+   * null to skip or params to include. Type assertions (as [...]) are
+   * needed because async factories weaken TypeScript's contextual typing.
    */
 
-  const rpcCookieFile = `${rootDir}/${bitcoinConfDefaults.rpccookiefile}`
+  const i2pEnabled = !!bitcoinConf.raw?.i2psam
 
-  await rm(`${bitcoindSub.rootfs}/${rpcCookieFile}`, { force: true, recursive: true })
+  const i2pMounts = sdk.Mounts.of().mountVolume({
+    volumeId: 'i2pd',
+    mountpoint: '/home/i2pd',
+    subpath: null,
+    readonly: false,
+    type: 'directory',
+  })
 
-  const usingEmbeddedI2P = isEmbeddedI2P(conf.i2psam)
-  const i2pSubcontainer = usingEmbeddedI2P
+  const i2pdSub = i2pEnabled
     ? await sdk.SubContainer.of(
         effects,
         { imageId: 'i2pd' },
-        sdk.Mounts.of().mountVolume({
-          volumeId: 'i2pd',
-          mountpoint: '/home/i2pd',
-          subpath: null,
-          readonly: false,
-          type: 'directory',
-        }),
+        i2pMounts,
         'i2pd-sub',
       )
     : null
 
-  if (usingEmbeddedI2P) {
-    // Ensure i2pd config is present with default values, then watch for changes
-    await i2pdConfFile.merge(effects, {})
-    await i2pdConfFile.read().const(effects)
-  }
+  // ---- Build daemon chain step by step ----
 
-  const daemons = sdk.Daemons.of(effects)
-    .addDaemon('i2pd', () =>
-      usingEmbeddedI2P
-        ? {
-            subcontainer: i2pSubcontainer,
-            exec: {
-              command: ['sh', '-c', 'ulimit -n 4096; /entrypoint.sh'],
-              user: 'root',
-            },
-            ready: {
-              display: 'I2P Proxy',
-              fn: () =>
-                sdk.healthCheck.checkPortListening(effects, 7656, {
-                  successMessage: 'I2P Proxy is ready',
-                  errorMessage: 'I2P Proxy is not ready',
-                }),
-            },
-            requires: [],
-          }
-        : null,
-    )
-    .addDaemon('primary', {
+  const base = sdk.Daemons.of(effects).addOneshot('nocow', {
+    subcontainer: bitcoindSub,
+    exec: {
+      command: ['chattr', '-R', '+C', '/.bitcoin'],
+    },
+    requires: [],
+  })
+
+  // I2P daemon (conditional)
+  const withI2pd = await base.addDaemon('i2pd', async () => {
+    if (!i2pdSub) return null
+    if (!i2pdConf) throw new Error('No i2pd.conf')
+
+    // Fix volume ownership for the non-root i2pd user
+    await i2pdSub.execFail(['chown', '-R', 'i2pd', '/home/i2pd'], {
+      user: 'root',
+    })
+
+    return {
+      subcontainer: i2pdSub,
+      exec: {
+        command: sdk.useEntrypoint(),
+      },
+      ready: {
+        display: 'I2P Proxy',
+        fn: () =>
+          sdk.healthCheck.checkPortListening(effects, i2pSamPort, {
+            successMessage: 'I2P Proxy is ready',
+            errorMessage: 'I2P Proxy is not ready',
+          }),
+      },
+      requires: [],
+    }
+  })
+
+  // Bitcoind
+  const withBitcoind = withI2pd
+    .addDaemon('bitcoind', {
       subcontainer: bitcoindSub,
       exec: {
         command: ['bitcoind', ...bitcoinArgs],
         sigtermTimeout: 300_000,
       },
       ready: {
-        display: i18n('RPC Proxy'),
+        display: 'RPC',
         fn: async () => {
           try {
-            await access(`${bitcoindSub.rootfs}${rpcCookieFile}`)
+            await access(`${bitcoindSub.rootfs}${rpcCookiePath}`)
             const res = await bitcoindSub.exec([
               'bitcoin-cli',
-              `-rpcconnect=${conf.rpcbind}`,
+              `-rpccookiefile=${rpcCookiePath}`,
+              '-rpcconnect=127.0.0.1',
               'getrpcinfo',
             ])
             return res.exitCode === 0
@@ -139,7 +165,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
           }
         },
       },
-      requires: usingEmbeddedI2P ? ['i2pd'] : [],
+      requires: i2pEnabled ? ['nocow', 'i2pd'] : ['nocow'],
     })
     .addHealthCheck('sync-progress', {
       ready: {
@@ -147,9 +173,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
         fn: async () => {
           const res = await bitcoindSub.exec([
             'bitcoin-cli',
-            `-conf=${rootDir}/bitcoin.conf`,
-            `-rpccookiefile=${rootDir}/${bitcoinConfDefaults.rpccookiefile}`,
-            `-rpcconnect=${conf.rpcbind}`,
+            `-rpccookiefile=${rpcCookiePath}`,
+            '-rpcconnect=127.0.0.1',
             'getblockchaininfo',
           ])
 
@@ -163,72 +188,85 @@ export const main = sdk.setupMain(async ({ effects }) => {
             if (info.initialblockdownload) {
               const percentage = (info.verificationprogress * 100).toFixed(2)
               return {
-                message: i18n('Syncing blocks...${percentage}%', { percentage }),
+                message: i18n('Syncing blocks...${percentage}%', {
+                  percentage,
+                }),
                 result: 'loading',
               }
             }
 
-            return { message: i18n('Bitcoin is fully synced'), result: 'success' }
+            return {
+              message: i18n('Bitcoin is fully synced'),
+              result: 'success',
+            }
           }
 
           if (res.stderr.includes('error code: -28')) {
-            return { message: i18n('Bitcoin is starting…'), result: 'starting' }
+            return {
+              message: i18n('Bitcoin is starting…'),
+              result: 'starting',
+            }
           } else {
             return { message: res.stderr as string, result: 'failure' }
           }
         },
       },
-      requires: ['primary'],
+      requires: ['bitcoind'],
     })
     .addOneshot('synced-true', {
-      requires: ['sync-progress'],
       subcontainer: null,
       exec: {
         fn: async () => {
-          const store = await storeJson.read().once()
-          if (!store) return null
-
-          const fullySynced = store.fullySynced
-
-          if (!fullySynced) {
+          if (!store.fullySynced) {
             await storeJson.merge(effects, {
               fullySynced: true,
               snapshotInUse: false,
             })
+            // Reduce dbcache after initial sync to free RAM
+            await bitcoinConfFile.merge(effects, { dbcache: 450 })
           }
 
           return null
         },
       },
+      requires: ['sync-progress'],
     })
 
-  if (conf.prune) {
+  // RPC proxy (conditional, enabled when pruning)
+  return withBitcoind.addDaemon('proxy', async () => {
+    if (!bitcoinConf.prune) return null
+
     const subcontainer = await sdk.SubContainer.of(
       effects,
       { imageId: 'proxy' },
-      mainMounts,
+      bitcoinMounts,
       'proxy-sub',
     )
 
     await writeFile(
-      `${subcontainer.rootfs}/root/.bitcoin/config.toml`,
+      `${subcontainer.rootfs}/config.toml`,
       TOML.stringify({
         bitcoind_address: '127.0.0.1',
         bitcoind_port: 18332,
         bind_address: '0.0.0.0',
         bind_port: rpcPort,
-        cookie_file: `${rootDir}/${bitcoinConfDefaults.rpccookiefile}`,
-        tor_proxy: `${osIp}:9050`,
-        tor_only: conf.onlynet ? conf.onlynet.includes('onion') : false,
+        cookie_file: rpcCookiePath,
+        tor_proxy: torIp ? `${torIp}:9050` : '',
+        tor_only: bitcoinConf.onlynet
+          ? bitcoinConf.onlynet.includes('onion')
+          : false,
         passthrough_rpcauth: `${rootDir}/bitcoin.conf`,
-        passthrough_rpccookie: `${rootDir}/${bitcoinConfDefaults.rpccookiefile}`,
+        passthrough_rpccookie: rpcCookiePath,
       }),
     )
 
-    return daemons.addDaemon('proxy', {
+    return {
       subcontainer,
       exec: {
-        command: ['/usr/bin/btc_rpc_proxy', '--conf', `${rootDir}/config.toml`],
+        command: ['/usr/bin/btc_rpc_proxy', '--conf', '/config.toml'] as [
+          string,
+          ...string[],
+        ],
       },
       ready: {
         display: i18n('RPC Proxy'),
@@ -238,8 +276,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             errorMessage: i18n('The Bitcoin RPC Proxy is not ready'),
           }),
       },
-      requires: ['primary'],
-    })
-  }
-  return daemons
+      requires: ['bitcoind' as const],
+    }
+  })
 })

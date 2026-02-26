@@ -1,29 +1,32 @@
 import { sdk } from '../sdk'
-import { otherConfig } from './config/other'
 import { mempoolConfig } from './config/mempool'
 import { peerConfig } from './config/peers'
 import { rpcConfig } from './config/rpc'
+import { assumeutxo } from './assumeutxo'
 import { deleteCoinstatsIndex } from './deleteCoinstatsIndex'
 import { deletePeers } from './deletePeers'
 import { deleteRpcAuth } from './deleteRpcAuth'
 import { deleteTxIndex } from './deleteTxIndex'
 import { generateRpcUser } from './generateRpcUser'
 import { generateRpcUserDependent } from './generateRpcUserDependent'
+import { otherConfig } from './config/other'
 import { reindexBlockchain } from './reindexBlockchain'
 import { reindexChainstate } from './reindexChainstate'
 import { runtimeInfo } from './runtimeInfo'
-import { assumeutxo } from './assumeutxo'
-import { prioritiseTransaction } from './prioritiseTransaction'
-import { signMessage } from './sign'
-import { getaddress } from './getaddress'
 import { getbalance } from './getbalance'
-import { sendAllCoin } from './sendallcoin'
+import { getaddress } from './getaddress'
 import { sendCoin } from './sendcoin'
+import { sendAllCoin } from './sendallcoin'
+import { signMessage } from './sign'
+import { prioritiseTransaction } from './prioritiseTransaction'
 import { backupwallet } from './backupwallet'
 import { restorewallet } from './restorewallet'
 import { removewallet } from './removewallet'
 
 export const actions = sdk.Actions.of()
+  .addAction(mempoolConfig)
+  .addAction(peerConfig)
+  .addAction(rpcConfig)
   .addAction(assumeutxo)
   .addAction(deleteCoinstatsIndex)
   .addAction(deletePeers)
@@ -31,19 +34,16 @@ export const actions = sdk.Actions.of()
   .addAction(deleteTxIndex)
   .addAction(generateRpcUser)
   .addAction(generateRpcUserDependent)
-  .addAction(getaddress)
-  .addAction(getbalance)
-  .addAction(mempoolConfig)
   .addAction(otherConfig)
-  .addAction(peerConfig)
-  .addAction(prioritiseTransaction)
   .addAction(reindexBlockchain)
   .addAction(reindexChainstate)
-  .addAction(rpcConfig)
   .addAction(runtimeInfo)
-  .addAction(sendAllCoin)
+  .addAction(getbalance)
+  .addAction(getaddress)
   .addAction(sendCoin)
+  .addAction(sendAllCoin)
   .addAction(signMessage)
+  .addAction(prioritiseTransaction)
   .addAction(backupwallet)
   .addAction(restorewallet)
   .addAction(removewallet)

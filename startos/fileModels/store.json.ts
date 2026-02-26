@@ -1,13 +1,12 @@
-import { FileHelper, matches } from '@start9labs/start-sdk'
+import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
 
-const { object, boolean } = matches
-
-export const shape = object({
-  reindexBlockchain: boolean,
-  reindexChainstate: boolean,
-  fullySynced: boolean,
-  snapshotInUse: boolean,
+export const shape = z.object({
+  reindexBlockchain: z.boolean().catch(false),
+  reindexChainstate: z.boolean().catch(false),
+  fullySynced: z.boolean().catch(false),
+  snapshotInUse: z.boolean().catch(false),
+  wantsOnion: z.boolean().nullable().catch(null),
 })
 
 export const storeJson = FileHelper.json(

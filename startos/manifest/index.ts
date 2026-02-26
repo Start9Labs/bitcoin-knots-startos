@@ -1,26 +1,30 @@
-import { short, long, alertUninstall, alertRestore } from './i18n'
 import { setupManifest } from '@start9labs/start-sdk'
+import {
+  short,
+  long,
+  alertUninstall,
+  alertRestore,
+  torDescription,
+} from './i18n'
 
 export const manifest = setupManifest({
   id: 'bitcoind',
   title: 'Bitcoin Knots',
   license: 'MIT',
   donationUrl: null,
-  wrapperRepo: 'https://github.com/Retropex/knots-startos',
+  packageRepo: 'https://github.com/Retropex/knots-startos',
   upstreamRepo: 'https://github.com/bitcoinknots/bitcoin',
-  supportSite: 'https://github.com/Retropex/knots-startos/issues',
-  marketingSite: 'https://bitcoinknots.org/',
-  docsUrl:
-    'https://github.com/Retropex/knots-startos/blob/next/docs/instructions.md',
+  marketingUrl: 'https://bitcoinknots.org/',
+  docsUrls: [
+    'https://docs.start9.com/bitcoin-guides/',
+    'https://bitcoinknots.org/#about',
+  ],
   description: { short, long },
   volumes: ['main', 'i2pd'],
   images: {
     bitcoind: {
       source: {
-        dockerBuild: {
-          workdir: './',
-          dockerfile: 'Dockerfile',
-        },
+        dockerBuild: {},
       },
       arch: ['x86_64', 'aarch64', 'riscv64'],
     },
@@ -28,12 +32,11 @@ export const manifest = setupManifest({
       source: {
         dockerTag: 'ghcr.io/start9labs/btc-rpc-proxy',
       },
-      arch: ['x86_64', 'aarch64'],
-      emulateMissingAs: 'aarch64',
+      arch: ['x86_64', 'aarch64', 'riscv64'],
     },
     python: {
       source: {
-        dockerTag: 'python:3.13.11-alpine',
+        dockerTag: 'python:3.14.2-alpine',
       },
       arch: ['x86_64', 'aarch64', 'riscv64'],
     },
@@ -42,16 +45,21 @@ export const manifest = setupManifest({
         dockerTag: 'purplei2p/i2pd:release-2.58.0',
       },
       arch: ['x86_64', 'aarch64'],
-      emulateMissingAs: 'aarch64',
-    }
+      emulateMissingAs: 'x86_64',
+    },
   },
   alerts: {
-    install: null,
-    update: null,
     uninstall: alertUninstall,
     restore: alertRestore,
-    start: null,
-    stop: null,
   },
-  dependencies: {},
+  dependencies: {
+    tor: {
+      description: torDescription,
+      optional: true,
+      metadata: {
+        title: 'Tor',
+        icon: 'https://raw.githubusercontent.com/Start9Labs/tor-startos/refs/heads/update/040/icon.png',
+      },
+    },
+  },
 })

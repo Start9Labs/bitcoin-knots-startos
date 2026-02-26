@@ -7,8 +7,7 @@ import { v29_2_0_2 } from 'bitcoin-core-startos/startos/install/versions/v29.2.0
 import { v30_2_0_1 } from 'bitcoin-core-startos/startos/install/versions/v30.2.0_1'
 import { storeJson } from '../../fileModels/store.json'
 import { sdk } from '../../sdk'
-import { mainMounts } from '../../main'
-const { whitebind, bind } = bitcoinConfDefaults
+import { bitcoinMounts, peerPortExternal, peerPortInternal } from '../../utils'
 
 export const v29_3_0_1 = VersionInfo.of({
   version: '#knots:29.3:0-beta.1',
@@ -21,7 +20,7 @@ export const v29_3_0_1 = VersionInfo.of({
       await sdk.SubContainer.withTemp(
         effects,
         { imageId: 'bitcoind' },
-        mainMounts,
+        bitcoinMounts,
         'nocow',
         async (subc) => {
           await subc.execFail(['chattr', '-R', '+C', '/.bitcoin'])
@@ -35,22 +34,25 @@ export const v29_3_0_1 = VersionInfo.of({
           reindexChainstate: false,
           fullySynced: false,
           snapshotInUse: false,
+          wantsOnion: false,
         })
       }
       const existingConf = await bitcoinConfFile.read().once()
 
       if (existingConf) {
         await bitcoinConfFile.merge(effects, {
-          rpcuser: undefined,
-          rpcpassword: undefined,
-          bind,
-          whitebind,
-          whitelist: undefined,
+          raw: {
+            rpcuser: undefined,
+            rpcpassword: undefined,
+            bind: `0.0.0.0:${peerPortInternal}`,
+            whitebind: `0.0.0.0:${peerPortExternal}`,
+            whitelist: undefined,
+          },
         })
         return
       } // Only write conf defaults if no existing bitcoin.conf found
 
-      await bitcoinConfFile.write(effects, bitcoinConfDefaults)
+      await bitcoinConfFile.merge(effects, { raw: bitcoinConfDefaults })
     },
     down: IMPOSSIBLE,
     other: {
@@ -67,16 +69,17 @@ export const v29_3_0_1 = VersionInfo.of({
           }
 
           if (existingBitcoinConf) {
+            const existingRaw = existingBitcoinConf.raw ?? {}
             const newOptions: Record<string, any> = {}
             for (const k in nonConstDefaults) {
-              if (!(k in existingBitcoinConf)) {
+              if (!(k in existingRaw)) {
                 newOptions[k] = nonConstDefaults[k]
               }
             }
-            await bitcoinConfFile.merge(effects, newOptions)
+            await bitcoinConfFile.merge(effects, { raw: newOptions })
           } else {
             // Write the bitcoin.conf if it doesn't exist
-            await bitcoinConfFile.write(effects, bitcoinConfDefaults)
+            await bitcoinConfFile.merge(effects, { raw: bitcoinConfDefaults })
           }
         },
         // Knots -> Core
@@ -89,16 +92,19 @@ export const v29_3_0_1 = VersionInfo.of({
           const nonConstDefaults: Record<string, any> = { ...coreDefaults }
 
           if (existingBitcoinConf) {
+            const existingRaw = existingBitcoinConf.raw ?? {}
             const newOptions: Record<string, any> = {}
             for (const k in nonConstDefaults) {
-              if (!(k in existingBitcoinConf)) {
+              if (!(k in existingRaw)) {
                 newOptions[k] = nonConstDefaults[k]
               }
             }
-            await bitcoinConfFile.merge(effects, newOptions)
+            await bitcoinConfFile.merge(effects, { raw: newOptions })
           } else {
             // Write the bitcoin.conf if it doesn't exist
-            await coreBitcoinConfFile.write(effects, coreDefaults)
+            await coreBitcoinConfFile.merge(effects, {
+              raw: { ...coreDefaults },
+            })
           }
         },
       },
@@ -115,16 +121,17 @@ export const v29_3_0_1 = VersionInfo.of({
           }
 
           if (existingBitcoinConf) {
+            const existingRaw = existingBitcoinConf.raw ?? {}
             const newOptions: Record<string, any> = {}
             for (const k in nonConstDefaults) {
-              if (!(k in existingBitcoinConf)) {
+              if (!(k in existingRaw)) {
                 newOptions[k] = nonConstDefaults[k]
               }
             }
-            await bitcoinConfFile.merge(effects, newOptions)
+            await bitcoinConfFile.merge(effects, { raw: newOptions })
           } else {
             // Write the bitcoin.conf if it doesn't exist
-            await bitcoinConfFile.write(effects, bitcoinConfDefaults)
+            await bitcoinConfFile.merge(effects, { raw: bitcoinConfDefaults })
           }
         },
         // Knots -> Core
@@ -137,16 +144,19 @@ export const v29_3_0_1 = VersionInfo.of({
           const nonConstDefaults: Record<string, any> = { ...coreDefaults }
 
           if (existingBitcoinConf) {
+            const existingRaw = existingBitcoinConf.raw ?? {}
             const newOptions: Record<string, any> = {}
             for (const k in nonConstDefaults) {
-              if (!(k in existingBitcoinConf)) {
+              if (!(k in existingRaw)) {
                 newOptions[k] = nonConstDefaults[k]
               }
             }
-            await bitcoinConfFile.merge(effects, newOptions)
+            await bitcoinConfFile.merge(effects, { raw: newOptions })
           } else {
             // Write the bitcoin.conf if it doesn't exist
-            await coreBitcoinConfFile.write(effects, coreDefaults)
+            await coreBitcoinConfFile.merge(effects, {
+              raw: { ...coreDefaults },
+            })
           }
         },
       },

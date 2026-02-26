@@ -1,235 +1,183 @@
-import { FileHelper, matches } from '@start9labs/start-sdk'
-import { bitcoinConfDefaults } from '../utils'
-import { sdk } from '../sdk'
-
-const { object, anyOf, arrayOf } = matches
-
-const stringArray = matches.array(matches.string)
-const string = stringArray.map(([a]) => a).orParser(matches.string)
-const number = string.map((a) => Number(a)).orParser(matches.number)
-const natural = string.map((a) => Number(a)).orParser(matches.natural)
-const boolean = number.map((a) => !!a).orParser(matches.boolean)
-const literal = (val: string | number) => {
-  return matches
-    .literal([String(val)])
-    .orParser(matches.literal(String(val)))
-    .orParser(matches.literal(val))
-    .map((a) => (typeof val === 'number' ? Number(a) : a))
-}
-
-const onlyNetOptions = anyOf(
-  matches.literal('ipv4'),
-  matches.literal('ipv6'),
-  matches.literal('onion'),
-  matches.literal('i2p'),
-  matches.literal('cjdns'),
-)
-
-const {
-  rpcbind,
+import { FileHelper, T, z } from '@start9labs/start-sdk'
+import {
+  i2PSamAddress,
+  peerPortExternal,
+  peerPortInternal,
   rpcallowip,
-  rpcauth,
-  rpcservertimeout,
-  rpcthreads,
-  rpcworkqueue,
+  rpcallowipPruned,
+  rpcbind,
+  rpcbindPruned,
   rpccookiefile,
-  whitebind,
-  bind,
-  persistmempool,
-  maxmempool,
-  mempoolexpiry,
-  mempoolfullrbf,
-  permitbaremultisig,
-  datacarrier,
-  datacarriersize,
-  rejectparasites,
-  rejecttokens,
-  minrelaytxfee,
-  bytespersigop,
-  bytespersigopstrict,
-  limitancestorcount,
-  limitancestorsize,
-  limitdescendantcount,
-  limitdescendantsize,
-  permitbarepubkey,
-  maxscriptsize,
-  datacarriercost,
-  acceptnonstddatacarrier,
-  dustrelayfee,
-  permitephemeral,
-  permitbareanchor,
-  permitbaredatacarrier,
-  maxtxlegacysigops,
-  acceptunknownwitness,
-  minrelaycoinblocks,
-  minrelaymaturity,
-  mempoolreplacement,
-  mempooltruc,
-  listen,
-  externalip,
-  maxconnections,
-  i2psam,
-  i2pacceptincoming,
-  v2transport,
-  connect,
-  addnode,
-  disablewallet,
-  avoidpartialspends,
-  discardfee,
-  blockmaxsize,
-  blockmaxweight,
-  blockreconstructionextratxn,
-  blockreconstructionextratxnsize,
-  blocknotify,
-  prune,
-  zmqpubrawblock,
-  zmqpubhashblock,
-  zmqpubhashtx,
-  zmqpubrawtx,
-  zmqpubsequence,
-  coinstatsindex,
-  txindex,
-  dbcache,
-  peerbloomfilters,
-  blockfilterindex,
-  peerblockfilters,
-  natpmp,
-  maxuploadtarget,
-} = bitcoinConfDefaults
+  zmqBundle,
+} from '../utils'
+import { sdk } from '../sdk'
+import { utils } from '@start9labs/start-sdk'
+import * as diskusage from 'diskusage'
+import { bitcoinConfDefaults as d } from '../utils'
+import { i18n } from '../i18n'
 
-export const shape = object({
+// INI coercion helpers: INI parsing returns strings, with duplicate keys producing arrays.
+// Each uses .catch(undefined) to match the old optional(t) = t.optional().onMismatch(undefined)
+
+const iniString = z
+  .union([z.array(z.string()).transform((a) => a.at(-1)!), z.string()])
+  .optional()
+  .catch(undefined)
+
+const iniStringArray = z
+  .union([z.array(z.string()), z.string().transform((s) => [s])])
+  .optional()
+  .catch(undefined)
+
+const iniNumber = z
+  .union([
+    z.array(z.string()).transform((a) => Number(a.at(-1))),
+    z.string().transform(Number),
+    z.number(),
+  ])
+  .optional()
+  .catch(undefined)
+
+const iniBoolean = z
+  .union([
+    z.string().transform((s) => !!Number(s)),
+    z.number().transform((n) => !!n),
+    z.boolean(),
+  ])
+  .optional()
+  .catch(undefined)
+
+const validNets = ['ipv4', 'ipv6', 'onion', 'i2p'] as const
+const onlyNetOption = z.enum(validNets)
+type ValidNets = z.infer<typeof onlyNetOption>
+
+export const shape = z.object({
+  // RPC enforced
+  rpcbind: z.enum([rpcbind, rpcbindPruned]).catch(rpcbind),
+  rpcallowip: z.enum([rpcallowip, rpcallowipPruned]).catch(rpcallowip),
+  rpcuser: z.undefined().optional().catch(undefined),
+  rpcpassword: z.undefined().optional().catch(undefined),
+  rpccookiefile: z.literal(rpccookiefile).catch(rpccookiefile),
+  // Peers enforced
+  whitebind: z
+    .literal(`0.0.0.0:${peerPortExternal}`)
+    .catch(`0.0.0.0:${peerPortExternal}`),
+
   // RPC
-  rpcbind: string.onMismatch(rpcbind),
-  rpcallowip: string.onMismatch(rpcallowip),
-  rpcauth: stringArray.orParser(string).optional().onMismatch(rpcauth),
-  rpcservertimeout: natural.onMismatch(rpcservertimeout),
-  rpcthreads: natural.onMismatch(rpcthreads),
-  rpcworkqueue: natural.onMismatch(rpcworkqueue),
-  rpccookiefile: literal(rpccookiefile).onMismatch(rpccookiefile),
-  rpcuser: matches.literal(undefined).optional().onMismatch(undefined),
-  rpcpassword: matches.literal(undefined).optional().onMismatch(undefined),
-  deprecatedrpc: matches.literal('create_bdb').onMismatch('create_bdb'),
+  rpcauth: iniStringArray,
+  rpcservertimeout: iniNumber,
+  rpcthreads: iniNumber,
+  rpcworkqueue: iniNumber,
+  deprecatedrpc: z.literal('create_bdb').catch('create_bdb'),
 
   // Mempool
-  mempoolfullrbf: boolean.onMismatch(mempoolfullrbf),
-  persistmempool: boolean.optional().onMismatch(persistmempool),
-  maxmempool: natural.optional().onMismatch(maxmempool),
-  mempoolexpiry: natural.onMismatch(mempoolexpiry),
-  datacarrier: boolean.onMismatch(datacarrier),
-  datacarriersize: natural.onMismatch(datacarriersize),
-  permitbaremultisig: boolean.onMismatch(permitbaremultisig),
-  rejectparasites: boolean.optional().onMismatch(rejectparasites),
-  rejecttokens: boolean.optional().onMismatch(rejecttokens),
-  minrelaytxfee: number.optional().onMismatch(minrelaytxfee),
-  bytespersigop: natural.optional().onMismatch(bytespersigop),
-  bytespersigopstrict: natural.optional().onMismatch(bytespersigopstrict),
-  limitancestorcount: natural.optional().onMismatch(limitancestorcount),
-  limitancestorsize: natural.optional().onMismatch(limitancestorsize),
-  limitdescendantcount: natural.optional().onMismatch(limitdescendantcount),
-  limitdescendantsize: natural.optional().onMismatch(limitdescendantsize),
-  permitbarepubkey: boolean.optional().onMismatch(permitbarepubkey),
-  maxscriptsize: natural.optional().onMismatch(maxscriptsize),
-  datacarriercost: natural.optional().onMismatch(datacarriercost),
-  acceptnonstddatacarrier: boolean
+  persistmempool: iniBoolean,
+  maxmempool: iniNumber,
+  mempoolexpiry: iniNumber,
+  mempoolfullrbf: iniBoolean,
+  datacarrier: iniBoolean,
+  datacarriersize: iniNumber,
+  permitbaremultisig: iniBoolean,
+  rejectparasites: iniBoolean,
+  rejecttokens: iniBoolean,
+  minrelaytxfee: iniNumber,
+  bytespersigop: iniNumber,
+  bytespersigopstrict: iniNumber,
+  limitancestorcount: iniNumber,
+  limitancestorsize: iniNumber,
+  limitdescendantcount: iniNumber,
+  limitdescendantsize: iniNumber,
+  permitbarepubkey: iniBoolean,
+  maxscriptsize: iniNumber,
+  datacarriercost: iniNumber,
+  acceptnonstddatacarrier: iniBoolean,
+  dustrelayfee: iniNumber,
+  permitephemeral: iniString,
+  permitbareanchor: iniBoolean,
+  permitbaredatacarrier: iniBoolean,
+  maxtxlegacysigops: iniNumber,
+  acceptunknownwitness: iniBoolean,
+  minrelaycoinblocks: iniNumber,
+  minrelaymaturity: iniNumber,
+  mempoolreplacement: z
+    .enum(['0', 'fee,optin', 'fee,-optin'])
     .optional()
-    .onMismatch(acceptnonstddatacarrier),
-  dustrelayfee: number.optional().onMismatch(dustrelayfee),
-  permitephemeral: string.optional().onMismatch(permitephemeral),
-  permitbareanchor: boolean.onMismatch(permitbareanchor),
-  permitbaredatacarrier: boolean.onMismatch(permitbaredatacarrier),
-  maxtxlegacysigops: natural.optional().onMismatch(maxtxlegacysigops),
-  acceptunknownwitness: boolean.optional().onMismatch(acceptunknownwitness),
-  minrelaycoinblocks: natural.optional().onMismatch(minrelaycoinblocks),
-  minrelaymaturity: natural.optional().onMismatch(minrelaymaturity),
-  mempoolreplacement: anyOf(
-    matches.literal('0'),
-    matches.literal('fee,-optin'),
-    matches.literal('fee,optin'),
-  )
+    .catch(undefined),
+  mempooltruc: z
+    .enum(['reject', 'accept', 'enforce'])
     .optional()
-    .onMismatch(mempoolreplacement),
-  mempooltruc: anyOf(
-    matches.literal('reject'),
-    matches.literal('accept'),
-    matches.literal('enforce'),
-  )
+    .catch(undefined),
+
+  // Peers enforced
+  listen: z.literal(true).catch(true),
+  bind: z
+    .union([z.array(z.string()).transform((a) => a.at(-1)!), z.string()])
+    .catch(`0.0.0.0:${peerPortInternal}`),
+  onlynet: z
+    .union([onlyNetOption, z.array(onlyNetOption)])
     .optional()
-    .onMismatch(mempooltruc),
-
-  // Peers
-  listen: boolean.onMismatch(listen),
-  bind: string.optional().onMismatch(bind),
-  connect: stringArray.orParser(string).optional().onMismatch(connect),
-  addnode: stringArray.orParser(string).optional().onMismatch(addnode),
-  onlynet: onlyNetOptions
-    .orParser(arrayOf(onlyNetOptions.optional().onMismatch(undefined)))
-    .optional(),
-  v2transport: boolean.onMismatch(v2transport),
-  externalip: string.optional().onMismatch(externalip),
-  maxconnections: natural.optional().onMismatch(maxconnections),
-  i2psam: string.optional().onMismatch(i2psam),
-  i2pacceptincoming: boolean.optional().onMismatch(true).defaultTo(i2pacceptincoming),
-
-  // Blocknotify
-  blocknotify: string.optional().onMismatch(blocknotify),
-
-  // Whitebind
-  whitebind: stringArray.orParser(string).optional().onMismatch(whitebind),
-  whitelist: stringArray.orParser(string).optional().onMismatch(undefined),
-
-  // Pruning
-  prune: natural.onMismatch(prune),
-
-  // Performance Tuning
-  dbcache: natural.onMismatch(dbcache),
-
-  // Other
-  blockmaxsize: natural.optional().onMismatch(blockmaxsize),
-  blockmaxweight: natural.optional().onMismatch(blockmaxweight),
-  blockreconstructionextratxn: natural
-    .optional()
-    .onMismatch(blockreconstructionextratxn),
-  blockreconstructionextratxnsize: natural
-    .optional()
-    .onMismatch(blockreconstructionextratxnsize),
+    .catch(undefined),
+  externalip: iniString,
+  whitelist: iniStringArray,
+  v2transport: iniBoolean,
+  connect: iniStringArray,
+  addnode: iniStringArray,
+  maxconnections: iniNumber,
+  i2psam: iniString,
+  i2pacceptincoming: iniBoolean,
 
   // Wallet
-  disablewallet: boolean.onMismatch(disablewallet),
-  avoidpartialspends: boolean.onMismatch(avoidpartialspends),
-  discardfee: natural.onMismatch(discardfee),
+  disablewallet: iniBoolean,
+  avoidpartialspends: iniBoolean,
+  discardfee: iniNumber,
 
-  // Zero MQ
-  zmqpubrawblock: string.optional().onMismatch(zmqpubrawblock),
-  zmqpubhashblock: string.optional().onMismatch(zmqpubhashblock),
-  zmqpubrawtx: string.optional().onMismatch(zmqpubrawtx),
-  zmqpubhashtx: string.optional().onMismatch(zmqpubhashtx),
-  zmqpubsequence: string.optional().onMismatch(zmqpubsequence),
+  // ZMQ
+  zmqpubrawblock: iniString,
+  zmqpubhashblock: iniString,
+  zmqpubrawtx: iniString,
+  zmqpubhashtx: iniString,
+  zmqpubsequence: iniString,
 
-  // TxIndex
-  txindex: boolean.onMismatch(txindex),
+  // Performance Tuning
+  dbcache: iniNumber,
+  dbbatchsize: iniNumber,
 
-  // CoinstatsIndex
-  coinstatsindex: boolean.onMismatch(coinstatsindex),
+  // Block Template & Reconstruction
+  blockmaxsize: iniNumber,
+  blockmaxweight: iniNumber,
+  blockreconstructionextratxn: iniNumber,
+  blockreconstructionextratxnsize: iniNumber,
 
-  // BIP37
-  peerbloomfilters: boolean.onMismatch(peerbloomfilters),
-
-  // BIP157
-  blockfilterindex: anyOf(matches.literal('basic'), boolean)
+  // Other
+  softwareexpiry: iniNumber,
+  blocknotify: iniString,
+  prune: iniNumber,
+  coinstatsindex: iniBoolean,
+  txindex: iniBoolean,
+  peerbloomfilters: iniBoolean,
+  blockfilterindex: z
+    .union([
+      z.literal('basic'),
+      z.union([
+        z.string().transform((s) => !!Number(s)),
+        z.number().transform((n) => !!n),
+        z.boolean(),
+      ]),
+    ])
     .optional()
-    .onMismatch(blockfilterindex),
-  peerblockfilters: boolean.onMismatch(peerblockfilters),
-  natpmp: boolean.onMismatch(natpmp),
-  maxuploadtarget: natural.onMismatch(maxuploadtarget),
-}).onMismatch(bitcoinConfDefaults)
+    .catch(undefined),
+  peerblockfilters: iniBoolean,
+  natpmp: iniBoolean,
+  maxuploadtarget: iniNumber,
+})
 
-function onWrite(a: unknown): any {
+function stringifyPrimitives(a: unknown): any {
   if (a && typeof a === 'object') {
     if (Array.isArray(a)) {
-      return a.map(onWrite)
+      return a.map(stringifyPrimitives)
     }
     return Object.fromEntries(
-      Object.entries(a).map(([k, v]) => [k, onWrite(v)]),
+      Object.entries(a).map(([k, v]) => [k, stringifyPrimitives(v)]),
     )
   } else if (typeof a === 'boolean') {
     return a ? 1 : 0
@@ -237,15 +185,991 @@ function onWrite(a: unknown): any {
   return a
 }
 
+const { InputSpec, Value, Variants, List } = sdk
+
+const diskUsage = utils.once(() => diskusage.check('/'))
+const archivalMin = 900_000_000_000
+
+export const fullConfigSpec = sdk.InputSpec.of({
+  raw: Value.hidden(shape),
+
+  // === MEMPOOL ===
+  persistmempool: Value.toggle({
+    name: i18n('Persist Mempool'),
+    description: i18n('Save the mempool on shutdown and load on restart.'),
+    default: d.persistmempool,
+  }),
+  maxmempool: Value.number({
+    name: i18n('Max Mempool Size'),
+    description: i18n('Keep the transaction memory pool below <n> megabytes.'),
+    required: false,
+    default: null,
+    min: 1,
+    integer: true,
+    units: 'MiB',
+    placeholder: String(d.maxmempool),
+  }),
+  mempoolexpiry: Value.number({
+    name: i18n('Mempool Expiration'),
+    description: i18n(
+      'Do not keep transactions in the mempool longer than <n> hours.',
+    ),
+    required: false,
+    default: d.mempoolexpiry,
+    min: 1,
+    integer: true,
+    units: i18n('Hr'),
+    placeholder: String(d.mempoolexpiry),
+  }),
+  mempoolfullrbf: Value.toggle({
+    name: i18n('Enable Full RBF'),
+    description: i18n(
+      'Policy for your node to use for relaying and mining unconfirmed transactions.',
+    ),
+    default: d.mempoolfullrbf,
+  }),
+  permitbaremultisig: Value.toggle({
+    name: i18n('Permit Bare Multisig'),
+    description: i18n('Relay non-P2SH multisig transactions'),
+    default: d.permitbaremultisig,
+  }),
+  datacarrier: Value.toggle({
+    name: i18n('Relay OP_RETURN Transactions'),
+    description: i18n('Relay transactions with OP_RETURN outputs'),
+    default: d.datacarrier,
+  }),
+  datacarriersize: Value.number({
+    name: i18n('Max OP_RETURN Size'),
+    description: i18n('Maximum size of data in OP_RETURN outputs to relay'),
+    required: false,
+    default: null,
+    min: 0,
+    max: 10_000,
+    integer: true,
+    units: i18n('bytes'),
+    placeholder: String(d.datacarriersize),
+  }),
+  permitbaredatacarrier: Value.toggle({
+    name: i18n('Permit Bare Datacarrier'),
+    description: i18n('Relay transactions that only have data carrier outputs'),
+    default: d.permitbaredatacarrier,
+  }),
+  rejectparasites: Value.toggle({
+    name: i18n('Reject Parasites'),
+    description: i18n('Reject parasite transactions'),
+    default: d.rejectparasites,
+  }),
+  rejecttokens: Value.toggle({
+    name: i18n('Reject Tokens'),
+    description: i18n('Reject tokens transactions (runes)'),
+    default: d.rejecttokens,
+  }),
+  mempoolreplacement: Value.select({
+    name: i18n('Mempool Replacement'),
+    description: i18n(
+      'Set to disabled to disable RBF entirely, "fee,optin" to honour RBF opt-out signal, or "fee,-optin" to always RBF aka full RBF',
+    ),
+    default: 'fee,-optin',
+    values: {
+      '0': i18n('Disabled'),
+      'fee,optin': 'fee,optin',
+      'fee,-optin': 'fee,-optin',
+    },
+  } as const),
+  mempooltruc: Value.select({
+    name: i18n('Mempool TRUC'),
+    description: i18n(
+      'Behaviour for transactions requesting TRUC limits: "reject" the transactions entirely, "accept" them just like any other, or "enforce" to impose their requested restrictions',
+    ),
+    default: 'accept',
+    values: {
+      reject: i18n('Reject'),
+      accept: i18n('Accept'),
+      enforce: i18n('Enforce'),
+    },
+  } as const),
+  permitbareanchor: Value.toggle({
+    name: i18n('Permit Bare Anchor'),
+    description: i18n(
+      'Relay transactions that only have ephemeral anchor outputs',
+    ),
+    default: d.permitbareanchor,
+  }),
+  permitephemeral: Value.text({
+    name: i18n('Permit Ephemeral'),
+    description: i18n(
+      'Relay transaction packages that include ephemeral outputs defined by comma-separated options (prefix each by \'-\' to force off): "anchor" to allow minimal anyone-can-spend anchors, "send" to allow ordinary output types to be considered ephemeral, and "dust" to allow for dust-amount outputs rather than strictly zero-value',
+    ),
+    required: false,
+    default: null,
+  }),
+  minrelaytxfee: Value.number({
+    name: i18n('Min Transaction Relay Fee'),
+    description: i18n(
+      'Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation',
+    ),
+    default: d.minrelaytxfee,
+    required: true,
+    min: 0,
+    integer: false,
+    units: 'BTC/kvB',
+  }),
+  bytespersigop: Value.number({
+    name: i18n('Bytes Per Sigop'),
+    description: i18n(
+      'Equivalent bytes per sigop in transactions for relay and mining',
+    ),
+    default: d.bytespersigop,
+    required: true,
+    min: 0,
+    max: 20,
+    integer: true,
+    units: i18n('bytes'),
+  }),
+  bytespersigopstrict: Value.number({
+    name: i18n('Bytes Per Sigop Strict'),
+    description: i18n(
+      'Minimum bytes per sigop in transactions we relay and mine',
+    ),
+    default: d.bytespersigopstrict,
+    required: true,
+    min: 0,
+    integer: true,
+    units: i18n('bytes'),
+  }),
+  maxtxlegacysigops: Value.number({
+    name: i18n('Max Legacy Sigops'),
+    description: i18n(
+      'Maximum number of legacy sigops allowed in transactions we relay and mine, as measured by BIP54',
+    ),
+    default: d.maxtxlegacysigops,
+    required: true,
+    min: 0,
+    integer: true,
+  }),
+  limitancestorcount: Value.number({
+    name: i18n('Max Ancestor Count'),
+    description: i18n(
+      'Do not accept transactions if number of in-mempool ancestors is <n> or more',
+    ),
+    default: d.limitancestorcount,
+    required: true,
+    min: 0,
+    integer: true,
+  }),
+  limitancestorsize: Value.number({
+    name: i18n('Max Ancestor Size'),
+    description: i18n(
+      'Do not accept transactions whose size with all in-mempool ancestors exceeds <n> kilobytes',
+    ),
+    default: d.limitancestorsize,
+    required: true,
+    min: 0,
+    integer: true,
+    units: 'kB',
+  }),
+  limitdescendantcount: Value.number({
+    name: i18n('Max Descendant Count'),
+    description: i18n(
+      'Do not accept transactions if any ancestor would have <n> or more in-mempool descendants',
+    ),
+    default: d.limitdescendantcount,
+    required: true,
+    min: 0,
+    integer: true,
+  }),
+  limitdescendantsize: Value.number({
+    name: i18n('Max Descendant Size'),
+    description: i18n(
+      'Do not accept transactions if any ancestor would have more than <n> kilobytes of in-mempool descendants',
+    ),
+    default: d.limitdescendantsize,
+    required: true,
+    min: 0,
+    integer: true,
+    units: 'kB',
+  }),
+  permitbarepubkey: Value.toggle({
+    name: i18n('Permit Bare Pubkey'),
+    description: i18n('Relay legacy pubkey outputs'),
+    default: d.permitbarepubkey,
+  }),
+  maxscriptsize: Value.number({
+    name: i18n('Max Script Size'),
+    description: i18n('Maximum size of scripts we relay and mine, in bytes'),
+    default: d.maxscriptsize,
+    required: true,
+    min: 0,
+    integer: true,
+    units: i18n('Bytes'),
+  }),
+  datacarriercost: Value.number({
+    name: i18n('Datacarrier Cost'),
+    description: i18n(
+      'Treat extra data in transactions as at least N vbytes per actual byte',
+    ),
+    default: d.datacarriercost,
+    required: true,
+    min: 0,
+    integer: true,
+  }),
+  acceptnonstddatacarrier: Value.toggle({
+    name: i18n('Accept Non-Standard Datacarrier'),
+    description: i18n('Relay and mine non-OP_RETURN datacarrier injection'),
+    default: d.acceptnonstddatacarrier,
+  }),
+  dustrelayfee: Value.number({
+    name: i18n('Dust Relay Fee'),
+    description: i18n(
+      'Fee rate (in BTC/kvB) used to define dust, the value of an output such that it will cost more than its value in fees at this fee rate to spend it.',
+    ),
+    default: d.dustrelayfee,
+    required: true,
+    min: 0,
+    integer: false,
+    units: 'BTC/kvB',
+  }),
+  acceptunknownwitness: Value.toggle({
+    name: i18n('Accept Unknown Witness'),
+    description: i18n(
+      'Relay transactions sending to unknown witness script versions',
+    ),
+    default: d.acceptunknownwitness,
+  }),
+  minrelaycoinblocks: Value.number({
+    name: i18n('Min Relay Coin Blocks'),
+    description: i18n(
+      'Minimum coin blocks (measured in sat per block) that a transaction must be spending to be relayed',
+    ),
+    default: null,
+    required: false,
+    min: 0,
+    integer: true,
+  }),
+  minrelaymaturity: Value.number({
+    name: i18n('Min Relay Maturity'),
+    description: i18n(
+      'Minimum number of blocks that inputs must mature before being spent in transactions we relay',
+    ),
+    default: null,
+    required: false,
+    min: 0,
+    integer: true,
+    units: i18n('Blocks'),
+  }),
+
+  // === OTHER ===
+  softwareexpiry: Value.number({
+    name: i18n('Software Expiry'),
+    description: i18n(
+      'Stop working after this POSIX timestamp (set to 0 to disable)',
+    ),
+    default: 1825593420,
+    required: true,
+    integer: true,
+    units: i18n('timestamp'),
+  }),
+  zmqEnabled: Value.toggle({
+    name: i18n('ZeroMQ Enabled'),
+    description: i18n(
+      'The ZeroMQ interface is useful for some applications which might require data related to block and transaction events from Bitcoin Knots. For example, LND requires ZeroMQ be enabled for LND to get the latest block data',
+    ),
+    default: true,
+  }),
+  txindex: Value.dynamicToggle(async ({ effects }) => {
+    const disk = await diskUsage()
+    return {
+      name: i18n('Transaction Index'),
+      default: disk.total >= archivalMin,
+      description: i18n(
+        'By enabling Transaction Index (txindex) Bitcoin Knots will build a complete transaction index. This allows Bitcoin Knots to access any transaction with commands like `getrawtransaction`.',
+      ),
+      disabled:
+        disk.total < archivalMin ? i18n('Not enough disk space') : false,
+    }
+  }),
+  blocknotify: Value.text({
+    name: i18n('Block Notify'),
+    required: false,
+    default: null,
+    description: i18n(
+      'Execute an arbitrary command when the best block changes',
+    ),
+  }),
+  templateconstruction: Value.object(
+    {
+      name: i18n('Template Construction'),
+      description: i18n('Set limits for block size/weight'),
+    },
+    InputSpec.of({
+      blockmaxsize: Value.number({
+        name: i18n('Max Block Size'),
+        description: i18n('Maximum block size in bytes'),
+        default: d.blockmaxsize,
+        required: true,
+        min: 100_000,
+        max: d.blockmaxsize,
+        integer: true,
+        units: i18n('Bytes'),
+      }),
+      blockmaxweight: Value.number({
+        name: i18n('Max Block Weight'),
+        description: i18n('Maximum block weight in vBytes'),
+        default: d.blockmaxweight,
+        required: true,
+        min: 100_000,
+        max: d.blockmaxweight,
+        integer: true,
+        units: i18n('vBytes'),
+      }),
+    }),
+  ),
+  blockreconstruction: Value.object(
+    {
+      name: i18n('Compact Block Reconstructions'),
+      description: i18n('Settings for compact block reconstructions'),
+    },
+    InputSpec.of({
+      blockreconstructionextratxn: Value.number({
+        name: i18n('Block Reconstruction Extra TXN'),
+        description: i18n(
+          'Extra transactions to keep in memory for compact block reconstructions',
+        ),
+        default: d.blockreconstructionextratxn,
+        required: true,
+        min: 0,
+        integer: true,
+      }),
+      blockreconstructionextratxnsize: Value.number({
+        name: i18n('Block Reconstruction Extra TXN Size'),
+        description: i18n(
+          'Upper limit of memory usage (in megabytes) for keeping extra transactions in memory for compact block reconstructions',
+        ),
+        default: d.blockreconstructionextratxnsize,
+        required: true,
+        min: 0,
+        integer: true,
+        units: 'MB',
+      }),
+    }),
+  ),
+  coinstatsindex: Value.toggle({
+    name: i18n('Coinstats Index'),
+    description: i18n(
+      'Enabling Coinstats Index reduces the time for the gettxoutsetinfo RPC to complete at the cost of using additional disk space',
+    ),
+    default: d.coinstatsindex,
+  }),
+  wallet: Value.object(
+    { name: i18n('Wallet'), description: i18n('Wallet Settings') },
+    InputSpec.of({
+      enable: Value.toggle({
+        name: i18n('Enable Wallet'),
+        description: i18n('Load the wallet and enable wallet RPC calls.'),
+        default: !d.disablewallet,
+      }),
+      avoidpartialspends: Value.toggle({
+        name: i18n('Avoid Partial Spends'),
+        description: i18n(
+          'Group outputs by address, selecting all or none, instead of selecting on a per-output basis. This improves privacy at the expense of higher transaction fees.',
+        ),
+        default: d.avoidpartialspends,
+      }),
+      discardfee: Value.number({
+        name: i18n('Discard Change Tolerance'),
+        description: i18n(
+          'The fee rate (in BTC/kB) that indicates your tolerance for discarding change by adding it to the fee.',
+        ),
+        required: false,
+        default: null,
+        min: 0,
+        max: 0.01,
+        integer: false,
+        units: i18n('BTC/kB'),
+        placeholder: String(d.discardfee),
+      }),
+    }),
+  ),
+  prune: Value.dynamicNumber(async ({ effects }) => {
+    const disk = await diskUsage()
+
+    return {
+      name: i18n('Pruning'),
+      description: i18n(
+        'Set the maximum size of the blockchain you wish to store on disk. If your disk is larger than .9TB this value can be set to zero (0) to maintain a full archival node.',
+      ),
+      warning: i18n(
+        'If your node is already pruned increasing this value will require re-syncing your node. Switching from a full archival node to pruned will disable txindex (if enabled)',
+      ),
+      placeholder: i18n('Enter max blockchain size'),
+      required: disk.total < archivalMin,
+      default: disk.total < archivalMin ? 550 : null,
+      integer: true,
+      units: 'MiB',
+      min: 0,
+      max: Math.floor((disk.total * 0.75) / (1024 * 1024)),
+    }
+  }),
+  dbcache: Value.number({
+    name: i18n('Database Cache'),
+    description: i18n(
+      'How much RAM to allocate for caching the TXO set. Higher values improve syncing performance, but may result in some re-work in the event of an ungraceful shutdown. 4-7GB is high enough to get most of the peformance benefit during IBD. Consider reducing this setting for lower resource devices (or a device with less available RAM)',
+    ),
+    required: false,
+    default: null,
+    min: 0,
+    integer: true,
+    units: 'MiB',
+    placeholder: String(d.dbcache),
+  }),
+  dbbatchsize: Value.number({
+    name: i18n('Database Batch'),
+    description: i18n(
+      'Maximum database write batch size in bytes. Higher values will speed up the critical sections when the utxo set is written to disk from memory in big batches.',
+    ),
+    required: false,
+    default: null,
+    min: 0,
+    integer: true,
+    units: i18n('Bytes'),
+    placeholder: String(d.dbbatchsize),
+  }),
+  blockfilters: Value.object(
+    {
+      name: i18n('Block Filters'),
+      description: i18n(
+        'Settings for storing and serving compact block filters',
+      ),
+    },
+    InputSpec.of({
+      blockfilterindex: Value.toggle({
+        name: i18n('Compute Compact Block Filters (BIP158)'),
+        description: i18n(
+          "Generate Compact Block Filters during initial sync (IBD) to enable 'getblockfilter' RPC. This is useful if dependent services need block filters to efficiently scan for addresses/transactions etc.",
+        ),
+        default: !!d.blockfilterindex,
+      }),
+      peerblockfilters: Value.toggle({
+        name: i18n('Serve Compact Block Filters to Peers (BIP157)'),
+        description: i18n(
+          "Serve Compact Block Filters as a peer service to other nodes on the network. This is useful if you wish to connect an SPV client to your node to make it efficient to scan transactions without having to download all block data.  'Compute Compact Block Filters (BIP158)' is required.",
+        ),
+        default: d.peerblockfilters,
+      }),
+    }),
+  ),
+  peerbloomfilters: Value.toggle({
+    name: i18n('Serve Bloom Filters to Peers'),
+    description: i18n(
+      'Peers have the option of setting filters on each connection they make after the version handshake has completed. Bloom filters are for clients implementing SPV (Simplified Payment Verification) that want to check that block headers  connect together correctly, without needing to verify the full blockchain.  The client must trust that the transactions in the chain are in fact valid.  It is highly recommended AGAINST using for anything except Bisq integration.',
+    ),
+    warning: i18n(
+      'This is ONLY for use with Bisq integration, please use Block Filters for all other applications.',
+    ),
+    default: d.peerbloomfilters,
+  }),
+  natpmp: Value.toggle({
+    name: i18n('NAT-PMP'),
+    description: i18n('Use PCP or NAT-PMP to map the listening port.'),
+    default: d.natpmp,
+  }),
+  maxuploadtarget: Value.number({
+    name: i18n('Max Upload Target'),
+    description: i18n(
+      "Tries to keep outbound traffic under the given target in MiB per 24h. Limit does not apply to peers with 'download' permission or blocks created within past week. 0 = no limit.",
+    ),
+    required: false,
+    default: null,
+    min: 0,
+    integer: true,
+    units: 'MiB',
+    placeholder: '0',
+  }),
+
+  // === PEERS ===
+  onlynet: Value.multiselect({
+    name: i18n('Onlynet'),
+    description: i18n(
+      'Make automatic outbound connections only to the selected networks. Inbound and manual connections are not affected by this option.',
+    ),
+    values: Object.fromEntries(
+      validNets.map((n) => [n, n === 'onion' ? 'onion (Tor)' : n]),
+    ) as Record<ValidNets, string>,
+    default: [],
+  }),
+  v2transport: Value.toggle({
+    name: i18n('Use V2 P2P Transport Protocol'),
+    description: i18n(
+      'Enable or disable the use of BIP324 V2 P2P transport protocol.',
+    ),
+    default: d.v2transport,
+  }),
+  connectpeer: Value.union({
+    name: i18n('Connect Peer'),
+    default: 'addnode',
+    variants: Variants.of({
+      connect: {
+        name: i18n('Connect'),
+        spec: InputSpec.of({
+          peers: Value.list(
+            List.text(
+              {
+                name: i18n('Connect Nodes'),
+                minLength: 1,
+                description: i18n(
+                  'Add addresses of nodes for Bitcoin to EXCLUSIVELY connect to.',
+                ),
+              },
+              {
+                patterns: [
+                  {
+                    regex:
+                      '(^s*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?:[0-9]{1,5}))s*$)|(^s*((?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?(?:.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?)*.?:[0-9]{1,5})s*$)|(^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?:[0-9]{1,5}s*$)',
+                    description: i18n(
+                      "Must be either a domain name, or an IPv4 or IPv6 address. Be sure to include the port number, but do not include protocol scheme (eg 'http://').",
+                    ),
+                  },
+                ],
+              },
+            ),
+          ),
+        }),
+      },
+      addnode: {
+        name: i18n('Add Node'),
+        spec: InputSpec.of({
+          peers: Value.list(
+            List.text(
+              {
+                name: i18n('Add Nodes'),
+                description: i18n(
+                  'Add addresses of nodes for Bitcoin to connect with in addition to default nodes.',
+                ),
+              },
+              {
+                inputmode: 'text',
+                patterns: [
+                  {
+                    regex:
+                      '(^s*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?:[0-9]{1,5}))s*$)|(^s*((?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?(?:.[0-9A-Za-z](?:(?:[0-9A-Za-z]|\b-){0,61}[0-9A-Za-z])?)*.?:[0-9]{1,5})s*$)|(^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?:[0-9]{1,5}s*$)',
+                    description: i18n(
+                      "Must be either a domain name, or an IPv4 or IPv6 address. Be sure to include the port number, but do not include protocol scheme (eg 'http://').",
+                    ),
+                  },
+                ],
+              },
+            ),
+          ),
+        }),
+      },
+    }),
+  }),
+  maxconnections: Value.number({
+    name: i18n('Maximum Connections'),
+    description: i18n(
+      'Set the maximum number of connections to maintain with peers.',
+    ),
+    default: d.maxconnections,
+    required: true,
+    min: 0,
+    integer: true,
+  }),
+
+  // === RPC ===
+  rpcservertimeout: Value.number({
+    name: i18n('Rpc Server Timeout'),
+    description: i18n(
+      'Number of seconds after which an uncompleted RPC call will time out.',
+    ),
+    required: false,
+    default: null,
+    min: 5,
+    max: 300,
+    integer: true,
+    units: i18n('seconds'),
+    placeholder: d.rpcservertimeout.toString(),
+  }),
+  rpcthreads: Value.number({
+    name: i18n('Threads'),
+    description: i18n(
+      'Set the number of threads for handling RPC calls. You may wish to increase this if you are making lots of calls via an integration.',
+    ),
+    required: false,
+    default: null,
+    min: 4,
+    max: 64,
+    step: null,
+    integer: true,
+    units: null,
+    placeholder: d.rpcthreads.toString(),
+  }),
+  rpcworkqueue: Value.number({
+    name: i18n('Work Queue'),
+    description: i18n(
+      'Set the depth of the work queue to service RPC calls. Determines how long the backlog of RPC requests can get before it just rejects new ones.',
+    ),
+    required: false,
+    default: null,
+    min: 8,
+    max: 256,
+    step: null,
+    integer: true,
+    units: i18n('requests'),
+    placeholder: d.rpcworkqueue.toString(),
+  }),
+})
+
+function fileToForm(
+  input: z.infer<typeof shape>,
+): T.DeepPartial<typeof fullConfigSpec._TYPE> {
+  const {
+    // Mempool
+    persistmempool,
+    maxmempool,
+    mempoolexpiry,
+    mempoolfullrbf,
+    permitbaremultisig,
+    datacarrier,
+    datacarriersize,
+    permitbaredatacarrier,
+    rejectparasites,
+    rejecttokens,
+    mempoolreplacement,
+    mempooltruc,
+    permitbareanchor,
+    permitephemeral,
+    minrelaytxfee,
+    bytespersigop,
+    bytespersigopstrict,
+    maxtxlegacysigops,
+    limitancestorcount,
+    limitancestorsize,
+    limitdescendantcount,
+    limitdescendantsize,
+    permitbarepubkey,
+    maxscriptsize,
+    datacarriercost,
+    acceptnonstddatacarrier,
+    dustrelayfee,
+    acceptunknownwitness,
+    minrelaycoinblocks,
+    minrelaymaturity,
+    // ZMQ
+    zmqpubhashblock,
+    zmqpubhashtx,
+    zmqpubrawblock,
+    zmqpubrawtx,
+    zmqpubsequence,
+    // Other
+    softwareexpiry,
+    txindex,
+    coinstatsindex,
+    disablewallet,
+    avoidpartialspends,
+    discardfee,
+    blocknotify,
+    prune,
+    dbcache,
+    dbbatchsize,
+    blockfilterindex,
+    peerblockfilters,
+    peerbloomfilters,
+    blockmaxsize,
+    blockmaxweight,
+    blockreconstructionextratxn,
+    blockreconstructionextratxnsize,
+    natpmp,
+    maxuploadtarget,
+    // Peers
+    onlynet,
+    v2transport,
+    connect,
+    addnode,
+    maxconnections,
+    // RPC
+    rpcservertimeout,
+    rpcthreads,
+    rpcworkqueue,
+  } = input
+
+  return {
+    raw: input ?? {},
+
+    // Mempool - 1:1 pass-through
+    persistmempool,
+    maxmempool,
+    mempoolexpiry,
+    mempoolfullrbf,
+    permitbaremultisig,
+    datacarrier,
+    datacarriersize,
+    permitbaredatacarrier,
+    rejectparasites,
+    rejecttokens,
+    mempoolreplacement,
+    mempooltruc,
+    permitbareanchor,
+    permitephemeral,
+    minrelaytxfee,
+    bytespersigop,
+    bytespersigopstrict,
+    maxtxlegacysigops,
+    limitancestorcount,
+    limitancestorsize,
+    limitdescendantcount,
+    limitdescendantsize,
+    permitbarepubkey,
+    maxscriptsize,
+    datacarriercost,
+    acceptnonstddatacarrier,
+    dustrelayfee,
+    acceptunknownwitness,
+    minrelaycoinblocks,
+    minrelaymaturity,
+
+    // Other - with transforms
+    softwareexpiry,
+    zmqEnabled: !!(
+      zmqpubhashblock &&
+      zmqpubhashtx &&
+      zmqpubrawblock &&
+      zmqpubrawtx &&
+      zmqpubsequence
+    ),
+    txindex,
+    coinstatsindex,
+    wallet: {
+      enable: !disablewallet,
+      avoidpartialspends,
+      discardfee,
+    },
+    blocknotify,
+    templateconstruction: {
+      blockmaxsize,
+      blockmaxweight,
+    },
+    blockreconstruction: {
+      blockreconstructionextratxn,
+      blockreconstructionextratxnsize,
+    },
+    prune,
+    dbcache: dbcache ?? null,
+    dbbatchsize: dbbatchsize ?? null,
+    blockfilters: {
+      blockfilterindex: blockfilterindex === 'basic',
+      peerblockfilters,
+    },
+    peerbloomfilters,
+    natpmp,
+    maxuploadtarget,
+
+    // Peers
+    onlynet: onlynet
+      ? [onlynet]
+          .flat()
+          .filter(
+            (x): x is ValidNets =>
+              x !== undefined && (validNets as readonly string[]).includes(x),
+          )
+      : undefined,
+    v2transport,
+    connectpeer: {
+      selection:
+        connect !== undefined ? ('connect' as const) : ('addnode' as const),
+      value: {
+        peers:
+          connect !== undefined
+            ? [connect].flat().filter((x): x is string => x !== undefined)
+            : [addnode].flat().filter((x): x is string => x !== undefined),
+      },
+    },
+    maxconnections,
+
+    // RPC
+    rpcservertimeout,
+    rpcthreads,
+    rpcworkqueue,
+  }
+}
+
+function formToFile(
+  input: T.DeepPartial<typeof fullConfigSpec._TYPE>,
+): z.infer<typeof shape> {
+  const {
+    raw,
+    // Mempool
+    persistmempool,
+    maxmempool,
+    mempoolexpiry,
+    mempoolfullrbf,
+    permitbaremultisig,
+    datacarrier,
+    datacarriersize,
+    permitbaredatacarrier,
+    rejectparasites,
+    rejecttokens,
+    mempoolreplacement,
+    mempooltruc,
+    permitbareanchor,
+    permitephemeral,
+    minrelaytxfee,
+    bytespersigop,
+    bytespersigopstrict,
+    maxtxlegacysigops,
+    limitancestorcount,
+    limitancestorsize,
+    limitdescendantcount,
+    limitdescendantsize,
+    permitbarepubkey,
+    maxscriptsize,
+    datacarriercost,
+    acceptnonstddatacarrier,
+    dustrelayfee,
+    acceptunknownwitness,
+    minrelaycoinblocks,
+    minrelaymaturity,
+    // Other
+    softwareexpiry,
+    prune,
+    wallet,
+    txindex,
+    coinstatsindex,
+    peerbloomfilters,
+    blockfilters,
+    blocknotify,
+    dbcache,
+    dbbatchsize,
+    zmqEnabled,
+    templateconstruction,
+    blockreconstruction,
+    natpmp,
+    maxuploadtarget,
+    // Peers
+    v2transport,
+    onlynet,
+    connectpeer,
+    maxconnections,
+    // RPC
+    rpcservertimeout,
+    rpcthreads,
+    rpcworkqueue,
+  } = input
+
+  return {
+    ...raw,
+
+    // Enforced fields
+    rpccookiefile: '.cookie',
+    listen: true,
+    bind: `0.0.0.0:${peerPortInternal}`,
+    whitebind: `0.0.0.0:${peerPortExternal}`,
+    deprecatedrpc: 'create_bdb',
+    rpcauth: raw?.rpcauth?.filter((a) => !!a) as string[] | undefined,
+    whitelist: raw?.whitelist?.filter((a) => !!a) as string[] | undefined,
+
+    // RPC (prune-derived)
+    rpcbind: prune ? rpcbindPruned : rpcbind,
+    rpcallowip: prune ? rpcallowipPruned : rpcallowip,
+
+    // Mempool - 1:1 pass-through
+    persistmempool,
+    maxmempool: maxmempool ?? undefined,
+    mempoolexpiry: mempoolexpiry ?? undefined,
+    mempoolfullrbf,
+    permitbaremultisig,
+    datacarrier,
+    datacarriersize: datacarriersize ?? undefined,
+    permitbaredatacarrier,
+    rejectparasites,
+    rejecttokens,
+    mempoolreplacement,
+    mempooltruc,
+    permitbareanchor,
+    permitephemeral: permitephemeral || undefined,
+    minrelaytxfee,
+    bytespersigop,
+    bytespersigopstrict,
+    maxtxlegacysigops,
+    limitancestorcount,
+    limitancestorsize,
+    limitdescendantcount,
+    limitdescendantsize,
+    permitbarepubkey,
+    maxscriptsize,
+    datacarriercost,
+    acceptnonstddatacarrier,
+    dustrelayfee,
+    acceptunknownwitness,
+    minrelaycoinblocks: minrelaycoinblocks ?? undefined,
+    minrelaymaturity: minrelaymaturity ?? undefined,
+
+    // Wallet
+    disablewallet: !wallet?.enable,
+    avoidpartialspends: wallet?.avoidpartialspends,
+    discardfee: wallet?.discardfee ?? undefined,
+
+    // Other
+    softwareexpiry,
+    txindex: prune ? false : txindex,
+    coinstatsindex,
+    peerbloomfilters,
+    peerblockfilters: blockfilters?.peerblockfilters,
+    blockfilterindex: blockfilters?.blockfilterindex ? 'basic' : false,
+    blocknotify: blocknotify || undefined,
+    prune: prune ?? undefined,
+    dbcache: dbcache ?? undefined,
+    dbbatchsize: dbbatchsize ?? undefined,
+    // ZMQ: explicitly set all fields to handle both enable and disable
+    zmqpubrawblock: zmqEnabled ? zmqBundle.zmqpubrawblock : undefined,
+    zmqpubhashblock: zmqEnabled ? zmqBundle.zmqpubhashblock : undefined,
+    zmqpubrawtx: zmqEnabled ? zmqBundle.zmqpubrawtx : undefined,
+    zmqpubhashtx: zmqEnabled ? zmqBundle.zmqpubhashtx : undefined,
+    zmqpubsequence: zmqEnabled ? zmqBundle.zmqpubsequence : undefined,
+
+    // Block Template & Reconstruction
+    blockmaxsize: templateconstruction?.blockmaxsize,
+    blockmaxweight: templateconstruction?.blockmaxweight,
+    blockreconstructionextratxn:
+      blockreconstruction?.blockreconstructionextratxn,
+    blockreconstructionextratxnsize:
+      blockreconstruction?.blockreconstructionextratxnsize,
+    natpmp,
+    maxuploadtarget: maxuploadtarget ?? undefined,
+
+    // Peers
+    v2transport,
+    onlynet: onlynet?.length ? input.onlynet?.filter((a) => !!a) : undefined,
+    maxconnections,
+    connect:
+      connectpeer?.selection === 'connect'
+        ? (connectpeer.value?.peers?.filter((a) => !!a) as string[] | undefined)
+        : undefined,
+    addnode:
+      connectpeer?.selection === 'addnode'
+        ? (connectpeer.value?.peers?.filter((a) => !!a) as string[] | undefined)
+        : undefined,
+
+    // RPC
+    rpcservertimeout: rpcservertimeout ?? undefined,
+    rpcthreads: rpcthreads ?? undefined,
+    rpcworkqueue: rpcworkqueue ?? undefined,
+  }
+}
+
 export const bitcoinConfFile = FileHelper.ini(
   {
     base: sdk.volumes.main,
     subpath: '/bitcoin.conf',
   },
-  shape,
+  fullConfigSpec.partialValidator,
   { bracketedArray: false },
   {
-    onRead: (a) => a,
-    onWrite,
+    onRead: (a) => {
+      const base = shape.parse(a)
+      return fileToForm(base)
+    },
+    onWrite: (a) => {
+      return stringifyPrimitives(formToFile(a))
+    },
   },
 )

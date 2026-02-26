@@ -27,6 +27,7 @@ export const inputSpec = InputSpec.of({
       disabled: i18n('Cannot edit dependent specified password'),
       required: true,
       default: null,
+      masked: true,
       patterns: [
         {
           regex: '^[A-Za-z0-9_-]+$',
@@ -96,7 +97,7 @@ export const generateRpcUserDependent = sdk.Action.withInput(
       const rpcAuthEntries = [existingRpcAuthEntries].flat()
       rpcAuthEntries.push(newRpcAuth)
 
-      await bitcoinConfFile.merge(effects, { rpcauth: rpcAuthEntries })
+      await bitcoinConfFile.merge(effects, { raw: { rpcauth: rpcAuthEntries } })
 
       return {
         version: '1',

@@ -1,8 +1,6 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir } from '../utils'
-import { rpcPort } from '../utils'
-import { mainMounts } from '../main'
+import { rootDir, rpcPort } from '../utils'
 import { i18n } from '../i18n'
 
 export const getbalance = sdk.Action.withoutInput(
@@ -12,31 +10,31 @@ export const getbalance = sdk.Action.withoutInput(
   // metadata
   async ({ effects }) => ({
     name: i18n('Get Balance'),
-    description:
-      i18n('Get the balance of your Bitcoin wallet.'),
+    description: i18n('Get the balance of your Bitcoin wallet.'),
     warning: null,
-    allowedStatuses: 'any',
-    group: 'Wallet',
+    allowedStatuses: 'only-running',
+    group: i18n('Wallet'),
     visibility: 'enabled',
   }),
 
   // execution function
   async ({ effects }) => {
-
     const mountpoint = '/scripts'
-    
+
     const conf = (await bitcoinConfFile.read().const(effects))!
 
     const res = await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'bitcoind' },
-      sdk.Mounts.of().mountVolume ({
-      volumeId: 'main',
-      subpath: null, 
-      mountpoint: rootDir,  
-      readonly: false,
-      }).mountAssets({ subpath: null, mountpoint}),
-      'Sign Message',
+      sdk.Mounts.of()
+        .mountVolume({
+          volumeId: 'main',
+          subpath: null,
+          mountpoint: rootDir,
+          readonly: false,
+        })
+        .mountAssets({ subpath: null, mountpoint }),
+      'getbalance',
       async (subc) => {
         return await subc.execFail([
           `${mountpoint}/getbalance.sh`,
@@ -46,10 +44,10 @@ export const getbalance = sdk.Action.withoutInput(
         ])
       },
     )
-    
+
     return {
       version: '1',
-      title: 'Sucess',
+      title: i18n('Success'),
       message: `${res.stdout}`,
       result: null,
     }
