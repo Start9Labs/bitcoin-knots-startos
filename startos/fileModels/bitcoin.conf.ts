@@ -51,125 +51,127 @@ const validNets = ['ipv4', 'ipv6', 'onion', 'i2p'] as const
 const onlyNetOption = z.enum(validNets)
 type ValidNets = z.infer<typeof onlyNetOption>
 
-export const shape = z.object({
-  // RPC enforced
-  rpcbind: z.enum([rpcbind, rpcbindPruned]).catch(rpcbind),
-  rpcallowip: z.enum([rpcallowip, rpcallowipPruned]).catch(rpcallowip),
-  rpcuser: z.undefined().optional().catch(undefined),
-  rpcpassword: z.undefined().optional().catch(undefined),
-  rpccookiefile: z.literal(rpccookiefile).catch(rpccookiefile),
-  // Peers enforced
-  whitebind: z
-    .literal(`0.0.0.0:${peerPortExternal}`)
-    .catch(`0.0.0.0:${peerPortExternal}`),
+export const shape = z
+  .object({
+    // RPC enforced
+    rpcbind: z.enum([rpcbind, rpcbindPruned]).catch(rpcbind),
+    rpcallowip: z.enum([rpcallowip, rpcallowipPruned]).catch(rpcallowip),
+    rpcuser: z.undefined().optional().catch(undefined),
+    rpcpassword: z.undefined().optional().catch(undefined),
+    rpccookiefile: z.literal(rpccookiefile).catch(rpccookiefile),
+    // Peers enforced
+    whitebind: z
+      .literal(`0.0.0.0:${peerPortExternal}`)
+      .catch(`0.0.0.0:${peerPortExternal}`),
 
-  // RPC
-  rpcauth: iniStringArray,
-  rpcservertimeout: iniNumber,
-  rpcthreads: iniNumber,
-  rpcworkqueue: iniNumber,
-  deprecatedrpc: z.literal('create_bdb').catch('create_bdb'),
+    // RPC
+    rpcauth: iniStringArray,
+    rpcservertimeout: iniNumber,
+    rpcthreads: iniNumber,
+    rpcworkqueue: iniNumber,
+    deprecatedrpc: z.literal('create_bdb').catch('create_bdb'),
 
-  // Mempool
-  persistmempool: iniBoolean,
-  maxmempool: iniNumber,
-  mempoolexpiry: iniNumber,
-  mempoolfullrbf: iniBoolean,
-  datacarrier: iniBoolean,
-  datacarriersize: iniNumber,
-  permitbaremultisig: iniBoolean,
-  rejectparasites: iniBoolean,
-  rejecttokens: iniBoolean,
-  minrelaytxfee: iniNumber,
-  bytespersigop: iniNumber,
-  bytespersigopstrict: iniNumber,
-  limitancestorcount: iniNumber,
-  limitancestorsize: iniNumber,
-  limitdescendantcount: iniNumber,
-  limitdescendantsize: iniNumber,
-  permitbarepubkey: iniBoolean,
-  maxscriptsize: iniNumber,
-  datacarriercost: iniNumber,
-  acceptnonstddatacarrier: iniBoolean,
-  dustrelayfee: iniNumber,
-  permitephemeral: iniString,
-  permitbareanchor: iniBoolean,
-  permitbaredatacarrier: iniBoolean,
-  maxtxlegacysigops: iniNumber,
-  acceptunknownwitness: iniBoolean,
-  minrelaycoinblocks: iniNumber,
-  minrelaymaturity: iniNumber,
-  mempoolreplacement: z
-    .enum(['0', 'fee,optin', 'fee,-optin'])
-    .optional()
-    .catch(undefined),
-  mempooltruc: z
-    .enum(['reject', 'accept', 'enforce'])
-    .optional()
-    .catch(undefined),
+    // Mempool
+    persistmempool: iniBoolean,
+    maxmempool: iniNumber,
+    mempoolexpiry: iniNumber,
+    mempoolfullrbf: iniBoolean,
+    datacarrier: iniBoolean,
+    datacarriersize: iniNumber,
+    permitbaremultisig: iniBoolean,
+    rejectparasites: iniBoolean,
+    rejecttokens: iniBoolean,
+    minrelaytxfee: iniNumber,
+    bytespersigop: iniNumber,
+    bytespersigopstrict: iniNumber,
+    limitancestorcount: iniNumber,
+    limitancestorsize: iniNumber,
+    limitdescendantcount: iniNumber,
+    limitdescendantsize: iniNumber,
+    permitbarepubkey: iniBoolean,
+    maxscriptsize: iniNumber,
+    datacarriercost: iniNumber,
+    acceptnonstddatacarrier: iniBoolean,
+    dustrelayfee: iniNumber,
+    permitephemeral: iniString,
+    permitbareanchor: iniBoolean,
+    permitbaredatacarrier: iniBoolean,
+    maxtxlegacysigops: iniNumber,
+    acceptunknownwitness: iniBoolean,
+    minrelaycoinblocks: iniNumber,
+    minrelaymaturity: iniNumber,
+    mempoolreplacement: z
+      .enum(['0', 'fee,optin', 'fee,-optin'])
+      .optional()
+      .catch(undefined),
+    mempooltruc: z
+      .enum(['reject', 'accept', 'enforce'])
+      .optional()
+      .catch(undefined),
 
-  // Peers enforced
-  listen: z.literal(true).catch(true),
-  bind: z
-    .union([z.array(z.string()).transform((a) => a.at(-1)!), z.string()])
-    .catch(`0.0.0.0:${peerPortInternal}`),
-  onlynet: z
-    .union([onlyNetOption, z.array(onlyNetOption)])
-    .optional()
-    .catch(undefined),
-  externalip: iniString,
-  whitelist: iniStringArray,
-  v2transport: iniBoolean,
-  connect: iniStringArray,
-  addnode: iniStringArray,
-  maxconnections: iniNumber,
-  i2psam: iniString,
-  i2pacceptincoming: iniBoolean,
+    // Peers enforced
+    listen: z.literal(true).catch(true),
+    bind: z
+      .union([z.array(z.string()).transform((a) => a.at(-1)!), z.string()])
+      .catch(`0.0.0.0:${peerPortInternal}`),
+    onlynet: z
+      .union([onlyNetOption, z.array(onlyNetOption)])
+      .optional()
+      .catch(undefined),
+    externalip: iniString,
+    whitelist: iniStringArray,
+    v2transport: iniBoolean,
+    connect: iniStringArray,
+    addnode: iniStringArray,
+    maxconnections: iniNumber,
+    i2psam: iniString,
+    i2pacceptincoming: iniBoolean,
 
-  // Wallet
-  disablewallet: iniBoolean,
-  avoidpartialspends: iniBoolean,
-  discardfee: iniNumber,
+    // Wallet
+    disablewallet: iniBoolean,
+    avoidpartialspends: iniBoolean,
+    discardfee: iniNumber,
 
-  // ZMQ
-  zmqpubrawblock: iniString,
-  zmqpubhashblock: iniString,
-  zmqpubrawtx: iniString,
-  zmqpubhashtx: iniString,
-  zmqpubsequence: iniString,
+    // ZMQ
+    zmqpubrawblock: iniString,
+    zmqpubhashblock: iniString,
+    zmqpubrawtx: iniString,
+    zmqpubhashtx: iniString,
+    zmqpubsequence: iniString,
 
-  // Performance Tuning
-  dbcache: iniNumber,
-  dbbatchsize: iniNumber,
+    // Performance Tuning
+    dbcache: iniNumber,
+    dbbatchsize: iniNumber,
 
-  // Block Template & Reconstruction
-  blockmaxsize: iniNumber,
-  blockmaxweight: iniNumber,
-  blockreconstructionextratxn: iniNumber,
-  blockreconstructionextratxnsize: iniNumber,
+    // Block Template & Reconstruction
+    blockmaxsize: iniNumber,
+    blockmaxweight: iniNumber,
+    blockreconstructionextratxn: iniNumber,
+    blockreconstructionextratxnsize: iniNumber,
 
-  // Other
-  softwareexpiry: iniNumber,
-  blocknotify: iniString,
-  prune: iniNumber,
-  coinstatsindex: iniBoolean,
-  txindex: iniBoolean,
-  peerbloomfilters: iniBoolean,
-  blockfilterindex: z
-    .union([
-      z.literal('basic'),
-      z.union([
-        z.string().transform((s) => !!Number(s)),
-        z.number().transform((n) => !!n),
-        z.boolean(),
-      ]),
-    ])
-    .optional()
-    .catch(undefined),
-  peerblockfilters: iniBoolean,
-  natpmp: iniBoolean,
-  maxuploadtarget: iniNumber,
-})
+    // Other
+    softwareexpiry: iniNumber,
+    blocknotify: iniString,
+    prune: iniNumber,
+    coinstatsindex: iniBoolean,
+    txindex: iniBoolean,
+    peerbloomfilters: iniBoolean,
+    blockfilterindex: z
+      .union([
+        z.literal('basic'),
+        z.union([
+          z.string().transform((s) => !!Number(s)),
+          z.number().transform((n) => !!n),
+          z.boolean(),
+        ]),
+      ])
+      .optional()
+      .catch(undefined),
+    peerblockfilters: iniBoolean,
+    natpmp: iniBoolean,
+    maxuploadtarget: iniNumber,
+  })
+  .loose()
 
 function stringifyPrimitives(a: unknown): any {
   if (a && typeof a === 'object') {
