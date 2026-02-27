@@ -12,7 +12,7 @@ export const manifest = setupManifest({
   title: 'Bitcoin Knots',
   license: 'MIT',
   donationUrl: null,
-  packageRepo: 'https://github.com/Retropex/knots-startos',
+  packageRepo: 'https://github.com/Retropex/knots-startos/tree/next',
   upstreamRepo: 'https://github.com/bitcoinknots/bitcoin',
   marketingUrl: 'https://bitcoinknots.org/',
   docsUrls: [
