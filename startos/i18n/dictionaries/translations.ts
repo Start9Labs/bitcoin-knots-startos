@@ -407,6 +407,9 @@ export default {
     2800: 'Auto-Configurar',
     2801: 'Configurar automáticamente bitcoin.conf para las necesidades de otro servicio',
     2802: 'Estos campos fueron proporcionados por una tarea y no se pueden editar',
+    // main.ts (reachability health check)
+    2900: 'Accesibilidad del nodo',
+    2901: 'Su nodo puede conectarse con otros nodos, pero otros nodos no pueden conectarse con usted. Opcionalmente agregue un dominio Tor, dominio público o dirección IP pública para cambiar este comportamiento.',
   } satisfies LangDict,
   de_DE: {
     // main.ts
@@ -814,6 +817,9 @@ export default {
     2800: 'Auto-Konfiguration',
     2801: 'bitcoin.conf automatisch für die Anforderungen eines anderen Dienstes konfigurieren',
     2802: 'Diese Felder wurden von einer Aufgabe bereitgestellt und können nicht bearbeitet werden',
+    // main.ts (reachability health check)
+    2900: 'Knotenerreichbarkeit',
+    2901: 'Ihr Knoten kann sich mit anderen Knoten verbinden, aber andere Knoten können sich nicht mit Ihnen verbinden. Fügen Sie optional eine Tor-Domain, öffentliche Domain oder öffentliche IP-Adresse hinzu, um dieses Verhalten zu ändern.',
   } satisfies LangDict,
   pl_PL: {
     // main.ts
@@ -1221,6 +1227,9 @@ export default {
     2800: 'Auto-Konfiguracja',
     2801: 'Automatycznie skonfiguruj bitcoin.conf dla potrzeb innej usługi',
     2802: 'Te pola zostały dostarczone przez zadanie i nie mogą być edytowane',
+    // main.ts (reachability health check)
+    2900: 'Dostępność węzła',
+    2901: 'Twój węzeł może łączyć się z innymi węzłami, ale inne węzły nie mogą łączyć się z Tobą. Opcjonalnie dodaj domenę Tor, domenę publiczną lub publiczny adres IP, aby zmienić to zachowanie.',
   } satisfies LangDict,
   fr_FR: {
     // main.ts
@@ -1628,5 +1637,8 @@ export default {
     2800: 'Auto-Configuration',
     2801: "Configurer automatiquement bitcoin.conf pour les besoins d'un autre service",
     2802: 'Ces champs ont été fournis par une tâche et ne peuvent pas être modifiés',
+    // main.ts (reachability health check)
+    2900: 'Accessibilité du nœud',
+    2901: 'Votre nœud peut se connecter avec d\'autres nœuds, mais d\'autres nœuds ne peuvent pas se connecter avec vous. Ajoutez éventuellement un domaine Tor, un domaine public ou une adresse IP publique pour modifier ce comportement.',
   } satisfies LangDict,
 }

@@ -28,6 +28,7 @@ This package shares the `bitcoind` package ID with [Bitcoin Core](https://github
 - [Backups and Restore](#backups-and-restore)
 - [Health Checks](#health-checks)
 - [Dependencies](#dependencies)
+- [Default Overrides](#default-overrides)
 - [Limitations and Differences](#limitations-and-differences)
 - [What Is Unchanged from Upstream](#what-is-unchanged-from-upstream)
 - [Contributing](#contributing)
@@ -69,7 +70,7 @@ StartOS-specific files on the `main` volume:
 ## Installation and First-Run Flow
 
 1. On install, StartOS sets the `nocow` attribute on the data directory (btrfs optimization via `chattr -R +C`)
-2. Default `bitcoin.conf` and `store.json` are written with sensible defaults, including Knots-specific policy settings (spam filtering enabled by default)
+2. Default `bitcoin.conf` and `store.json` are seeded. Only values that **diverge** from upstream Bitcoin Knots defaults are written (see [Default Overrides](#default-overrides)); all other settings are left unset so bitcoind uses its built-in defaults. Knots-specific policy settings (spam filtering) are enabled by default upstream
 3. **Disk-aware defaults**: on disks smaller than 900 GB, pruning is automatically enabled (550 MiB target) and `txindex` is disabled; on larger disks, a full archival node is configured
 4. **I2P enabled by default**: the embedded I2P daemon starts automatically with `i2pacceptincoming=true`, so the node accepts inbound peer connections over I2P out of the box — no user configuration required
 5. **Tor proxy always configured**: the `-onion` flag is set to the StartOS Tor proxy on every start, enabling outbound connections over Tor. To additionally advertise a public address (clearnet IP or Tor onion), use the **Peer Settings** action
@@ -117,19 +118,6 @@ Settings **not** managed by StartOS (hardcoded):
 | `whitebind`     | `0.0.0.0:8333`  | Required for peer connections                                    |
 | `deprecatedrpc` | `create_bdb`    | Required for wallet creation                                     |
 | `-onion`        | `<torIp>:9050`  | StartOS Tor proxy (resolved via `sdk.getContainerIp` at runtime) |
-
-### Knots-Specific Mempool Policy Defaults
-
-Bitcoin Knots provides enhanced mempool filtering not available in Bitcoin Core. These settings help keep the network clean by rejecting spam and parasitic transactions:
-
-| Setting              | Default      | Description                                             |
-| -------------------- | ------------ | ------------------------------------------------------- |
-| `rejectparasites`    | `true`       | Reject parasite transactions                            |
-| `rejecttokens`       | `false`      | Reject token transactions (runes)                       |
-| `mempoolreplacement` | `fee,-optin` | Full RBF (always replace by fee)                        |
-| `mempooltruc`        | `accept`     | Accept TRUC transactions without enforcing restrictions |
-| `permitbaremultisig` | `false`      | Do not relay bare multisig                              |
-| `datacarriercost`    | `1`          | Treat extra data as 1 vbyte per actual byte             |
 
 ### Pruned Node Architecture
 
@@ -215,10 +203,11 @@ This is transparent to dependent services — port 8332 always serves RPC.
 
 ## Health Checks
 
-| Check             | Method                                                  | Messages                                                             |
-| ----------------- | ------------------------------------------------------- | -------------------------------------------------------------------- |
-| **RPC**           | Waits for `.cookie` file, then `bitcoin-cli getrpcinfo` | Ready: "The Bitcoin RPC Interface is ready"                          |
-| **Sync Progress** | `bitcoin-cli getblockchaininfo`                         | Shows percentage during IBD; "Bitcoin is fully synced" when complete |
+| Check              | Method                                                  | Messages                                                                            |
+| ------------------ | ------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **RPC**            | Waits for `.cookie` file, then `bitcoin-cli getrpcinfo` | Ready: "The Bitcoin RPC Interface is ready"                                         |
+| **Sync Progress**  | `bitcoin-cli getblockchaininfo`                         | Shows percentage during IBD; "Bitcoin is fully synced" when complete                |
+| **Reachability**   | Checks `externalip` and I2P incoming config             | Disabled: "Your node can peer with other nodes, but other nodes cannot peer with you" (hidden when node is reachable via public IP, Tor, or I2P incoming) |
 
 ## Dependencies
 
@@ -227,6 +216,47 @@ This is transparent to dependent services — port 8332 always serves RPC.
 | **Tor**    | When `wantsOnion` is true, `externalip` contains `.onion`, or `onlynet` includes `onion` | Running (>= 0.4.8:0-beta.0) |
 
 When a Tor onion address is requested via the **Peer Settings** action, a task is created asking Tor to provision an onion service. Once fulfilled, the onion address is set as `externalip` automatically. Other StartOS services (LND, Core Lightning, Electrs, etc.) depend on Bitcoin Knots.
+
+## Default Overrides
+
+Only settings that **diverge from upstream Bitcoin Knots defaults** are seeded into `bitcoin.conf` on install. All other settings are left unset, allowing bitcoind to use its built-in defaults. This keeps `bitcoin.conf` minimal and avoids drift when upstream defaults change between versions.
+
+### Seeded overrides (written to `bitcoin.conf` on install)
+
+| Setting | Upstream Default | Our Default | Reason |
+| --- | --- | --- | --- |
+| `dbcache` | 450 MiB | 5000 MiB | Faster IBD; reduced to 450 automatically after initial sync completes |
+| `blockfilterindex` | off | `basic` | Required by dependent services (Electrs, etc.) for BIP158 filters |
+| `natpmp` | true | false | NAT-PMP disabled to avoid unexpected port mapping on StartOS |
+| `datacarriercost` | 4 | 1 | Treat extra data as 1 vbyte per actual byte (more permissive relay) |
+| `blockmaxsize` | 300000 | 3985000 | Allow larger blocks in templates |
+| `blockmaxweight` | 1200000 | 3985000 | Allow heavier blocks in templates |
+| `zmqpubrawblock`, `zmqpubhashblock` | off | `tcp://0.0.0.0:28332` | Required by dependent services (LND, etc.) |
+| `zmqpubrawtx`, `zmqpubhashtx`, `zmqpubsequence` | off | `tcp://0.0.0.0:28333` | Required by dependent services (LND, etc.) |
+| `i2psam` | off | `127.0.0.1:7656` | Embedded I2P daemon for peer-to-peer privacy |
+| `prune` (disk < 900 GB only) | 0 (off) | 550 MiB | Automatic pruning on smaller disks |
+
+### Knots-Specific Mempool Policy Defaults
+
+Bitcoin Knots provides enhanced mempool filtering not available in Bitcoin Core. These settings are **upstream Knots defaults** (not our overrides) and are included here for reference:
+
+| Setting              | Default      | Description                                             |
+| -------------------- | ------------ | ------------------------------------------------------- |
+| `rejectparasites`    | `true`       | Reject parasite transactions                            |
+| `rejecttokens`       | `false`      | Reject token transactions (runes)                       |
+| `mempoolreplacement` | `fee,-optin` | Full RBF (always replace by fee)                        |
+| `mempooltruc`        | `accept`     | Accept TRUC transactions without enforcing restrictions |
+| `permitbaremultisig` | `false`      | Do not relay bare multisig                              |
+
+### Form defaults vs placeholders
+
+Configuration actions use a consistent pattern for number fields:
+
+- **`default: null`** — the field is empty; if the user saves without setting a value, the key is omitted from `bitcoin.conf` and bitcoind uses its upstream default
+- **`placeholder`** — shows the upstream bitcoind default, so the user knows what value applies when the field is left empty
+- **`default: <value>`** — used only when we intentionally override the upstream default (e.g. `dbcache: 5000`); "reset defaults" restores our override, not the upstream value
+
+Override defaults (`defaultDbcache`, `defaultPrune`, `defaultBlockmaxsize`, `defaultBlockmaxweight`, `defaultDatacarriercost`) are defined once in `bitcoin.conf.ts` and imported by `seedFiles.ts`, ensuring the form defaults and seed values cannot drift apart.
 
 ## Limitations and Differences
 
@@ -308,6 +338,7 @@ actions:
 health_checks:
   - bitcoin-cli_getrpcinfo: rpc_ready
   - bitcoin-cli_getblockchaininfo: sync_progress
+  - reachability: disabled_when_unreachable
 backup_volumes:
   - main (excluding blocks/, chainstate/, indexes/)
   - i2pd (excluding ephemeral data)

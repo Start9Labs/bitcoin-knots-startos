@@ -13,7 +13,6 @@ import {
 import { sdk } from '../sdk'
 import { utils } from '@start9labs/start-sdk'
 import * as diskusage from 'diskusage'
-import { bitcoinConfDefaults as d } from '../utils'
 import { i18n } from '../i18n'
 
 // INI coercion helpers: INI parsing returns strings, with duplicate keys producing arrays.
@@ -60,6 +59,10 @@ export const shape = z
     rpcpassword: z.undefined().optional().catch(undefined),
     rpccookiefile: z.literal(rpccookiefile).catch(rpccookiefile),
     // Peers enforced
+    listen: z.literal(true).catch(true),
+    bind: z
+      .union([z.array(z.string()).transform((a) => a.at(-1)!), z.string()])
+      .catch(`0.0.0.0:${peerPortInternal}`),
     whitebind: z
       .literal(`0.0.0.0:${peerPortExternal}`)
       .catch(`0.0.0.0:${peerPortExternal}`),
@@ -109,11 +112,7 @@ export const shape = z
       .optional()
       .catch(undefined),
 
-    // Peers enforced
-    listen: z.literal(true).catch(true),
-    bind: z
-      .union([z.array(z.string()).transform((a) => a.at(-1)!), z.string()])
-      .catch(`0.0.0.0:${peerPortInternal}`),
+    // Peers
     onlynet: z
       .union([onlyNetOption, z.array(onlyNetOption)])
       .optional()
@@ -190,7 +189,14 @@ function stringifyPrimitives(a: unknown): any {
 const { InputSpec, Value, Variants, List } = sdk
 
 const diskUsage = utils.once(() => diskusage.check('/'))
-const archivalMin = 900_000_000_000
+export const archivalMin = 900_000_000_000
+
+// Override defaults (diverging from upstream Bitcoin Knots)
+export const defaultDbcache = 5_000
+export const defaultPrune = 550
+export const defaultBlockmaxsize = 3_985_000
+export const defaultBlockmaxweight = 3_985_000
+export const defaultDatacarriercost = 1
 
 export const fullConfigSpec = sdk.InputSpec.of({
   raw: Value.hidden(shape),
@@ -199,7 +205,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
   persistmempool: Value.toggle({
     name: i18n('Persist Mempool'),
     description: i18n('Save the mempool on shutdown and load on restart.'),
-    default: d.persistmempool,
+    default: true,
   }),
   maxmempool: Value.number({
     name: i18n('Max Mempool Size'),
@@ -209,7 +215,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 1,
     integer: true,
     units: 'MiB',
-    placeholder: String(d.maxmempool),
+    placeholder: '300',
   }),
   mempoolexpiry: Value.number({
     name: i18n('Mempool Expiration'),
@@ -217,28 +223,28 @@ export const fullConfigSpec = sdk.InputSpec.of({
       'Do not keep transactions in the mempool longer than <n> hours.',
     ),
     required: false,
-    default: d.mempoolexpiry,
+    default: null,
     min: 1,
     integer: true,
     units: i18n('Hr'),
-    placeholder: String(d.mempoolexpiry),
+    placeholder: '336',
   }),
   mempoolfullrbf: Value.toggle({
     name: i18n('Enable Full RBF'),
     description: i18n(
       'Policy for your node to use for relaying and mining unconfirmed transactions.',
     ),
-    default: d.mempoolfullrbf,
+    default: true,
   }),
   permitbaremultisig: Value.toggle({
     name: i18n('Permit Bare Multisig'),
     description: i18n('Relay non-P2SH multisig transactions'),
-    default: d.permitbaremultisig,
+    default: false,
   }),
   datacarrier: Value.toggle({
     name: i18n('Relay OP_RETURN Transactions'),
     description: i18n('Relay transactions with OP_RETURN outputs'),
-    default: d.datacarrier,
+    default: true,
   }),
   datacarriersize: Value.number({
     name: i18n('Max OP_RETURN Size'),
@@ -249,22 +255,22 @@ export const fullConfigSpec = sdk.InputSpec.of({
     max: 10_000,
     integer: true,
     units: i18n('bytes'),
-    placeholder: String(d.datacarriersize),
+    placeholder: '83',
   }),
   permitbaredatacarrier: Value.toggle({
     name: i18n('Permit Bare Datacarrier'),
     description: i18n('Relay transactions that only have data carrier outputs'),
-    default: d.permitbaredatacarrier,
+    default: false,
   }),
   rejectparasites: Value.toggle({
     name: i18n('Reject Parasites'),
     description: i18n('Reject parasite transactions'),
-    default: d.rejectparasites,
+    default: true,
   }),
   rejecttokens: Value.toggle({
     name: i18n('Reject Tokens'),
     description: i18n('Reject tokens transactions (runes)'),
-    default: d.rejecttokens,
+    default: false,
   }),
   mempoolreplacement: Value.select({
     name: i18n('Mempool Replacement'),
@@ -295,7 +301,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     description: i18n(
       'Relay transactions that only have ephemeral anchor outputs',
     ),
-    default: d.permitbareanchor,
+    default: true,
   }),
   permitephemeral: Value.text({
     name: i18n('Permit Ephemeral'),
@@ -310,133 +316,144 @@ export const fullConfigSpec = sdk.InputSpec.of({
     description: i18n(
       'Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation',
     ),
-    default: d.minrelaytxfee,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: false,
     units: 'BTC/kvB',
+    placeholder: '0.00001',
   }),
   bytespersigop: Value.number({
     name: i18n('Bytes Per Sigop'),
     description: i18n(
       'Equivalent bytes per sigop in transactions for relay and mining',
     ),
-    default: d.bytespersigop,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     max: 20,
     integer: true,
     units: i18n('bytes'),
+    placeholder: '20',
   }),
   bytespersigopstrict: Value.number({
     name: i18n('Bytes Per Sigop Strict'),
     description: i18n(
       'Minimum bytes per sigop in transactions we relay and mine',
     ),
-    default: d.bytespersigopstrict,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: true,
     units: i18n('bytes'),
+    placeholder: '20',
   }),
   maxtxlegacysigops: Value.number({
     name: i18n('Max Legacy Sigops'),
     description: i18n(
       'Maximum number of legacy sigops allowed in transactions we relay and mine, as measured by BIP54',
     ),
-    default: d.maxtxlegacysigops,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: true,
+    placeholder: '2500',
   }),
   limitancestorcount: Value.number({
     name: i18n('Max Ancestor Count'),
     description: i18n(
       'Do not accept transactions if number of in-mempool ancestors is <n> or more',
     ),
-    default: d.limitancestorcount,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: true,
+    placeholder: '25',
   }),
   limitancestorsize: Value.number({
     name: i18n('Max Ancestor Size'),
     description: i18n(
       'Do not accept transactions whose size with all in-mempool ancestors exceeds <n> kilobytes',
     ),
-    default: d.limitancestorsize,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: true,
     units: 'kB',
+    placeholder: '101',
   }),
   limitdescendantcount: Value.number({
     name: i18n('Max Descendant Count'),
     description: i18n(
       'Do not accept transactions if any ancestor would have <n> or more in-mempool descendants',
     ),
-    default: d.limitdescendantcount,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: true,
+    placeholder: '25',
   }),
   limitdescendantsize: Value.number({
     name: i18n('Max Descendant Size'),
     description: i18n(
       'Do not accept transactions if any ancestor would have more than <n> kilobytes of in-mempool descendants',
     ),
-    default: d.limitdescendantsize,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: true,
     units: 'kB',
+    placeholder: '101',
   }),
   permitbarepubkey: Value.toggle({
     name: i18n('Permit Bare Pubkey'),
     description: i18n('Relay legacy pubkey outputs'),
-    default: d.permitbarepubkey,
+    default: false,
   }),
   maxscriptsize: Value.number({
     name: i18n('Max Script Size'),
     description: i18n('Maximum size of scripts we relay and mine, in bytes'),
-    default: d.maxscriptsize,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: true,
     units: i18n('Bytes'),
+    placeholder: '1650',
   }),
   datacarriercost: Value.number({
     name: i18n('Datacarrier Cost'),
     description: i18n(
       'Treat extra data in transactions as at least N vbytes per actual byte',
     ),
-    default: d.datacarriercost,
+    default: defaultDatacarriercost,
     required: true,
     min: 0,
     integer: true,
+    placeholder: '4',
   }),
   acceptnonstddatacarrier: Value.toggle({
     name: i18n('Accept Non-Standard Datacarrier'),
     description: i18n('Relay and mine non-OP_RETURN datacarrier injection'),
-    default: d.acceptnonstddatacarrier,
+    default: false,
   }),
   dustrelayfee: Value.number({
     name: i18n('Dust Relay Fee'),
     description: i18n(
       'Fee rate (in BTC/kvB) used to define dust, the value of an output such that it will cost more than its value in fees at this fee rate to spend it.',
     ),
-    default: d.dustrelayfee,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: false,
     units: 'BTC/kvB',
+    placeholder: '0.00003',
   }),
   acceptunknownwitness: Value.toggle({
     name: i18n('Accept Unknown Witness'),
     description: i18n(
       'Relay transactions sending to unknown witness script versions',
     ),
-    default: d.acceptunknownwitness,
+    default: true,
   }),
   minrelaycoinblocks: Value.number({
     name: i18n('Min Relay Coin Blocks'),
@@ -507,20 +524,20 @@ export const fullConfigSpec = sdk.InputSpec.of({
       blockmaxsize: Value.number({
         name: i18n('Max Block Size'),
         description: i18n('Maximum block size in bytes'),
-        default: d.blockmaxsize,
+        default: defaultBlockmaxsize,
         required: true,
         min: 100_000,
-        max: d.blockmaxsize,
+        max: defaultBlockmaxsize,
         integer: true,
         units: i18n('Bytes'),
       }),
       blockmaxweight: Value.number({
         name: i18n('Max Block Weight'),
         description: i18n('Maximum block weight in vBytes'),
-        default: d.blockmaxweight,
+        default: defaultBlockmaxweight,
         required: true,
         min: 100_000,
-        max: d.blockmaxweight,
+        max: defaultBlockmaxweight,
         integer: true,
         units: i18n('vBytes'),
       }),
@@ -537,21 +554,23 @@ export const fullConfigSpec = sdk.InputSpec.of({
         description: i18n(
           'Extra transactions to keep in memory for compact block reconstructions',
         ),
-        default: d.blockreconstructionextratxn,
-        required: true,
+        default: null,
+        required: false,
         min: 0,
         integer: true,
+        placeholder: '32768',
       }),
       blockreconstructionextratxnsize: Value.number({
         name: i18n('Block Reconstruction Extra TXN Size'),
         description: i18n(
           'Upper limit of memory usage (in megabytes) for keeping extra transactions in memory for compact block reconstructions',
         ),
-        default: d.blockreconstructionextratxnsize,
-        required: true,
+        default: null,
+        required: false,
         min: 0,
         integer: true,
         units: 'MB',
+        placeholder: '10',
       }),
     }),
   ),
@@ -560,7 +579,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     description: i18n(
       'Enabling Coinstats Index reduces the time for the gettxoutsetinfo RPC to complete at the cost of using additional disk space',
     ),
-    default: d.coinstatsindex,
+    default: false,
   }),
   wallet: Value.object(
     { name: i18n('Wallet'), description: i18n('Wallet Settings') },
@@ -568,14 +587,14 @@ export const fullConfigSpec = sdk.InputSpec.of({
       enable: Value.toggle({
         name: i18n('Enable Wallet'),
         description: i18n('Load the wallet and enable wallet RPC calls.'),
-        default: !d.disablewallet,
+        default: true,
       }),
       avoidpartialspends: Value.toggle({
         name: i18n('Avoid Partial Spends'),
         description: i18n(
           'Group outputs by address, selecting all or none, instead of selecting on a per-output basis. This improves privacy at the expense of higher transaction fees.',
         ),
-        default: d.avoidpartialspends,
+        default: false,
       }),
       discardfee: Value.number({
         name: i18n('Discard Change Tolerance'),
@@ -588,7 +607,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
         max: 0.01,
         integer: false,
         units: i18n('BTC/kB'),
-        placeholder: String(d.discardfee),
+        placeholder: '0.0001',
       }),
     }),
   ),
@@ -605,7 +624,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
       ),
       placeholder: i18n('Enter max blockchain size'),
       required: disk.total < archivalMin,
-      default: disk.total < archivalMin ? 550 : null,
+      default: disk.total < archivalMin ? defaultPrune : null,
       integer: true,
       units: 'MiB',
       min: 0,
@@ -618,11 +637,11 @@ export const fullConfigSpec = sdk.InputSpec.of({
       'How much RAM to allocate for caching the TXO set. Higher values improve syncing performance, but may result in some re-work in the event of an ungraceful shutdown. 4-7GB is high enough to get most of the peformance benefit during IBD. Consider reducing this setting for lower resource devices (or a device with less available RAM)',
     ),
     required: false,
-    default: null,
+    default: defaultDbcache,
     min: 0,
     integer: true,
     units: 'MiB',
-    placeholder: String(d.dbcache),
+    placeholder: '450',
   }),
   dbbatchsize: Value.number({
     name: i18n('Database Batch'),
@@ -634,7 +653,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: true,
     units: i18n('Bytes'),
-    placeholder: String(d.dbbatchsize),
+    placeholder: '67108864',
   }),
   blockfilters: Value.object(
     {
@@ -649,14 +668,14 @@ export const fullConfigSpec = sdk.InputSpec.of({
         description: i18n(
           "Generate Compact Block Filters during initial sync (IBD) to enable 'getblockfilter' RPC. This is useful if dependent services need block filters to efficiently scan for addresses/transactions etc.",
         ),
-        default: !!d.blockfilterindex,
+        default: true,
       }),
       peerblockfilters: Value.toggle({
         name: i18n('Serve Compact Block Filters to Peers (BIP157)'),
         description: i18n(
           "Serve Compact Block Filters as a peer service to other nodes on the network. This is useful if you wish to connect an SPV client to your node to make it efficient to scan transactions without having to download all block data.  'Compute Compact Block Filters (BIP158)' is required.",
         ),
-        default: d.peerblockfilters,
+        default: false,
       }),
     }),
   ),
@@ -668,12 +687,12 @@ export const fullConfigSpec = sdk.InputSpec.of({
     warning: i18n(
       'This is ONLY for use with Bisq integration, please use Block Filters for all other applications.',
     ),
-    default: d.peerbloomfilters,
+    default: false,
   }),
   natpmp: Value.toggle({
     name: i18n('NAT-PMP'),
     description: i18n('Use PCP or NAT-PMP to map the listening port.'),
-    default: d.natpmp,
+    default: false,
   }),
   maxuploadtarget: Value.number({
     name: i18n('Max Upload Target'),
@@ -704,7 +723,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     description: i18n(
       'Enable or disable the use of BIP324 V2 P2P transport protocol.',
     ),
-    default: d.v2transport,
+    default: true,
   }),
   connectpeer: Value.union({
     name: i18n('Connect Peer'),
@@ -771,10 +790,11 @@ export const fullConfigSpec = sdk.InputSpec.of({
     description: i18n(
       'Set the maximum number of connections to maintain with peers.',
     ),
-    default: d.maxconnections,
-    required: true,
+    default: null,
+    required: false,
     min: 0,
     integer: true,
+    placeholder: '125',
   }),
 
   // === RPC ===
@@ -789,7 +809,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     max: 300,
     integer: true,
     units: i18n('seconds'),
-    placeholder: d.rpcservertimeout.toString(),
+    placeholder: '30',
   }),
   rpcthreads: Value.number({
     name: i18n('Threads'),
@@ -803,7 +823,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     step: null,
     integer: true,
     units: null,
-    placeholder: d.rpcthreads.toString(),
+    placeholder: '16',
   }),
   rpcworkqueue: Value.number({
     name: i18n('Work Queue'),
@@ -817,7 +837,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     step: null,
     integer: true,
     units: i18n('requests'),
-    placeholder: d.rpcworkqueue.toString(),
+    placeholder: '64',
   }),
 })
 
@@ -1088,19 +1108,19 @@ function formToFile(
     mempooltruc,
     permitbareanchor,
     permitephemeral: permitephemeral || undefined,
-    minrelaytxfee,
-    bytespersigop,
-    bytespersigopstrict,
-    maxtxlegacysigops,
-    limitancestorcount,
-    limitancestorsize,
-    limitdescendantcount,
-    limitdescendantsize,
+    minrelaytxfee: minrelaytxfee ?? undefined,
+    bytespersigop: bytespersigop ?? undefined,
+    bytespersigopstrict: bytespersigopstrict ?? undefined,
+    maxtxlegacysigops: maxtxlegacysigops ?? undefined,
+    limitancestorcount: limitancestorcount ?? undefined,
+    limitancestorsize: limitancestorsize ?? undefined,
+    limitdescendantcount: limitdescendantcount ?? undefined,
+    limitdescendantsize: limitdescendantsize ?? undefined,
     permitbarepubkey,
-    maxscriptsize,
+    maxscriptsize: maxscriptsize ?? undefined,
     datacarriercost,
     acceptnonstddatacarrier,
-    dustrelayfee,
+    dustrelayfee: dustrelayfee ?? undefined,
     acceptunknownwitness,
     minrelaycoinblocks: minrelaycoinblocks ?? undefined,
     minrelaymaturity: minrelaymaturity ?? undefined,
@@ -1121,27 +1141,31 @@ function formToFile(
     prune: prune ?? undefined,
     dbcache: dbcache ?? undefined,
     dbbatchsize: dbbatchsize ?? undefined,
-    // ZMQ: explicitly set all fields to handle both enable and disable
-    zmqpubrawblock: zmqEnabled ? zmqBundle.zmqpubrawblock : undefined,
-    zmqpubhashblock: zmqEnabled ? zmqBundle.zmqpubhashblock : undefined,
-    zmqpubrawtx: zmqEnabled ? zmqBundle.zmqpubrawtx : undefined,
-    zmqpubhashtx: zmqEnabled ? zmqBundle.zmqpubhashtx : undefined,
-    zmqpubsequence: zmqEnabled ? zmqBundle.zmqpubsequence : undefined,
+    // ZMQ
+    ...(zmqEnabled
+      ? zmqBundle
+      : {
+          zmqpubrawblock: undefined,
+          zmqpubhashblock: undefined,
+          zmqpubrawtx: undefined,
+          zmqpubhashtx: undefined,
+          zmqpubsequence: undefined,
+        }),
 
     // Block Template & Reconstruction
     blockmaxsize: templateconstruction?.blockmaxsize,
     blockmaxweight: templateconstruction?.blockmaxweight,
     blockreconstructionextratxn:
-      blockreconstruction?.blockreconstructionextratxn,
+      blockreconstruction?.blockreconstructionextratxn ?? undefined,
     blockreconstructionextratxnsize:
-      blockreconstruction?.blockreconstructionextratxnsize,
+      blockreconstruction?.blockreconstructionextratxnsize ?? undefined,
     natpmp,
     maxuploadtarget: maxuploadtarget ?? undefined,
 
     // Peers
     v2transport,
     onlynet: onlynet?.length ? input.onlynet?.filter((a) => !!a) : undefined,
-    maxconnections,
+    maxconnections: maxconnections ?? undefined,
     connect:
       connectpeer?.selection === 'connect'
         ? (connectpeer.value?.peers?.filter((a) => !!a) as string[] | undefined)

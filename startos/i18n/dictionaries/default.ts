@@ -418,6 +418,10 @@ const dict = {
   'Auto-Configure': 2800,
   'Automatically configure bitcoin.conf for the needs of a another service': 2801,
   'These fields were provided by a task and cannot be edited': 2802,
+
+  // main.ts (reachability health check)
+  'Node Reachability': 2900,
+  'Your node can peer with other nodes, but other nodes cannot peer with you. Optionally add a Tor domain, public domain, or public IP address to change this behavior.': 2901,
 } as const
 
 /**

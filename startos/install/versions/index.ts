@@ -1,5 +1,6 @@
-export { v29_3_0_1 as knotsCurrent } from './v29_3_0_0-beta.1'
-import { v29_2_0_2 as core29_2 } from 'bitcoin-core-startos/startos/install/versions/v29.2.0_2'
-import { v30_2_0_1 as coreCurrent } from 'bitcoin-core-startos/startos/install/versions/v30.2.0_1'
+export { v29_3_1_b0 as current } from './v29.3_1.b0'
 
-export const other = [coreCurrent, core29_2]
+import { v29_3_0_b0 as core29_3 } from 'bitcoin-core-startos/startos/install/versions/v29.3_0.b0'
+import { v30_2_2_b0 as coreCurrent } from 'bitcoin-core-startos/startos/install/versions/v30.2_2.b0'
+
+export const other = [coreCurrent, core29_3]
