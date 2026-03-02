@@ -34,7 +34,6 @@ export default {
     208: 'Usuario RPC creado exitosamente',
     209: 'Contraseña RPC creada para ${username}. Guarde esta contraseña en un lugar seguro. Si la pierde, será necesario crear un nuevo usuario RPC ya que Bitcoin.conf solo almacena un hash de la contraseña',
     210: 'Contraseña RPC',
-    211: 'Contraseña RPC de ${username}',
     212: 'Error al crear usuario RPC',
     213: 'rpcauth.py falló con error: ${error}',
 
