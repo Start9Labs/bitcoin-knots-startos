@@ -1,13 +1,14 @@
 import { T } from '@start9labs/start-sdk'
+import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import {
+  bitcoinMounts,
   GetBlockchainInfo,
   GetNetworkInfo,
   rootDir,
+  rpcPort,
 } from '../utils'
-import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
-import { rpcPort, bitcoinMounts } from '../utils'
-import { i18n } from '../i18n'
 
 export const runtimeInfo = sdk.Action.withoutInput(
   // id

@@ -404,6 +404,10 @@ export default {
     2701: 'Remove the wallet in Bitcoin Knots',
     2702: '⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.',
     2703: 'Your wallet has been removed.',
+    // actions/config/autoconfig.ts
+    2800: 'Auto-Configurar',
+    2801: 'Configurar automáticamente bitcoin.conf para las necesidades de otro servicio',
+    2802: 'Estos campos fueron proporcionados por una tarea y no se pueden editar',
   } satisfies LangDict,
   de_DE: {
     // main.ts
@@ -438,7 +442,6 @@ export default {
     208: 'RPC-Benutzer erfolgreich erstellt',
     209: 'RPC-Passwort für ${username} erstellt. Bewahren Sie dieses Passwort an einem sicheren Ort auf. Wenn es verloren geht, muss ein neuer RPC-Benutzer erstellt werden, da Bitcoin.conf nur einen Hash des Passworts speichert',
     210: 'RPC-Passwort',
-    211: '${username} RPC-Passwort',
     212: 'Fehler beim Erstellen des RPC-Benutzers',
     213: 'rpcauth.py ist mit Fehler fehlgeschlagen: ${error}',
 
@@ -808,6 +811,10 @@ export default {
     2701: 'Remove the wallet in Bitcoin Knots',
     2702: '⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.',
     2703: 'Your wallet has been removed.',
+    // actions/config/autoconfig.ts
+    2800: 'Auto-Konfiguration',
+    2801: 'bitcoin.conf automatisch für die Anforderungen eines anderen Dienstes konfigurieren',
+    2802: 'Diese Felder wurden von einer Aufgabe bereitgestellt und können nicht bearbeitet werden',
   } satisfies LangDict,
   pl_PL: {
     // main.ts
@@ -842,7 +849,6 @@ export default {
     208: 'Użytkownik RPC utworzony pomyślnie',
     209: 'Hasło RPC utworzone dla ${username}. Przechowuj to hasło w bezpiecznym miejscu. Jeśli zostanie utracone, konieczne będzie utworzenie nowego użytkownika RPC, ponieważ Bitcoin.conf przechowuje tylko hash hasła',
     210: 'Hasło RPC',
-    211: 'Hasło RPC ${username}',
     212: 'Nie udało się utworzyć użytkownika RPC',
     213: 'rpcauth.py zakończył się błędem: ${error}',
 
@@ -1212,6 +1218,10 @@ export default {
     2701: 'Remove the wallet in Bitcoin Knots',
     2702: '⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.',
     2703: 'Your wallet has been removed.',
+    // actions/config/autoconfig.ts
+    2800: 'Auto-Konfiguracja',
+    2801: 'Automatycznie skonfiguruj bitcoin.conf dla potrzeb innej usługi',
+    2802: 'Te pola zostały dostarczone przez zadanie i nie mogą być edytowane',
   } satisfies LangDict,
   fr_FR: {
     // main.ts
@@ -1246,7 +1256,6 @@ export default {
     208: 'Utilisateur RPC créé avec succès',
     209: "Mot de passe RPC créé pour ${username}. Conservez ce mot de passe dans un endroit sûr. En cas de perte, un nouvel utilisateur RPC devra être créé car Bitcoin.conf ne stocke qu'un hachage du mot de passe",
     210: 'Mot de passe RPC',
-    211: 'Mot de passe RPC de ${username}',
     212: "Échec de la création de l'utilisateur RPC",
     213: "rpcauth.py a échoué avec l'erreur : ${error}",
 
@@ -1616,5 +1625,9 @@ export default {
     2701: 'Remove the wallet in Bitcoin Knots',
     2702: '⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.',
     2703: 'Your wallet has been removed.',
+    // actions/config/autoconfig.ts
+    2800: 'Auto-Configuration',
+    2801: "Configurer automatiquement bitcoin.conf pour les besoins d'un autre service",
+    2802: 'Ces champs ont été fournis par une tâche et ne peuvent pas être modifiés',
   } satisfies LangDict,
 }

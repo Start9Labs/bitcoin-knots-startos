@@ -33,7 +33,6 @@ const dict = {
   'RPC user successfully created': 208,
   'RPC password created for ${username}. Store this password in a secure place. If lost, a new RPC user will need to be created as Bitcoin.conf only stores a hash of the password': 209,
   'RPC Password': 210,
-  '${username} RPC Password': 211,
   'Failed to create RPC user': 212,
   'rpcauth.py failed with error: ${error}': 213,
 
@@ -414,6 +413,11 @@ const dict = {
   'Remove the wallet in Bitcoin Knots': 2701,
   '⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.': 2702,
   'Your wallet has been removed.': 2703,
+
+  // actions/config/autoconfig.ts
+  'Auto-Configure': 2800,
+  'Automatically configure bitcoin.conf for the needs of a another service': 2801,
+  'These fields were provided by a task and cannot be edited': 2802,
 } as const
 
 /**
