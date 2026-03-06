@@ -1,6 +1,8 @@
-import { FileHelper, T, z } from '@start9labs/start-sdk'
+import { FileHelper, T, utils, z } from '@start9labs/start-sdk'
+import * as diskusage from 'diskusage'
+import { i18n } from '../i18n'
+import { sdk } from '../sdk'
 import {
-  i2PSamAddress,
   peerPortExternal,
   peerPortInternal,
   rpcallowip,
@@ -10,10 +12,6 @@ import {
   rpccookiefile,
   zmqBundle,
 } from '../utils'
-import { sdk } from '../sdk'
-import { utils } from '@start9labs/start-sdk'
-import * as diskusage from 'diskusage'
-import { i18n } from '../i18n'
 
 // INI coercion helpers: INI parsing returns strings, with duplicate keys producing arrays.
 // Each uses .catch(undefined) to match the old optional(t) = t.optional().onMismatch(undefined)
@@ -194,8 +192,6 @@ export const archivalMin = 900_000_000_000
 // Override defaults (diverging from upstream Bitcoin Knots)
 export const defaultDbcache = 5_000
 export const defaultPrune = 550
-export const defaultBlockmaxsize = 3_985_000
-export const defaultBlockmaxweight = 3_985_000
 export const defaultDatacarriercost = 1
 
 export const fullConfigSpec = sdk.InputSpec.of({
@@ -524,21 +520,23 @@ export const fullConfigSpec = sdk.InputSpec.of({
       blockmaxsize: Value.number({
         name: i18n('Max Block Size'),
         description: i18n('Maximum block size in bytes'),
-        default: defaultBlockmaxsize,
-        required: true,
+        default: null,
+        required: false,
         min: 100_000,
-        max: defaultBlockmaxsize,
+        max: 3_985_000,
         integer: true,
+        placeholder: '100,000',
         units: i18n('Bytes'),
       }),
       blockmaxweight: Value.number({
         name: i18n('Max Block Weight'),
         description: i18n('Maximum block weight in vBytes'),
-        default: defaultBlockmaxweight,
-        required: true,
+        default: null,
+        required: false,
         min: 100_000,
-        max: defaultBlockmaxweight,
+        max: 3_985_000,
         integer: true,
+        placeholder: '100,000',
         units: i18n('vBytes'),
       }),
     }),
@@ -1153,8 +1151,8 @@ function formToFile(
         }),
 
     // Block Template & Reconstruction
-    blockmaxsize: templateconstruction?.blockmaxsize,
-    blockmaxweight: templateconstruction?.blockmaxweight,
+    blockmaxsize: templateconstruction?.blockmaxsize ?? undefined,
+    blockmaxweight: templateconstruction?.blockmaxweight ?? undefined,
     blockreconstructionextratxn:
       blockreconstruction?.blockreconstructionextratxn ?? undefined,
     blockreconstructionextratxnsize:

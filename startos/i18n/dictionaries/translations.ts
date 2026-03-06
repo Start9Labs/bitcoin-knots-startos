@@ -261,13 +261,11 @@ export default {
     1739: 'Otras configuraciones',
     1740: 'Editar más valores en bitcoin.conf',
 
-    // actions/config/peers.ts (externalip)
-    1855: 'Dirección pública',
-    1856: 'Seleccione la dirección donde su nodo puede ser contactado por pares.',
-    1858: 'Crear dirección Tor',
-
-    // dependencies.ts
-    1859: 'Bitcoin Knots necesita una dirección onion de Tor para conexiones entrantes de pares.',
+    // actions/setExternalAddress.ts
+    1855: 'Establecer dirección externa',
+    1856: 'Establecer la dirección donde su nodo puede ser contactado por pares',
+    1857: 'Dirección externa',
+    1858: 'Seleccione la dirección donde su nodo puede ser contactado por pares.',
 
     // Common
     1800: 'Configuración',
@@ -407,9 +405,13 @@ export default {
     2800: 'Auto-Configurar',
     2801: 'Configurar automáticamente bitcoin.conf para las necesidades de otro servicio',
     2802: 'Estos campos fueron proporcionados por una tarea y no se pueden editar',
-    // main.ts (reachability health check)
-    2900: 'Accesibilidad del nodo',
-    2901: 'Su nodo puede conectarse con otros nodos, pero otros nodos no pueden conectarse con usted. Opcionalmente agregue un dominio Tor, dominio público o dirección IP pública para cambiar este comportamiento.',
+    // main.ts (health checks)
+    2903: 'I2P está desactivado',
+    2904: 'Conexiones entrantes y salientes',
+    2905: 'Solo conexiones salientes',
+    2906: 'Excluido por onlynet',
+    2908: 'Tor no está en ejecución',
+    2909: 'Tor no está instalado',
   } satisfies LangDict,
   de_DE: {
     // main.ts
@@ -671,13 +673,11 @@ export default {
     1739: 'Weitere Einstellungen',
     1740: 'Weitere Werte in bitcoin.conf bearbeiten',
 
-    // actions/config/peers.ts (externalip)
-    1855: 'Öffentliche Adresse',
-    1856: 'Wählen Sie die Adresse, unter der Ihr Knoten von Peers erreicht werden kann.',
-    1858: 'Tor-Adresse erstellen',
-
-    // dependencies.ts
-    1859: 'Bitcoin Knots benötigt eine Tor-Onion-Adresse für eingehende Peer-Verbindungen.',
+    // actions/setExternalAddress.ts
+    1855: 'Externe Adresse festlegen',
+    1856: 'Legen Sie die Adresse fest, unter der Ihr Knoten von Peers erreicht werden kann',
+    1857: 'Externe Adresse',
+    1858: 'Wählen Sie die Adresse, unter der Ihr Knoten von Peers erreicht werden kann.',
 
     // Common
     1800: 'Konfiguration',
@@ -817,9 +817,13 @@ export default {
     2800: 'Auto-Konfiguration',
     2801: 'bitcoin.conf automatisch für die Anforderungen eines anderen Dienstes konfigurieren',
     2802: 'Diese Felder wurden von einer Aufgabe bereitgestellt und können nicht bearbeitet werden',
-    // main.ts (reachability health check)
-    2900: 'Knotenerreichbarkeit',
-    2901: 'Ihr Knoten kann sich mit anderen Knoten verbinden, aber andere Knoten können sich nicht mit Ihnen verbinden. Fügen Sie optional eine Tor-Domain, öffentliche Domain oder öffentliche IP-Adresse hinzu, um dieses Verhalten zu ändern.',
+    // main.ts (health checks)
+    2903: 'I2P ist deaktiviert',
+    2904: 'Eingehende und ausgehende Verbindungen',
+    2905: 'Nur ausgehende Verbindungen',
+    2906: 'Durch onlynet ausgeschlossen',
+    2908: 'Tor läuft nicht',
+    2909: 'Tor ist nicht installiert',
   } satisfies LangDict,
   pl_PL: {
     // main.ts
@@ -1081,13 +1085,11 @@ export default {
     1739: 'Inne ustawienia',
     1740: 'Edytuj więcej wartości w bitcoin.conf',
 
-    // actions/config/peers.ts (externalip)
-    1855: 'Adres publiczny',
-    1856: 'Wybierz adres, pod którym Twój węzeł może być osiągalny przez peerów.',
-    1858: 'Utwórz adres Tor',
-
-    // dependencies.ts
-    1859: 'Bitcoin Knots potrzebuje adresu onion Tor dla przychodzących połączeń peerów.',
+    // actions/setExternalAddress.ts
+    1855: 'Ustaw adres zewnętrzny',
+    1856: 'Ustaw adres, pod którym Twój węzeł może być osiągalny przez peerów',
+    1857: 'Adres zewnętrzny',
+    1858: 'Wybierz adres, pod którym Twój węzeł może być osiągalny przez peerów.',
 
     // Common
     1800: 'Konfiguracja',
@@ -1227,9 +1229,13 @@ export default {
     2800: 'Auto-Konfiguracja',
     2801: 'Automatycznie skonfiguruj bitcoin.conf dla potrzeb innej usługi',
     2802: 'Te pola zostały dostarczone przez zadanie i nie mogą być edytowane',
-    // main.ts (reachability health check)
-    2900: 'Dostępność węzła',
-    2901: 'Twój węzeł może łączyć się z innymi węzłami, ale inne węzły nie mogą łączyć się z Tobą. Opcjonalnie dodaj domenę Tor, domenę publiczną lub publiczny adres IP, aby zmienić to zachowanie.',
+    // main.ts (health checks)
+    2903: 'I2P jest wyłączony',
+    2904: 'Połączenia przychodzące i wychodzące',
+    2905: 'Tylko połączenia wychodzące',
+    2906: 'Wykluczone przez onlynet',
+    2908: 'Tor nie jest uruchomiony',
+    2909: 'Tor nie jest zainstalowany',
   } satisfies LangDict,
   fr_FR: {
     // main.ts
@@ -1491,13 +1497,11 @@ export default {
     1739: 'Autres paramètres',
     1740: 'Modifier plus de valeurs dans bitcoin.conf',
 
-    // actions/config/peers.ts (externalip)
-    1855: 'Adresse publique',
-    1856: "Sélectionnez l'adresse à laquelle votre nœud peut être contacté par les pairs.",
-    1858: 'Créer une adresse Tor',
-
-    // dependencies.ts
-    1859: "Bitcoin Knots a besoin d'une adresse onion Tor pour les connexions entrantes des pairs.",
+    // actions/setExternalAddress.ts
+    1855: "Définir l'adresse externe",
+    1856: "Définir l'adresse à laquelle votre nœud peut être contacté par les pairs",
+    1857: 'Adresse externe',
+    1858: "Sélectionnez l'adresse à laquelle votre nœud peut être contacté par les pairs.",
 
     // Common
     1800: 'Configuration',
@@ -1637,8 +1641,12 @@ export default {
     2800: 'Auto-Configuration',
     2801: "Configurer automatiquement bitcoin.conf pour les besoins d'un autre service",
     2802: 'Ces champs ont été fournis par une tâche et ne peuvent pas être modifiés',
-    // main.ts (reachability health check)
-    2900: 'Accessibilité du nœud',
-    2901: 'Votre nœud peut se connecter avec d\'autres nœuds, mais d\'autres nœuds ne peuvent pas se connecter avec vous. Ajoutez éventuellement un domaine Tor, un domaine public ou une adresse IP publique pour modifier ce comportement.',
+    // main.ts (health checks)
+    2903: 'I2P est désactivé',
+    2904: 'Connexions entrantes et sortantes',
+    2905: 'Connexions sortantes uniquement',
+    2906: 'Exclu par onlynet',
+    2908: "Tor n'est pas en cours d'exécution",
+    2909: "Tor n'est pas installé",
   } satisfies LangDict,
 }

@@ -7,7 +7,6 @@ export const shape = z
     reindexChainstate: z.boolean().catch(false),
     fullySynced: z.boolean().catch(false),
     snapshotInUse: z.boolean().catch(false),
-    wantsOnion: z.boolean().nullable().catch(null),
   })
   .strip()
 

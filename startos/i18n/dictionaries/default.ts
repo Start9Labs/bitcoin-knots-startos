@@ -4,7 +4,7 @@ const dict = {
   // main.ts
   'The Bitcoin RPC Interface is ready': 1,
   'The Bitcoin RPC Interface is not ready': 2,
-  'Blockchain Sync Progress': 3,
+  'Blockchain Sync': 3,
   'Bitcoin is fully synced': 4,
   'Bitcoin is starting…': 5,
   'Syncing blocks...${percentage}%': 6,
@@ -346,13 +346,11 @@ const dict = {
   // Common
   Configuration: 1800,
 
-  // actions/config/peers.ts (externalip)
-  'Public Address': 1855,
-  'Select the address at which your node can be reached by peers.': 1856,
-  'Create Tor Address': 1858,
-
-  // dependencies.ts
-  'Bitcoin Knots needs a Tor onion address for inbound peer connections.': 1859,
+  // actions/setExternalAddress.ts
+  'Set External Address': 1855,
+  'Set the address at which your node can be reached by peers': 1856,
+  'External Address': 1857,
+  'Select the address at which your node can be reached by peers.': 1858,
 
   // actions/wallet - getbalance.ts
   'Get Balance': 1900,
@@ -419,9 +417,13 @@ const dict = {
   'Automatically configure bitcoin.conf for the needs of a another service': 2801,
   'These fields were provided by a task and cannot be edited': 2802,
 
-  // main.ts (reachability health check)
-  'Node Reachability': 2900,
-  'Your node can peer with other nodes, but other nodes cannot peer with you. Optionally add a Tor domain, public domain, or public IP address to change this behavior.': 2901,
+  // main.ts (health checks)
+  'I2P is disabled': 2903,
+  'Inbound and outbound connections': 2904,
+  'Outbound connections only': 2905,
+  'Excluded by onlynet': 2906,
+  'Tor is not running': 2908,
+  'Tor is not installed': 2909,
 } as const
 
 /**
