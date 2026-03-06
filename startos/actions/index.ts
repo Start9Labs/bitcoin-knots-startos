@@ -1,6 +1,9 @@
 import { sdk } from '../sdk'
-import { otherConfig } from './config/other'
+import { assumeutxo } from './assumeutxo'
+import { backupwallet } from './backupwallet'
+import { autoconfig } from './config/autoconfig'
 import { mempoolConfig } from './config/mempool'
+import { otherConfig } from './config/other'
 import { peerConfig } from './config/peers'
 import { rpcConfig } from './config/rpc'
 import { deleteCoinstatsIndex } from './deleteCoinstatsIndex'
@@ -9,21 +12,23 @@ import { deleteRpcAuth } from './deleteRpcAuth'
 import { deleteTxIndex } from './deleteTxIndex'
 import { generateRpcUser } from './generateRpcUser'
 import { generateRpcUserDependent } from './generateRpcUserDependent'
-import { reindexBlockchain } from './reindexBlockchain'
-import { reindexChainstate } from './reindexChainstate'
-import { runtimeInfo } from './runtimeInfo'
-import { assumeutxo } from './assumeutxo'
-import { prioritiseTransaction } from './prioritiseTransaction'
-import { signMessage } from './sign'
 import { getaddress } from './getaddress'
 import { getbalance } from './getbalance'
+import { prioritiseTransaction } from './prioritiseTransaction'
+import { reindexBlockchain } from './reindexBlockchain'
+import { reindexChainstate } from './reindexChainstate'
+import { removewallet } from './removewallet'
+import { restorewallet } from './restorewallet'
+import { runtimeInfo } from './runtimeInfo'
+import { setExternalAddress } from './config/setExternalAddress'
 import { sendAllCoin } from './sendallcoin'
 import { sendCoin } from './sendcoin'
-import { backupwallet } from './backupwallet'
-import { restorewallet } from './restorewallet'
-import { removewallet } from './removewallet'
+import { signMessage } from './sign'
 
 export const actions = sdk.Actions.of()
+  .addAction(mempoolConfig)
+  .addAction(peerConfig)
+  .addAction(rpcConfig)
   .addAction(assumeutxo)
   .addAction(deleteCoinstatsIndex)
   .addAction(deletePeers)
@@ -31,19 +36,18 @@ export const actions = sdk.Actions.of()
   .addAction(deleteTxIndex)
   .addAction(generateRpcUser)
   .addAction(generateRpcUserDependent)
-  .addAction(getaddress)
-  .addAction(getbalance)
-  .addAction(mempoolConfig)
   .addAction(otherConfig)
-  .addAction(peerConfig)
-  .addAction(prioritiseTransaction)
   .addAction(reindexBlockchain)
   .addAction(reindexChainstate)
-  .addAction(rpcConfig)
   .addAction(runtimeInfo)
-  .addAction(sendAllCoin)
+  .addAction(setExternalAddress)
+  .addAction(autoconfig)
+  .addAction(getbalance)
+  .addAction(getaddress)
   .addAction(sendCoin)
+  .addAction(sendAllCoin)
   .addAction(signMessage)
+  .addAction(prioritiseTransaction)
   .addAction(backupwallet)
   .addAction(restorewallet)
   .addAction(removewallet)

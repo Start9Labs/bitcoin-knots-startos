@@ -1,8 +1,6 @@
 import { sdk } from '../sdk'
-import { rootDir } from '../utils'
-import { mainMounts } from '../main'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
-import { rpcPort } from '../utils'
+import { bitcoinCliArgs, bitcoinMounts, rootDir } from '../utils'
 import { Value } from '@start9labs/start-sdk/base/lib/actions/input/builder'
 import * as fs from 'fs/promises'
 import { SubContainer } from '@start9labs/start-sdk'
@@ -73,7 +71,7 @@ export const assumeutxo = sdk.Action.withInput(
     assumeutxoSubc = await sdk.SubContainer.of(
       effects,
       { imageId: 'bitcoind' },
-      mainMounts.mountVolume({
+      bitcoinMounts.mountVolume({
         volumeId: 'main',
         subpath: 'tmp',
         mountpoint: '/tmp',
@@ -99,10 +97,7 @@ export const assumeutxo = sdk.Action.withInput(
 
         do {
           const getBlockHeaderRes = await assumeutxoSubc.exec([
-            'bitcoin-cli',
-            `-conf=${rootDir}/bitcoin.conf`,
-            `-rpccookiefile=${rootDir}/.cookie`,
-            `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+            ...bitcoinCliArgs({ prune: !!conf.prune }),
             'getblockheader',
             block_840_000,
           ])
@@ -115,10 +110,7 @@ export const assumeutxo = sdk.Action.withInput(
 
         await assumeutxoSubc.execFail(
           [
-            'bitcoin-cli',
-            `-conf=${rootDir}/bitcoin.conf`,
-            `-rpccookiefile=${rootDir}/.cookie`,
-            `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+            ...bitcoinCliArgs({ prune: !!conf.prune }),
             '-rpcclienttimeout=0',
             'loadtxoutset',
             `${rootDir}/${snapshotTempFile}`,

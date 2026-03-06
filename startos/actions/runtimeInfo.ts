@@ -1,10 +1,13 @@
 import { T } from '@start9labs/start-sdk'
-import { sdk } from '../sdk'
-import { GetBlockchainInfo, GetNetworkInfo, rootDir } from '../utils'
-import { mainMounts } from '../main'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
-import { rpcPort } from '../utils'
 import { i18n } from '../i18n'
+import { sdk } from '../sdk'
+import {
+  bitcoinCliArgs,
+  bitcoinMounts,
+  GetBlockchainInfo,
+  GetNetworkInfo,
+} from '../utils'
 
 export const runtimeInfo = sdk.Action.withoutInput(
   // id
@@ -30,14 +33,11 @@ export const runtimeInfo = sdk.Action.withoutInput(
     const networkInfoRes = await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'bitcoind' },
-      mainMounts,
+      bitcoinMounts,
       'getnetworkinfo',
       async (subc) => {
         return await subc.execFail([
-          'bitcoin-cli',
-          `-conf=${rootDir}/bitcoin.conf`,
-          `-rpccookiefile=${rootDir}/.cookie`,
-          `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+          ...bitcoinCliArgs({ prune: !!conf.prune }),
           'getnetworkinfo',
         ])
       },
@@ -52,14 +52,11 @@ export const runtimeInfo = sdk.Action.withoutInput(
     const blockchainInfoRes = await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'bitcoind' },
-      mainMounts,
+      bitcoinMounts,
       'getblockchaininfo',
       async (subc) => {
         return await subc.execFail([
-          'bitcoin-cli',
-          `-conf=${rootDir}/bitcoin.conf`,
-          `-rpccookiefile=${rootDir}/.cookie`,
-          `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+          ...bitcoinCliArgs({ prune: !!conf.prune }),
           'getblockchaininfo',
         ])
       },
@@ -70,10 +67,10 @@ export const runtimeInfo = sdk.Action.withoutInput(
     )
 
     // return
-    const value = [
-      getConnections(networkInfoRaw),
-      getBlockchainInfo(blockchainInfoRaw),
-    ]
+    const value = [getConnections(networkInfoRaw)]
+
+    value.push(getBlockchainInfo(blockchainInfoRaw))
+
     if (blockchainInfoRaw.softforks) {
       value.push(getSoftforkInfo(blockchainInfoRaw))
     }
@@ -133,7 +130,9 @@ function getBlockchainInfo(
           blockchainInfoRaw.blocks === 0
             ? `${(blockchainInfoRaw.verificationprogress * 100).toFixed(2)}%`
             : '100%',
-        description: i18n('The percentage of the blockchain that has been verified'),
+        description: i18n(
+          'The percentage of the blockchain that has been verified',
+        ),
         copyable: false,
         masked: false,
         qr: false,
@@ -266,7 +265,9 @@ function getBip9Info(bip9: Bip9): T.ActionResultMember {
         type: 'single',
         name: i18n('Since'),
         value: String(since),
-        description: i18n('height of the first block to which the status applies'),
+        description: i18n(
+          'height of the first block to which the status applies',
+        ),
         copyable: false,
         masked: false,
         qr: false,

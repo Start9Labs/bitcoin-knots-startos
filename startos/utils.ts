@@ -1,23 +1,39 @@
 import { sdk } from './sdk'
+
 export const rpcInterfaceId = 'rpc'
 export const peerInterfaceId = 'peer'
 export const zmqInterfaceId = 'zmq'
-export const zmqPort = 28332
-export const peerPort = 18333
+
+export const zmqPortBlock = 28332
+export const zmqPortTransaction = 28333
+
+export const peerPortExternal = 8333
+export const peerPortInternal = 58333
+
 export const rpcPort = 8332
+export const rpcPortPruned = 58332
+
+export const rpcbind = `0.0.0.0:${rpcPort}`
+export const rpcbindPruned = `127.0.0.1:${rpcPortPruned}`
+
+export const rpcallowip = '0.0.0.0/0'
+export const rpcallowipPruned = '127.0.0.1/32'
 
 export const rootDir = '/root/.bitcoin'
+export const rpccookiefile = '.cookie'
 
-export const unprunedRpcbind = '0.0.0.0:8332'
-export const unprunedRpcallowIp = '0.0.0.0/0'
+export const i2pSamPort = 7656
+export const i2pUiPort = 7070
+export const i2pControlPort = 7650
 
-export const prunedRpcbind = '127.0.0.1:18332'
-export const prunedRpcallowip = '127.0.0.1/32'
+export const i2PSamAddress = `127.0.0.1:${i2pSamPort}`
 
-export const embeddedI2PSamAddress = '127.0.0.1:7656'
-export function isEmbeddedI2P(i2psam: string | undefined) {
-  return i2psam === embeddedI2PSamAddress
-}
+export const bitcoinMounts = sdk.Mounts.of().mountVolume({
+  volumeId: 'main',
+  subpath: null,
+  mountpoint: rootDir,
+  readonly: false,
+})
 
 export type GetNetworkInfo = {
   connections: number
@@ -65,127 +81,24 @@ export type GetBlockchainInfo = {
   warnings: string
 }
 
-export const bitcoinConfDefaults = {
-  // RPC
-  rpcbind: unprunedRpcbind,
-  rpcallowip: unprunedRpcallowIp,
-  rpcauth: undefined,
-  rpcservertimeout: 30,
-  rpcthreads: 4,
-  rpcworkqueue: 16,
-  rpccookiefile: '.cookie',
-  whitebind: '0.0.0.0:8333',
-  bind: undefined,
-  deprecatedrpc: 'create_bdb',
+/** RPC connection args shared by bitcoin-cli and shell-script wrappers. */
+export function rpcArgs(opts: { prune: boolean }): string[] {
+  return [
+    `-conf=${rootDir}/bitcoin.conf`,
+    `-rpccookiefile=${rootDir}/.cookie`,
+    `-rpcport=${opts.prune ? rpcPortPruned : rpcPort}`,
+  ]
+}
 
-  // Mempool
-  persistmempool: true,
-  maxmempool: 300,
-  mempoolexpiry: 336,
-  mempoolfullrbf: true,
-  permitbaremultisig: false,
-  datacarrier: true,
-  datacarriersize: 83,
-  rejectparasites: true,
-  rejecttokens: false,
-  minrelaytxfee: 0.00001,
-  bytespersigop: 20,
-  bytespersigopstrict: 20,
-  limitancestorcount: 25,
-  limitancestorsize: 101,
-  limitdescendantcount: 25,
-  limitdescendantsize: 101,
-  permitbarepubkey: false,
-  maxscriptsize: 1_650,
-  datacarriercost: 1,
-  acceptnonstddatacarrier: false,
-  dustrelayfee: 0.00003,
-  permitephemeral: undefined,
-  permitbareanchor: true,
-  permitbaredatacarrier: false,
-  maxtxlegacysigops: 2500,
-  acceptunknownwitness: true,
-  minrelaycoinblocks: undefined,
-  minrelaymaturity: undefined,
-  mempoolreplacement: 'fee,-optin',
-  mempooltruc: 'accept',
+/** Full bitcoin-cli command prefix for actions running in temp subcontainers. */
+export function bitcoinCliArgs(opts: { prune: boolean }): string[] {
+  return ['bitcoin-cli', ...rpcArgs(opts)]
+}
 
-  // Peers
-  listen: true,
-  onlynet: undefined,
-  externalip: undefined,
-  v2transport: true,
-  connect: undefined,
-  addnode: undefined,
-  maxconnections: 125,
-  i2psam: undefined,
-  i2pacceptincoming: true,
-
-  // Wallet
-  disablewallet: false,
-  avoidpartialspends: false,
-  discardfee: 0.0001,
-
-  // Other
-  blockmaxsize: 3_985_000,
-  blockmaxweight: 3_985_000,
-  blockreconstructionextratxn: 32768,
-  blockreconstructionextratxnsize: 10,
-  blocknotify: undefined,
-  prune: 0,
-  zmqpubrawblock: 'tcp://0.0.0.0:28332',
-  zmqpubhashblock: 'tcp://0.0.0.0:28332',
-  zmqpubrawtx: 'tcp://0.0.0.0:28333',
-  zmqpubhashtx: 'tcp://0.0.0.0:28333',
-  zmqpubsequence: 'tcp://0.0.0.0:28333',
-  natpmp: false,
-  maxuploadtarget: 0,
-
-  coinstatsindex: false,
-  txindex: false,
-  dbcache: 450,
-
-  peerbloomfilters: false,
-  blockfilterindex: 'basic',
-  peerblockfilters: false,
-} as const
-
-export function getExteralAddresses() {
-  return sdk.Value.dynamicSelect(async ({ effects }) => {
-    const peerInterface = await sdk.serviceInterface
-      .getOwn(effects, peerInterfaceId)
-      .const()
-
-    const urls = peerInterface?.addressInfo?.public.format() || []
-
-    const nonOnionUrl = urls.find((u: string) => !u.includes('onion'))
-    if (nonOnionUrl && !nonOnionUrl.endsWith(':8333')) {
-      urls.push(nonOnionUrl.replace(/:.*/, ':8333'))
-    }
-
-    if (urls.length === 0) {
-      return {
-        name: 'External Address',
-        description:
-          "Address at which your node can be reached by peers. Select 'none' if you do not want your node to be reached by peers.",
-        values: { none: 'none' },
-        default: 'none',
-      }
-    }
-
-    const urlsWithNone = urls.reduce(
-      (obj: Record<string, string>, url: string) => ({ ...obj, [url]: url }),
-      {} as Record<string, string>,
-    )
-
-    urlsWithNone['none'] = 'none'
-
-    return {
-      name: 'External Address',
-      description:
-        "Address at which your node can be reached by peers. Select 'none' if you do not want your node to be reached by peers.",
-      values: urlsWithNone,
-      default: urls.find((u: string) => u.endsWith('.onion')) || '',
-    }
-  })
+export const zmqBundle = {
+  zmqpubrawblock: `tcp://0.0.0.0:${zmqPortBlock}`,
+  zmqpubhashblock: `tcp://0.0.0.0:${zmqPortBlock}`,
+  zmqpubrawtx: `tcp://0.0.0.0:${zmqPortTransaction}`,
+  zmqpubhashtx: `tcp://0.0.0.0:${zmqPortTransaction}`,
+  zmqpubsequence: `tcp://0.0.0.0:${zmqPortTransaction}`,
 }

@@ -1,7 +1,6 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir } from '../utils'
-import { rpcPort } from '../utils'
+import { rootDir, rpcArgs } from '../utils'
 import { i18n } from '../i18n'
 
 export const restorewallet = sdk.Action.withoutInput(
@@ -39,9 +38,7 @@ export const restorewallet = sdk.Action.withoutInput(
 	  async (subc) => {
 		return await subc.execFail([
 		  `${mountpoint}/restorewallet.sh`,
-		  `-conf=${rootDir}/bitcoin.conf`,
-		  `-rpccookiefile=${rootDir}/.cookie`,
-		  `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+		  ...rpcArgs({ prune: !!conf.prune }),
 		  `${rootDir}/coin.dat`,
 		])
 	  },

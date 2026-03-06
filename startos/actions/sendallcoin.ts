@@ -1,34 +1,31 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir } from '../utils'
-import { rpcPort } from '../utils'
-import { mainMounts } from '../main'
+import { rootDir, rpcArgs } from '../utils'
 import { i18n } from '../i18n'
+
 const { InputSpec, Value } = sdk
 
-export const inputSpec = InputSpec.of({
-  address: Value.dynamicText(async ({ effects }) => {
-    return {
-      name: 'Address',
-      description: 'The Bitcoin address you want to send the funds.',
-      required: true,
-      default: null,
-      patterns: [
-        {
-          regex: '^[a-zA-Z0-9]+$',
-          description: 'Must be alphanumeric.',
-        },
-      ],
-    }
-  }),
-  fee: Value.dynamicText(async ({ effects }) => {
-    return {
-      name: 'Fee',
-      description: 'Fees in sat/vbytes you want to pay for the transaction.',
-      required: true,
-      default: null,
-    }
-  }),
+const inputSpec = InputSpec.of({
+  address: Value.dynamicText(async ({ effects }) => ({
+    name: i18n('Address'),
+    description: i18n('The Bitcoin address you want to send the funds.'),
+    required: true,
+    default: null,
+    patterns: [
+      {
+        regex: '^[a-zA-Z0-9]+$',
+        description: i18n('Must be alphanumeric.'),
+      },
+    ],
+  })),
+  fee: Value.dynamicText(async ({ effects }) => ({
+    name: i18n('Fee'),
+    description: i18n(
+      'Fees in sat/vbytes you want to pay for the transaction.',
+    ),
+    required: true,
+    default: null,
+  })),
 })
 
 export const sendAllCoin = sdk.Action.withInput(
@@ -38,11 +35,10 @@ export const sendAllCoin = sdk.Action.withInput(
   // metadata
   async ({ effects }) => ({
     name: i18n('Send All Coins'),
-    description:
-      i18n('Send all coins to a Bitcoin address.'),
+    description: i18n('Send all coins to a Bitcoin address.'),
     warning: null,
-    allowedStatuses: 'any',
-    group: 'Wallet',
+    allowedStatuses: 'only-running',
+    group: i18n('Wallet'),
     visibility: 'enabled',
   }),
 
@@ -50,41 +46,41 @@ export const sendAllCoin = sdk.Action.withInput(
   inputSpec,
 
   // optionally pre-fill form
-  async ({ effects }) => {},
+  async ({ effects }) => ({}),
 
   // execution function
   async ({ effects, input }) => {
     const { address, fee } = input
 
     const mountpoint = '/scripts'
-    
+
     const conf = (await bitcoinConfFile.read().const(effects))!
 
     const res = await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'bitcoind' },
-      sdk.Mounts.of().mountVolume ({
-      volumeId: 'main',
-      subpath: null, 
-      mountpoint: rootDir,  
-      readonly: false,
-      }).mountAssets({ subpath: null, mountpoint}),
-      'Sign Message',
+      sdk.Mounts.of()
+        .mountVolume({
+          volumeId: 'main',
+          subpath: null,
+          mountpoint: rootDir,
+          readonly: false,
+        })
+        .mountAssets({ subpath: null, mountpoint }),
+      'sendallcoin',
       async (subc) => {
         return await subc.execFail([
           `${mountpoint}/sendallcoin.sh`,
-          `-conf=${rootDir}/bitcoin.conf`,
-          `-rpccookiefile=${rootDir}/.cookie`,
-          `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+          ...rpcArgs({ prune: !!conf.prune }),
           `${address}`,
           `${fee}`,
         ])
       },
     )
-    
+
     return {
       version: '1',
-      title: 'Sucess',
+      title: i18n('Success'),
       message: `TXID: ${res.stdout}`,
       result: null,
     }
