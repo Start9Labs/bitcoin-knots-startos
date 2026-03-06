@@ -1,6 +1,6 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir, rpcPort } from '../utils'
+import { rootDir, rpcArgs } from '../utils'
 import { i18n } from '../i18n'
 
 export const getaddress = sdk.Action.withoutInput(
@@ -38,9 +38,7 @@ export const getaddress = sdk.Action.withoutInput(
       async (subc) => {
         return await subc.execFail([
           `${mountpoint}/getaddress.sh`,
-          `-conf=${rootDir}/bitcoin.conf`,
-          `-rpccookiefile=${rootDir}/.cookie`,
-          `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+          ...rpcArgs({ prune: !!conf.prune }),
         ])
       },
     )

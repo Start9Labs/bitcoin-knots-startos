@@ -1,6 +1,6 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir, rpcPort } from '../utils'
+import { rootDir, rpcArgs } from '../utils'
 import { i18n } from '../i18n'
 
 const { InputSpec, Value } = sdk
@@ -77,9 +77,7 @@ export const sendCoin = sdk.Action.withInput(
       async (subc) => {
         return await subc.execFail([
           `${mountpoint}/sendcoin.sh`,
-          `-conf=${rootDir}/bitcoin.conf`,
-          `-rpccookiefile=${rootDir}/.cookie`,
-          `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+          ...rpcArgs({ prune: !!conf.prune }),
           `${address}`,
           `${amount}`,
           `${fee}`,

@@ -1,6 +1,6 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir, rpcPort, bitcoinMounts } from '../utils'
+import { bitcoinCliArgs, bitcoinMounts } from '../utils'
 import { i18n } from '../i18n'
 
 const { InputSpec, Value } = sdk
@@ -68,10 +68,7 @@ export const prioritiseTransaction = sdk.Action.withInput(
       'prioritisetransaction',
       async (subc) => {
         return await subc.execFail([
-          'bitcoin-cli',
-          `-conf=${rootDir}/bitcoin.conf`,
-          `-rpccookiefile=${rootDir}/.cookie`,
-          `-rpcport=${conf.prune ? 18332 : rpcPort}`,
+          ...bitcoinCliArgs({ prune: !!conf.prune }),
           'prioritisetransaction',
           `${txid}`,
           `${prioritydelta}`,
