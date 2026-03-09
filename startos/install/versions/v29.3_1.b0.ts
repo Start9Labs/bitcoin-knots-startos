@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
-import { v28_3_0_b0 } from 'bitcoin-core-startos/startos/install/versions/v28.3_0.b0'
-import { v29_3_0_b0 } from 'bitcoin-core-startos/startos/install/versions/v29.3_0.b0'
-import { v30_2_2_b0 } from 'bitcoin-core-startos/startos/install/versions/v30.2_2.b0'
+import { v28_3_4_b0} from 'bitcoin-core-startos/startos/install/versions/v28.3_4.b0'
+import { v29_3_4_b0 } from 'bitcoin-core-startos/startos/install/versions/v29.3_4.b0'
+import { v30_2_4_b0 } from 'bitcoin-core-startos/startos/install/versions/v30.2_4.b0'
 import { bitcoinConfFile } from '../../fileModels/bitcoin.conf'
 /**
  * Reset all mempool settings to undefined so the new flavor's upstream
@@ -56,7 +56,7 @@ export const v29_3_1_b0 = VersionInfo.of({
     up: async () => {},
     down: IMPOSSIBLE,
     other: {
-      [v28_3_0_b0.options.version]: {
+      [v28_3_4_b0.options.version]: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -66,7 +66,7 @@ export const v29_3_1_b0 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      [v29_3_0_b0.options.version]: {
+      [v29_3_4_b0.options.version]: {
         // Core → Knots: reset mempool so Knots upstream defaults apply
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -76,7 +76,7 @@ export const v29_3_1_b0 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      [v30_2_2_b0.options.version]: {
+      [v30_2_4_b0.options.version]: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -88,4 +88,4 @@ export const v29_3_1_b0 = VersionInfo.of({
       },
     },
   },
-}).satisfies(v29_3_0_b0.options.version)
+}).satisfies(v29_3_4_b0.options.version)
