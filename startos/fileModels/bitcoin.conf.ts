@@ -257,7 +257,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     required: false,
     default: null,
     min: 0,
-    max: 10_000,
+    max: 83,
     integer: true,
     units: i18n('bytes'),
     placeholder: '83',

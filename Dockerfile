@@ -41,7 +41,8 @@ RUN apk --no-cache add \
         bash \
         curl \
         pkgconf \
-        capnproto-dev
+        capnproto-dev \
+        git
 
 ADD ./bitcoin /bitcoin
 

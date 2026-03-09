@@ -9,15 +9,14 @@ import {
 
 export const manifest = setupManifest({
   id: 'bitcoind',
-  title: 'Bitcoin Knots',
+  title: 'Bitcoin Knots plus BIP-110',
   license: 'MIT',
   donationUrl: null,
-  packageRepo: 'https://github.com/Retropex/knots-startos/tree/next',
-  upstreamRepo: 'https://github.com/bitcoinknots/bitcoin',
-  marketingUrl: 'https://bitcoinknots.org/',
+  packageRepo: 'https://github.com/dathonohm/knots-startos/tree/bip110-startos0.4.0',
+  upstreamRepo: 'https://github.com/dathonohm/bitcoin',
+  marketingUrl: 'https://bip110.org/',
   docsUrls: [
     'https://docs.start9.com/bitcoin-guides/',
-    'https://bitcoinknots.org/#about',
   ],
   description: { short, long },
   volumes: ['main', 'i2pd'],

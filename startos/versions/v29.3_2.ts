@@ -2,6 +2,7 @@ import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 import { v_28_3_5 } from 'bitcoin-core-startos/startos/versions/v28.3.5'
 import { v_29_3_5 } from 'bitcoin-core-startos/startos/versions/v29.3.5'
 import { v_30_2_5 } from 'bitcoin-core-startos/startos/versions/v30.2.5'
+import { v29_3_2 as knots } from 'bitcoind-knots/startos/versions/v29.3_2'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 /**
  * Reset all mempool settings to undefined so the new flavor's upstream
@@ -44,7 +45,7 @@ const mempoolReset = {
 }
 
 export const v29_3_2 = VersionInfo.of({
-  version: '#knots:29.3:2',
+  version: '#knotsrdts:29.3:2',
   releaseNotes: {
     en_US: 'Multiple bug fixes',
   },
@@ -82,6 +83,14 @@ export const v29_3_2 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
+      [knots.options.version]: {
+        up: async ({ effects }) => {
+          await bitcoinConfFile.merge(effects, mempoolReset)
+        },
+        down: async ({ effects }) => {
+          await bitcoinConfFile.merge(effects, mempoolReset)
+        },
+      }
     },
   },
 }).satisfies(v_29_3_5.options.version)
