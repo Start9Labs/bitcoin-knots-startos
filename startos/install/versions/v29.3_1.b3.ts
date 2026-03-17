@@ -43,14 +43,14 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_1_b1 = VersionInfo.of({
-  version: '#knots:29.3:1-beta.1',
+export const v29_3_1_b3 = VersionInfo.of({
+  version: '#knots:29.3:1-beta.3',
   releaseNotes: {
-    en_US: 'Add new wallet actions',
-    es_ES: 'Añadir nuevas acciones de cartera',
-    de_DE: 'Neue Wallet-Aktionen hinzufügen',
-    pl_PL: 'Dodaj nowe akcje portfela',
-    fr_FR: 'Ajout de nouvelles actions pour le portefeuille',
+    en_US: 'Update to the latest SDK',
+    es_ES: 'Actualizar al SDK más reciente',
+    de_DE: 'Aktualisieren Sie auf das neueste SDK.',
+    pl_PL: 'Aktualizacja do najnowszego zestawu SDK',
+    fr_FR: 'Met à jour le SDK vers sa dernière version.',
   },
   migrations: {
     up: async () => {},
