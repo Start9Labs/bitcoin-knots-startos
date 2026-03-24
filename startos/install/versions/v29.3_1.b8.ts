@@ -43,8 +43,8 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_1_b7 = VersionInfo.of({
-  version: '#knots:29.3:1-beta.7',
+export const v29_3_1_b8 = VersionInfo.of({
+  version: '#knots:29.3:1-beta.8',
   releaseNotes: {
     en_US: 'Multiple bug fixes',
   },

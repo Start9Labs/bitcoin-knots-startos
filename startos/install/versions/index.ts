@@ -1,4 +1,4 @@
-export { v29_3_1_b7 as current } from './v29.3_1.b7'
+export { v29_3_1_b8 as current } from './v29.3_1.b8'
 
 import { v_28_3_5_b4 as core28_3 } from 'bitcoin-core-startos/startos/install/versions/v28.3.5.b4'
 import { v_29_3_5_b4 as core29_3 } from 'bitcoin-core-startos/startos/install/versions/v29.3.5.b4'
