@@ -20,7 +20,6 @@ import { reindexChainstate } from './reindexChainstate'
 import { removewallet } from './removewallet'
 import { restorewallet } from './restorewallet'
 import { runtimeInfo } from './runtimeInfo'
-import { setExternalAddress } from './config/setExternalAddress'
 import { sendAllCoin } from './sendallcoin'
 import { sendCoin } from './sendcoin'
 import { signMessage } from './sign'
@@ -40,7 +39,6 @@ export const actions = sdk.Actions.of()
   .addAction(reindexBlockchain)
   .addAction(reindexChainstate)
   .addAction(runtimeInfo)
-  .addAction(setExternalAddress)
   .addAction(autoconfig)
   .addAction(getbalance)
   .addAction(getaddress)

@@ -345,9 +345,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
         }
         return {
           result: 'success',
-          message: externalip?.includes('.onion')
+          message: externalip?.some((ip) => ip?.includes('.onion'))
             ? i18n('Inbound and outbound connections')
-            : i18n('Outbound connections only'),
+            : i18n('Outbound only. Add an onion address to enable inbound.'),
         }
       },
     },
@@ -369,9 +369,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
         return {
           result: 'success',
           message:
-            externalip && !externalip.includes('.onion')
+            externalip?.some((ip) => ip && !ip.includes('.onion'))
               ? i18n('Inbound and outbound connections')
-              : i18n('Outbound connections only'),
+              : i18n('Outbound only. Publish an IP address to enable inbound.'),
         }
       },
     },

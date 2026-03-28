@@ -3,6 +3,7 @@ import * as diskusage from 'diskusage'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import {
+  i2PSamAddress,
   peerPortExternal,
   peerPortInternal,
   rpcallowip,
@@ -117,13 +118,13 @@ export const shape = z
       .union([onlyNetOption, z.array(onlyNetOption)])
       .optional()
       .catch(undefined),
-    externalip: iniString,
+    externalip: iniStringArray,
     whitelist: iniStringArray,
     v2transport: iniBoolean,
     connect: iniStringArray,
     addnode: iniStringArray,
     maxconnections: iniNumber,
-    i2psam: iniString,
+    i2psam: z.literal(i2PSamAddress).optional().catch(undefined),
     i2pacceptincoming: iniBoolean,
 
     // Wallet
@@ -1099,6 +1100,7 @@ function formToFile(
     deprecatedrpc: 'create_bdb',
     rpcauth: raw?.rpcauth?.filter((a) => !!a) as string[] | undefined,
     whitelist: raw?.whitelist?.filter((a) => !!a) as string[] | undefined,
+    externalip: raw?.externalip?.filter((a) => !!a) as string[] | undefined,
 
     // RPC (prune-derived)
     rpcbind: prune ? rpcbindPruned : rpcbind,

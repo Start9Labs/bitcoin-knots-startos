@@ -262,12 +262,6 @@ export default {
     1739: 'Otras configuraciones',
     1740: 'Editar más valores en bitcoin.conf',
 
-    // actions/setExternalAddress.ts
-    1855: 'Establecer dirección externa',
-    1856: 'Establecer la dirección donde su nodo puede ser contactado por pares',
-    1857: 'Dirección externa',
-    1858: 'Seleccione la dirección donde su nodo puede ser contactado por pares.',
-
     // Common
     1800: 'Configuración',
 
@@ -413,6 +407,8 @@ export default {
     2906: 'Excluido por onlynet',
     2908: 'Tor no está en ejecución',
     2909: 'Tor no está instalado',
+    2910: 'Solo saliente. Agregue una dirección onion para habilitar entrante.',
+    2911: 'Solo saliente. Publique una dirección IP para habilitar entrante.',
   } satisfies LangDict,
   de_DE: {
     // main.ts
@@ -675,12 +671,6 @@ export default {
     1739: 'Weitere Einstellungen',
     1740: 'Weitere Werte in bitcoin.conf bearbeiten',
 
-    // actions/setExternalAddress.ts
-    1855: 'Externe Adresse festlegen',
-    1856: 'Legen Sie die Adresse fest, unter der Ihr Knoten von Peers erreicht werden kann',
-    1857: 'Externe Adresse',
-    1858: 'Wählen Sie die Adresse, unter der Ihr Knoten von Peers erreicht werden kann.',
-
     // Common
     1800: 'Konfiguration',
 
@@ -826,6 +816,8 @@ export default {
     2906: 'Durch onlynet ausgeschlossen',
     2908: 'Tor läuft nicht',
     2909: 'Tor ist nicht installiert',
+    2910: 'Nur ausgehend. Fügen Sie eine Onion-Adresse hinzu, um eingehende Verbindungen zu ermöglichen.',
+    2911: 'Nur ausgehend. Veröffentlichen Sie eine IP-Adresse, um eingehende Verbindungen zu ermöglichen.',
   } satisfies LangDict,
   pl_PL: {
     // main.ts
@@ -1088,12 +1080,6 @@ export default {
     1739: 'Inne ustawienia',
     1740: 'Edytuj więcej wartości w bitcoin.conf',
 
-    // actions/setExternalAddress.ts
-    1855: 'Ustaw adres zewnętrzny',
-    1856: 'Ustaw adres, pod którym Twój węzeł może być osiągalny przez peerów',
-    1857: 'Adres zewnętrzny',
-    1858: 'Wybierz adres, pod którym Twój węzeł może być osiągalny przez peerów.',
-
     // Common
     1800: 'Konfiguracja',
 
@@ -1239,6 +1225,8 @@ export default {
     2906: 'Wykluczone przez onlynet',
     2908: 'Tor nie jest uruchomiony',
     2909: 'Tor nie jest zainstalowany',
+    2910: 'Tylko wychodzące. Dodaj adres onion, aby włączyć przychodzące.',
+    2911: 'Tylko wychodzące. Opublikuj adres IP, aby włączyć przychodzące.',
   } satisfies LangDict,
   fr_FR: {
     // main.ts
@@ -1501,12 +1489,6 @@ export default {
     1739: 'Autres paramètres',
     1740: 'Modifier plus de valeurs dans bitcoin.conf',
 
-    // actions/setExternalAddress.ts
-    1855: "Définir l'adresse externe",
-    1856: "Définir l'adresse à laquelle votre nœud peut être contacté par les pairs",
-    1857: 'Adresse externe',
-    1858: "Sélectionnez l'adresse à laquelle votre nœud peut être contacté par les pairs.",
-
     // Common
     1800: 'Configuration',
 
@@ -1652,5 +1634,7 @@ export default {
     2906: 'Exclu par onlynet',
     2908: "Tor n'est pas en cours d'exécution",
     2909: "Tor n'est pas installé",
+    2910: 'Sortant uniquement. Ajoutez une adresse onion pour activer les connexions entrantes.',
+    2911: 'Sortant uniquement. Publiez une adresse IP pour activer les connexions entrantes.',
   } satisfies LangDict,
 }

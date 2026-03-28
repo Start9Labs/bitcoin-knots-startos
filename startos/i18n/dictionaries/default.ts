@@ -347,11 +347,6 @@ const dict = {
   // Common
   Configuration: 1800,
 
-  // actions/setExternalAddress.ts
-  'Set External Address': 1855,
-  'Set the address at which your node can be reached by peers': 1856,
-  'External Address': 1857,
-  'Select the address at which your node can be reached by peers.': 1858,
 
   // actions/wallet - getbalance.ts
   'Get Balance': 1900,
@@ -425,6 +420,8 @@ const dict = {
   'Excluded by onlynet': 2906,
   'Tor is not running': 2908,
   'Tor is not installed': 2909,
+  'Outbound only. Add an onion address to enable inbound.': 2910,
+  'Outbound only. Publish an IP address to enable inbound.': 2911,
 } as const
 
 /**
