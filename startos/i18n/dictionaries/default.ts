@@ -422,6 +422,8 @@ const dict = {
   'Tor is not installed': 2909,
   'Outbound only. Add an onion address to enable inbound.': 2910,
   'Outbound only. Publish an IP address to enable inbound.': 2911,
+  'Blocks Only': 2912,
+  'Reduce bandwidth by not relaying transactions. Blocks will still be downloaded and validated normally. Disables the mempool, wallet transaction broadcasting, and fee estimation.': 2913,
 } as const
 
 /**

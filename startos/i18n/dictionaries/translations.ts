@@ -409,6 +409,8 @@ export default {
     2909: 'Tor no está instalado',
     2910: 'Solo saliente. Agregue una dirección onion para habilitar entrante.',
     2911: 'Solo saliente. Publique una dirección IP para habilitar entrante.',
+    2912: 'Solo bloques',
+    2913: 'Reducir el ancho de banda al no retransmitir transacciones. Los bloques se seguirán descargando y validando normalmente. Desactiva el mempool, la transmisión de transacciones de la billetera y la estimación de comisiones.',
   } satisfies LangDict,
   de_DE: {
     // main.ts
@@ -818,6 +820,8 @@ export default {
     2909: 'Tor ist nicht installiert',
     2910: 'Nur ausgehend. Fügen Sie eine Onion-Adresse hinzu, um eingehende Verbindungen zu ermöglichen.',
     2911: 'Nur ausgehend. Veröffentlichen Sie eine IP-Adresse, um eingehende Verbindungen zu ermöglichen.',
+    2912: 'Nur Blöcke',
+    2913: 'Bandbreite reduzieren, indem keine Transaktionen weitergeleitet werden. Blöcke werden weiterhin normal heruntergeladen und validiert. Deaktiviert den Mempool, die Wallet-Transaktionsübertragung und die Gebührenschätzung.',
   } satisfies LangDict,
   pl_PL: {
     // main.ts
@@ -1227,6 +1231,8 @@ export default {
     2909: 'Tor nie jest zainstalowany',
     2910: 'Tylko wychodzące. Dodaj adres onion, aby włączyć przychodzące.',
     2911: 'Tylko wychodzące. Opublikuj adres IP, aby włączyć przychodzące.',
+    2912: 'Tylko bloki',
+    2913: 'Zmniejsz zużycie pasma, nie przekazując transakcji. Bloki będą nadal pobierane i walidowane normalnie. Wyłącza mempool, transmisję transakcji portfela i szacowanie opłat.',
   } satisfies LangDict,
   fr_FR: {
     // main.ts
@@ -1636,5 +1642,7 @@ export default {
     2909: "Tor n'est pas installé",
     2910: 'Sortant uniquement. Ajoutez une adresse onion pour activer les connexions entrantes.',
     2911: 'Sortant uniquement. Publiez une adresse IP pour activer les connexions entrantes.',
+    2912: 'Blocs uniquement',
+    2913: "Réduire la bande passante en ne relayant pas les transactions. Les blocs seront toujours téléchargés et validés normalement. Désactive le mempool, la diffusion des transactions du portefeuille et l'estimation des frais.",
   } satisfies LangDict,
 }

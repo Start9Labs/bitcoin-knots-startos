@@ -65,7 +65,7 @@ StartOS-specific files on the `main` volume:
 
 | File         | Purpose                                                                       |
 | ------------ | ----------------------------------------------------------------------------- |
-| `store.json` | Persistent StartOS state (reindex flags, sync status, IPC toggle) |
+| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking) |
 
 Blockchain data directories (`blocks/`, `chainstate/`, `indexes/`) reside on the `main` volume alongside the standard `bitcoin.conf` and `.cookie` files.
 
@@ -101,10 +101,10 @@ Bitcoin Knots is configured through **StartOS actions** that write to `bitcoin.c
 
 | Action               | Settings                                                                                                                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Mempool Settings** | persistmempool, maxmempool, mempoolexpiry, permitbaremultisig, OP_RETURN (datacarrier/datacarriersize)                                                                                           |
-| **Peer Settings**    | onlynet (ipv4/ipv6/onion/i2p/cjdns), BIP324 v2transport, I2P SAM proxy (enabled/disabled), connect/addnode peers                                                                                |
+| **Mempool Settings** | persistmempool, maxmempool, mempoolexpiry, mempoolfullrbf, permitbaremultisig, OP_RETURN (datacarrier/datacarriersize, permitbaredatacarrier, datacarriercost, acceptnonstddatacarrier), rejectparasites, rejecttokens, mempoolreplacement, mempooltruc, permitbareanchor, permitephemeral, minrelaytxfee, bytespersigop, bytespersigopstrict, maxtxlegacysigops, limitancestorcount/size, limitdescendantcount/size, permitbarepubkey, maxscriptsize, dustrelayfee, acceptunknownwitness, minrelaycoinblocks, minrelaymaturity, blocksonly |
+| **Peer Settings**    | onlynet (ipv4/ipv6/onion/i2p/cjdns), BIP324 v2transport, I2P SAM proxy (enabled/disabled), connect/addnode peers, maxconnections                                                                |
 | **RPC Settings**     | rpcservertimeout, rpcthreads, rpcworkqueue                                                                                                                                                       |
-| **Other Settings**   | ZMQ, txindex, blocknotify, coinstatsindex, wallet settings (enable/avoidpartialspends/discardfee), pruning, dbcache, dbbatchsize, BIP158/BIP157 block filters, bloom filters |
+| **Other Settings**   | softwareexpiry, ZMQ, txindex, blocknotify, block template construction (blockmaxsize/blockmaxweight), block reconstruction, coinstatsindex, wallet settings (enable/avoidpartialspends/discardfee), pruning, dbcache, dbbatchsize, BIP158/BIP157 block filters, bloom filters, natpmp, maxuploadtarget |
 
 Settings **not** managed by StartOS (hardcoded):
 
@@ -318,7 +318,7 @@ actions:
   - rpc-config
   - other-config
   - generate-rpcuser
-  - generate-rpcuser-dependent
+  - generate-rpc-dependent
   - delete-rpcauth
   - reindex-blockchain
   - reindex-chainstate
@@ -371,5 +371,4 @@ knots_specific_settings:
   - blockmaxweight
   - blockreconstructionextratxn
   - blockreconstructionextratxnsize
-  - maxconnections
 ```

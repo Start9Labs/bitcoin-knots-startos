@@ -48,6 +48,7 @@ export const mempoolConfig = sdk.Action.withInput(
     acceptunknownwitness: true,
     minrelaycoinblocks: true,
     minrelaymaturity: true,
+    blocksonly: true,
   }),
 
   // optionally pre-fill the input form
