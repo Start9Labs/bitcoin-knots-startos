@@ -90,7 +90,15 @@ export const v29_3_2 = VersionInfo.of({
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
-      }
+      },
+      ['#knots:29.3.0:0']: {
+        up: async ({ effects }) => {
+          await bitcoinConfFile.merge(effects, mempoolReset)
+        },
+        down: async ({ effects }) => {
+          await bitcoinConfFile.merge(effects, mempoolReset)
+        },
+      },
     },
   },
 }).satisfies(v_29_3_5.options.version)
