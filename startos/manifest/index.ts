@@ -24,7 +24,12 @@ export const manifest = setupManifest({
   images: {
     bitcoind: {
       source: {
-        dockerBuild: {},
+        dockerBuild: {
+          buildArgs: {
+            VERSION: "29.3.knots20260210",
+            PATH_VERSION: "29.x"
+          }
+        },
       },
       arch: ['x86_64', 'aarch64', 'riscv64'],
     },

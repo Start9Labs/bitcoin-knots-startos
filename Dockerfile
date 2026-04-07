@@ -1,81 +1,48 @@
-# Sysroot stage - runs on target platform to get native libraries
-FROM alpine:3.22 AS sysroot
+# Build stage
+FROM debian:stable-slim AS builder
 
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add \
-        musl-dev \
-        gcc \
-        g++ \
-        libstdc++-dev \
-        clang \
-        compiler-rt \
-        boost-dev \
-        libevent-dev \
-        sqlite-dev \
-        libsodium-dev \
-        zeromq-dev \
-        capnproto-dev \
-        linux-headers && \
-    # Remove ZeroMQ cmake config - it has hardcoded absolute paths that break cross-compilation
-    rm -rf /usr/lib/cmake/ZeroMQ
+ARG VERSION
+ARG PATH_VERSION
+ARG TARGETPLATFORM
 
-# Build stage for Bitcoin Knots - runs on build platform
-FROM --platform=$BUILDPLATFORM alpine:3.22 AS builder
+WORKDIR /build
 
-ARG TARGETARCH
+RUN apt-get update && apt-get install -y wget pgp curl jq
 
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add \
-        cmake \
-        automake \
-        build-base \
-        clang \
-        lld \
-        llvm \
-        chrpath \
-        file \
-        gnupg \
-        libressl \
-        libtool \
-        linux-headers \
-        bash \
-        curl \
-        pkgconf \
-        capnproto-dev
+RUN case "${TARGETPLATFORM}" in \
+      "linux/amd64")   echo "bitcoin-${VERSION}-x86_64-linux-gnu.tar.gz"    > /tarball-name ;; \
+      "linux/arm64")   echo "bitcoin-${VERSION}-aarch64-linux-gnu.tar.gz"   > /tarball-name ;; \
+      "linux/riscv64") echo "bitcoin-${VERSION}-riscv64-linux-gnu.tar.gz"   > /tarball-name ;; \
+      *) echo "Unsupported platform: ${TARGETPLATFORM}" && exit 1 ;; \
+    esac
 
-ADD ./bitcoin /bitcoin
+RUN wget https://bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/$(cat /tarball-name) \
+         https://bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/SHA256SUMS.asc \
+         https://bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/SHA256SUMS
 
-COPY build.sh /build.sh
+# GPG key pinning for regular signers
+RUN gpg --receive-keys 95636F3538D9262765AB29BEE952E584CA8C0F45 DAED928C727D3E613EC46635F5073C4F4882FFFC 1A3E761F19D2CC7785C5502EA291A2C45D0C504A
+# Fetch additional keys for the SHA256SUMS.asc file
+RUN curl -s "https://api.github.com/repos/bitcoinknots/guix.sigs/contents/builder-keys" | jq -r '.[].download_url' | while read url; do curl -s "$url" | gpg --import; done
+RUN gpg --verify SHA256SUMS.asc SHA256SUMS
 
-ENV BITCOIN_PREFIX=/opt/bitcoin
+RUN cp SHA256SUMS /sha256sums
+RUN grep $(cat /tarball-name) /sha256sums | sha256sum -c
 
-WORKDIR /bitcoin
+RUN tar -zxvf $(cat /tarball-name) --strip-components=1
 
-RUN --mount=type=bind,from=sysroot,source=/,target=/sysroot,ro \
-    /build.sh
-
-# Runtime stage
-FROM alpine:3.22
-
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add \
-  bash \
-  curl \
-  libevent \
-  libsodium \
-  libzmq \
-  sqlite-dev \
-  tini \
-  yq \
-  jq \
-RUN rm -rf /var/cache/apk/*
-
-ARG ARCH
+# Final image
+FROM debian:stable-slim
 
 ENV BITCOIN_DATA=/root/.bitcoin
 ENV BITCOIN_PREFIX=/opt/bitcoin
 ENV PATH=${BITCOIN_PREFIX}/bin:$PATH
 
-COPY --from=builder /opt /opt
+RUN apt-get update && apt-get install -y curl e2fsprogs jq yq 
+
+COPY --from=builder /build/bin/bitcoind ${BITCOIN_PREFIX}/bin/
+COPY --from=builder /build/bin/bitcoin-cli ${BITCOIN_PREFIX}/bin/
+
+ARG ARCH
 
 EXPOSE 8332 8333
