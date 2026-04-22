@@ -101,11 +101,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
   )
 
   const rpcCookiePath = `${rootDir}/${rpccookiefile}`
-  const getBlockchainInfo = [
-    ...bitcoinCliArgs({ prune: !!bitcoinConf.prune }),
-    '-rpcconnect=127.0.0.1',
-    'getblockchaininfo',
-  ]
 
   // remove cookie file
   await rm(`${bitcoindSub.rootfs}${rpcCookiePath}`, {
@@ -178,23 +173,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
             }
           }
 
-          const res = await bitcoindSub.exec([
-            ...bitcoinCliArgs({ prune: !!bitcoinConf.prune }),
-            '-rpcconnect=127.0.0.1',
-            'uptime',
-          ])
-
-          if (res.exitCode === 0) {
-            return {
-              message: i18n('The Bitcoin RPC Interface is ready'),
-              result: 'success',
-            }
-          }
-
-          return {
-            message: i18n('The Bitcoin RPC Interface is not ready'),
-            result: 'starting',
-          }
+          return sdk.healthCheck.checkPortListening(
+            effects,
+            bitcoinConf.prune ? rpcPortPruned : rpcPort,
+            {
+              successMessage: i18n('The Bitcoin RPC Interface is ready'),
+              errorMessage: i18n('The Bitcoin RPC Interface is not ready'),
+            },
+          )
         },
       },
       requires: ['nocow'],
@@ -202,8 +188,16 @@ export const main = sdk.setupMain(async ({ effects }) => {
     .addHealthCheck('sync-progress', {
       ready: {
         display: i18n('Blockchain Sync'),
+        trigger: sdk.trigger.statusTrigger(30_000, {
+          starting: 5_000,
+          failure: 5_000,
+        }),
         fn: async () => {
-          const res = await bitcoindSub.exec(getBlockchainInfo)
+          const res = await bitcoindSub.exec([
+            ...bitcoinCliArgs({ prune: !!bitcoinConf.prune }),
+            '-rpcconnect=127.0.0.1',
+            'getblockchaininfo',
+          ])
 
           if (
             res.exitCode === 0 &&
@@ -246,7 +240,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
               snapshotInUse: false,
             })
             // Reduce dbcache and dbbatchsize after initial sync to free RAM
-            await bitcoinConfFile.merge(effects, { dbcache: undefined, dbbatchsize: undefined })
+            await bitcoinConfFile.merge(effects, {
+              dbcache: undefined,
+              dbbatchsize: undefined,
+            })
           }
 
           return null
@@ -368,10 +365,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
         }
         return {
           result: 'success',
-          message:
-            externalip?.some((ip) => ip && !ip.includes('.onion'))
-              ? i18n('Inbound and outbound connections')
-              : i18n('Outbound only. Publish an IP address to enable inbound.'),
+          message: externalip?.some((ip) => ip && !ip.includes('.onion'))
+            ? i18n('Inbound and outbound connections')
+            : i18n('Outbound only. Publish an IP address to enable inbound.'),
         }
       },
     },
