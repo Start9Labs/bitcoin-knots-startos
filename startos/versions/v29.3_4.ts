@@ -1,7 +1,4 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
-import { v_28_3_5 } from 'bitcoin-core-startos/startos/versions/v28.3.5'
-import { v_29_3_5 } from 'bitcoin-core-startos/startos/versions/v29.3.5'
-import { v_30_2_5 } from 'bitcoin-core-startos/startos/versions/v30.2.5'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 /**
  * Reset all mempool settings to undefined so the new flavor's upstream
@@ -43,16 +40,17 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_3 = VersionInfo.of({
-  version: '#knots:29.3:3',
+export const v29_3_4 = VersionInfo.of({
+  version: '#knots:29.3:4',
   releaseNotes: {
-    en_US: 'Multiple bug fixes',
+    en_US:
+      "Config toggles now have a third 'use upstream default' state, and each field's footnote shows the actual Knots default. Faster RPC readiness probe (port-listening check instead of a bitcoin-cli subprocess). Removed obsolete 0.3.5-era install migration. SDK and dependency updates.",
   },
   migrations: {
     up: async ({ effects }) => {},
     down: IMPOSSIBLE,
     other: {
-      [v_28_3_5.options.version]: {
+      ['28.3:7']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -62,7 +60,7 @@ export const v29_3_3 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      [v_29_3_5.options.version]: {
+      ['29.3:7']: {
         // Core → Knots: reset mempool so Knots upstream defaults apply
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -72,7 +70,17 @@ export const v29_3_3 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      [v_30_2_5.options.version]: {
+      ['30.2:7']: {
+        // Core → Knots
+        up: async ({ effects }) => {
+          await bitcoinConfFile.merge(effects, mempoolReset)
+        },
+        // Knots → Core
+        down: async ({ effects }) => {
+          await bitcoinConfFile.merge(effects, mempoolReset)
+        },
+      },
+      ['31.0:7']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -84,4 +92,4 @@ export const v29_3_3 = VersionInfo.of({
       },
     },
   },
-}).satisfies(v_29_3_5.options.version)
+}).satisfies('29.3:7')

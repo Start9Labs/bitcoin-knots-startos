@@ -1,5 +1,6 @@
 import { FileHelper, T, utils, z } from '@start9labs/start-sdk'
 import * as diskusage from 'diskusage'
+import { totalmem } from 'os'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import {
@@ -204,14 +205,21 @@ export const archivalMin = 900_000_000_000
 // Override defaults (diverging from upstream Bitcoin Knots)
 export const defaultDatacarriercost = 1
 
+export const defaultDbcache = () =>
+  Math.min(Math.floor((totalmem() * 0.25) / (1024 * 1024)), 5_120)
+
+export const defaultDbbatchsize = () =>
+  Math.min(Math.max(Math.floor(totalmem() / 256), 16_777_216), 33_554_432)
+
 export const fullConfigSpec = sdk.InputSpec.of({
   raw: Value.hidden(shape),
 
   // === MEMPOOL ===
-  persistmempool: Value.toggle({
+  persistmempool: Value.triState({
     name: i18n('Persist Mempool'),
     description: i18n('Save the mempool on shutdown and load on restart.'),
-    default: true,
+    default: null,
+    footnote: `${i18n('Default')}: true`,
   }),
   maxmempool: Value.number({
     name: i18n('Max Mempool Size'),
@@ -221,7 +229,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 1,
     integer: true,
     units: 'MiB',
-    placeholder: '300',
+    footnote: `${i18n('Default')}: 300 MiB`,
   }),
   mempoolexpiry: Value.number({
     name: i18n('Mempool Expiration'),
@@ -233,24 +241,27 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 1,
     integer: true,
     units: i18n('Hr'),
-    placeholder: '336',
+    footnote: `${i18n('Default')}: 336 Hr`,
   }),
-  mempoolfullrbf: Value.toggle({
+  mempoolfullrbf: Value.triState({
     name: i18n('Enable Full RBF'),
     description: i18n(
       'Policy for your node to use for relaying and mining unconfirmed transactions.',
     ),
-    default: true,
+    default: null,
+    footnote: `${i18n('Default')}: true`,
   }),
-  permitbaremultisig: Value.toggle({
+  permitbaremultisig: Value.triState({
     name: i18n('Permit Bare Multisig'),
     description: i18n('Relay non-P2SH multisig transactions'),
-    default: false,
+    default: null,
+    footnote: `${i18n('Default')}: false`,
   }),
-  datacarrier: Value.toggle({
+  datacarrier: Value.triState({
     name: i18n('Relay OP_RETURN Transactions'),
     description: i18n('Relay transactions with OP_RETURN outputs'),
-    default: true,
+    default: null,
+    footnote: `${i18n('Default')}: true`,
   }),
   datacarriersize: Value.number({
     name: i18n('Max OP_RETURN Size'),
@@ -261,22 +272,25 @@ export const fullConfigSpec = sdk.InputSpec.of({
     max: 10_000,
     integer: true,
     units: i18n('bytes'),
-    placeholder: '83',
+    footnote: `${i18n('Default')}: 83 bytes`,
   }),
-  permitbaredatacarrier: Value.toggle({
+  permitbaredatacarrier: Value.triState({
     name: i18n('Permit Bare Datacarrier'),
     description: i18n('Relay transactions that only have data carrier outputs'),
-    default: false,
+    default: null,
+    footnote: `${i18n('Default')}: false`,
   }),
-  rejectparasites: Value.toggle({
+  rejectparasites: Value.triState({
     name: i18n('Reject Parasites'),
     description: i18n('Reject parasite transactions'),
-    default: true,
+    default: null,
+    footnote: `${i18n('Default')}: true`,
   }),
-  rejecttokens: Value.toggle({
+  rejecttokens: Value.triState({
     name: i18n('Reject Tokens'),
     description: i18n('Reject tokens transactions (runes)'),
-    default: false,
+    default: null,
+    footnote: `${i18n('Default')}: false`,
   }),
   mempoolreplacement: Value.select({
     name: i18n('Mempool Replacement'),
@@ -302,12 +316,13 @@ export const fullConfigSpec = sdk.InputSpec.of({
       enforce: i18n('Enforce'),
     },
   } as const),
-  permitbareanchor: Value.toggle({
+  permitbareanchor: Value.triState({
     name: i18n('Permit Bare Anchor'),
     description: i18n(
       'Relay transactions that only have ephemeral anchor outputs',
     ),
-    default: true,
+    default: null,
+    footnote: `${i18n('Default')}: true`,
   }),
   permitephemeral: Value.text({
     name: i18n('Permit Ephemeral'),
@@ -327,7 +342,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: false,
     units: 'BTC/kvB',
-    placeholder: '0.00001',
+    footnote: `${i18n('Default')}: 0.00001 BTC/kvB`,
   }),
   bytespersigop: Value.number({
     name: i18n('Bytes Per Sigop'),
@@ -340,7 +355,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     max: 20,
     integer: true,
     units: i18n('bytes'),
-    placeholder: '20',
+    footnote: `${i18n('Default')}: 20 bytes`,
   }),
   bytespersigopstrict: Value.number({
     name: i18n('Bytes Per Sigop Strict'),
@@ -352,7 +367,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: true,
     units: i18n('bytes'),
-    placeholder: '20',
+    footnote: `${i18n('Default')}: 20 bytes`,
   }),
   maxtxlegacysigops: Value.number({
     name: i18n('Max Legacy Sigops'),
@@ -363,7 +378,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     required: false,
     min: 0,
     integer: true,
-    placeholder: '2500',
+    footnote: `${i18n('Default')}: 2500`,
   }),
   limitancestorcount: Value.number({
     name: i18n('Max Ancestor Count'),
@@ -374,7 +389,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     required: false,
     min: 0,
     integer: true,
-    placeholder: '25',
+    footnote: `${i18n('Default')}: 25`,
   }),
   limitancestorsize: Value.number({
     name: i18n('Max Ancestor Size'),
@@ -386,7 +401,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: true,
     units: 'kB',
-    placeholder: '101',
+    footnote: `${i18n('Default')}: 101 kB`,
   }),
   limitdescendantcount: Value.number({
     name: i18n('Max Descendant Count'),
@@ -397,7 +412,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     required: false,
     min: 0,
     integer: true,
-    placeholder: '25',
+    footnote: `${i18n('Default')}: 25`,
   }),
   limitdescendantsize: Value.number({
     name: i18n('Max Descendant Size'),
@@ -409,12 +424,13 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: true,
     units: 'kB',
-    placeholder: '101',
+    footnote: `${i18n('Default')}: 101 kB`,
   }),
-  permitbarepubkey: Value.toggle({
+  permitbarepubkey: Value.triState({
     name: i18n('Permit Bare Pubkey'),
     description: i18n('Relay legacy pubkey outputs'),
-    default: false,
+    default: null,
+    footnote: `${i18n('Default')}: false`,
   }),
   maxscriptsize: Value.number({
     name: i18n('Max Script Size'),
@@ -424,7 +440,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: true,
     units: i18n('Bytes'),
-    placeholder: '1650',
+    footnote: `${i18n('Default')}: 1650 Bytes`,
   }),
   datacarriercost: Value.number({
     name: i18n('Datacarrier Cost'),
@@ -435,12 +451,13 @@ export const fullConfigSpec = sdk.InputSpec.of({
     required: true,
     min: 0,
     integer: true,
-    placeholder: '4',
+    footnote: `${i18n('Default')}: 4`,
   }),
-  acceptnonstddatacarrier: Value.toggle({
+  acceptnonstddatacarrier: Value.triState({
     name: i18n('Accept Non-Standard Datacarrier'),
     description: i18n('Relay and mine non-OP_RETURN datacarrier injection'),
-    default: false,
+    default: null,
+    footnote: `${i18n('Default')}: false`,
   }),
   dustrelayfee: Value.number({
     name: i18n('Dust Relay Fee'),
@@ -452,14 +469,15 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: false,
     units: 'BTC/kvB',
-    placeholder: '0.00003',
+    footnote: `${i18n('Default')}: 0.00003 BTC/kvB`,
   }),
-  acceptunknownwitness: Value.toggle({
+  acceptunknownwitness: Value.triState({
     name: i18n('Accept Unknown Witness'),
     description: i18n(
       'Relay transactions sending to unknown witness script versions',
     ),
-    default: true,
+    default: null,
+    footnote: `${i18n('Default')}: true`,
   }),
   minrelaycoinblocks: Value.number({
     name: i18n('Min Relay Coin Blocks'),
@@ -494,21 +512,23 @@ export const fullConfigSpec = sdk.InputSpec.of({
     integer: true,
     units: i18n('timestamp'),
   }),
-  zmqEnabled: Value.toggle({
+  zmqEnabled: Value.triState({
     name: i18n('ZeroMQ Enabled'),
     description: i18n(
       'The ZeroMQ interface is useful for some applications which might require data related to block and transaction events from Bitcoin Knots. For example, LND requires ZeroMQ be enabled for LND to get the latest block data',
     ),
     default: true,
+    footnote: `${i18n('Default')}: false`,
   }),
-  txindex: Value.dynamicToggle(async ({ effects }) => {
+  txindex: Value.dynamicTriState(async ({ effects }) => {
     const disk = await diskUsage()
     return {
       name: i18n('Transaction Index'),
-      default: disk.total >= archivalMin,
+      default: null,
       description: i18n(
         'By enabling Transaction Index (txindex) Bitcoin Knots will build a complete transaction index. This allows Bitcoin Knots to access any transaction with commands like `getrawtransaction`.',
       ),
+      footnote: `${i18n('Default')}: false`,
       disabled:
         disk.total < archivalMin ? i18n('Not enough disk space') : false,
     }
@@ -535,8 +555,8 @@ export const fullConfigSpec = sdk.InputSpec.of({
         min: 100_000,
         max: 3_985_000,
         integer: true,
-        placeholder: '100,000',
         units: i18n('Bytes'),
+        footnote: `${i18n('Default')}: 100,000 Bytes`,
       }),
       blockmaxweight: Value.number({
         name: i18n('Max Block Weight'),
@@ -546,8 +566,8 @@ export const fullConfigSpec = sdk.InputSpec.of({
         min: 100_000,
         max: 3_985_000,
         integer: true,
-        placeholder: '100,000',
         units: i18n('vBytes'),
+        footnote: `${i18n('Default')}: 100,000 vBytes`,
       }),
     }),
   ),
@@ -566,7 +586,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
         required: false,
         min: 0,
         integer: true,
-        placeholder: '32768',
+        footnote: `${i18n('Default')}: 32768`,
       }),
       blockreconstructionextratxnsize: Value.number({
         name: i18n('Block Reconstruction Extra TXN Size'),
@@ -578,31 +598,34 @@ export const fullConfigSpec = sdk.InputSpec.of({
         min: 0,
         integer: true,
         units: 'MB',
-        placeholder: '10',
+        footnote: `${i18n('Default')}: 10 MB`,
       }),
     }),
   ),
-  coinstatsindex: Value.toggle({
+  coinstatsindex: Value.triState({
     name: i18n('Coinstats Index'),
     description: i18n(
       'Enabling Coinstats Index reduces the time for the gettxoutsetinfo RPC to complete at the cost of using additional disk space',
     ),
-    default: false,
+    default: null,
+    footnote: `${i18n('Default')}: false`,
   }),
   wallet: Value.object(
     { name: i18n('Wallet'), description: i18n('Wallet Settings') },
     InputSpec.of({
-      enable: Value.toggle({
+      enable: Value.triState({
         name: i18n('Enable Wallet'),
         description: i18n('Load the wallet and enable wallet RPC calls.'),
-        default: true,
+        default: null,
+        footnote: `${i18n('Default')}: true`,
       }),
-      avoidpartialspends: Value.toggle({
+      avoidpartialspends: Value.triState({
         name: i18n('Avoid Partial Spends'),
         description: i18n(
           'Group outputs by address, selecting all or none, instead of selecting on a per-output basis. This improves privacy at the expense of higher transaction fees.',
         ),
-        default: false,
+        default: null,
+        footnote: `${i18n('Default')}: false`,
       }),
       discardfee: Value.number({
         name: i18n('Discard Change Tolerance'),
@@ -615,7 +638,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
         max: 0.01,
         integer: false,
         units: i18n('BTC/kB'),
-        placeholder: '0.0001',
+        footnote: `${i18n('Default')}: 0.0001 BTC/kB`,
       }),
     }),
   ),
@@ -652,7 +675,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: true,
     units: 'MiB',
-    placeholder: '450',
+    footnote: `${i18n('Default')}: 450 MiB`,
   }),
   dbbatchsize: Value.number({
     name: i18n('Database Batch'),
@@ -664,7 +687,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: true,
     units: i18n('Bytes'),
-    placeholder: '67108864',
+    footnote: `${i18n('Default')}: 67108864 Bytes`,
   }),
   blockfilters: Value.object(
     {
@@ -674,23 +697,25 @@ export const fullConfigSpec = sdk.InputSpec.of({
       ),
     },
     InputSpec.of({
-      blockfilterindex: Value.toggle({
+      blockfilterindex: Value.triState({
         name: i18n('Compute Compact Block Filters (BIP158)'),
         description: i18n(
           "Generate Compact Block Filters during initial sync (IBD) to enable 'getblockfilter' RPC. This is useful if dependent services need block filters to efficiently scan for addresses/transactions etc.",
         ),
         default: true,
+        footnote: `${i18n('Default')}: false`,
       }),
-      peerblockfilters: Value.toggle({
+      peerblockfilters: Value.triState({
         name: i18n('Serve Compact Block Filters to Peers (BIP157)'),
         description: i18n(
           "Serve Compact Block Filters as a peer service to other nodes on the network. This is useful if you wish to connect an SPV client to your node to make it efficient to scan transactions without having to download all block data.  'Compute Compact Block Filters (BIP158)' is required.",
         ),
-        default: false,
+        default: null,
+        footnote: `${i18n('Default')}: false`,
       }),
     }),
   ),
-  peerbloomfilters: Value.toggle({
+  peerbloomfilters: Value.triState({
     name: i18n('Serve Bloom Filters to Peers'),
     description: i18n(
       'Peers have the option of setting filters on each connection they make after the version handshake has completed. Bloom filters are for clients implementing SPV (Simplified Payment Verification) that want to check that block headers  connect together correctly, without needing to verify the full blockchain.  The client must trust that the transactions in the chain are in fact valid.  It is highly recommended AGAINST using for anything except Bisq integration.',
@@ -698,12 +723,14 @@ export const fullConfigSpec = sdk.InputSpec.of({
     warning: i18n(
       'This is ONLY for use with Bisq integration, please use Block Filters for all other applications.',
     ),
-    default: false,
+    default: null,
+    footnote: `${i18n('Default')}: false`,
   }),
-  natpmp: Value.toggle({
+  natpmp: Value.triState({
     name: i18n('NAT-PMP'),
     description: i18n('Use PCP or NAT-PMP to map the listening port.'),
     default: false,
+    footnote: `${i18n('Default')}: true`,
   }),
   maxuploadtarget: Value.number({
     name: i18n('Max Upload Target'),
@@ -715,7 +742,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     min: 0,
     integer: true,
     units: 'MiB',
-    placeholder: '0',
+    footnote: `${i18n('Default')}: 0 MiB`,
   }),
 
   // === PEERS ===
@@ -729,12 +756,13 @@ export const fullConfigSpec = sdk.InputSpec.of({
     ) as Record<ValidNets, string>,
     default: [],
   }),
-  v2transport: Value.toggle({
+  v2transport: Value.triState({
     name: i18n('Use V2 P2P Transport Protocol'),
     description: i18n(
       'Enable or disable the use of BIP324 V2 P2P transport protocol.',
     ),
-    default: true,
+    default: null,
+    footnote: `${i18n('Default')}: true`,
   }),
   connectpeer: Value.union({
     name: i18n('Connect Peer'),
@@ -805,14 +833,15 @@ export const fullConfigSpec = sdk.InputSpec.of({
     required: false,
     min: 0,
     integer: true,
-    placeholder: '125',
+    footnote: `${i18n('Default')}: 125`,
   }),
-  blocksonly: Value.toggle({
+  blocksonly: Value.triState({
     name: i18n('Blocks Only'),
     description: i18n(
       'Reduce bandwidth by not relaying transactions. Blocks will still be downloaded and validated normally. Disables the mempool, wallet transaction broadcasting, and fee estimation.',
     ),
-    default: false,
+    default: null,
+    footnote: `${i18n('Default')}: false`,
   }),
 
   // === RPC ===
@@ -827,7 +856,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     max: 300,
     integer: true,
     units: i18n('seconds'),
-    placeholder: '30',
+    footnote: `${i18n('Default')}: 30 seconds`,
   }),
   rpcthreads: Value.number({
     name: i18n('Threads'),
@@ -841,7 +870,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     step: null,
     integer: true,
     units: null,
-    placeholder: '16',
+    footnote: `${i18n('Default')}: 16`,
   }),
   rpcworkqueue: Value.number({
     name: i18n('Work Queue'),
@@ -855,7 +884,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
     step: null,
     integer: true,
     units: i18n('requests'),
-    placeholder: '64',
+    footnote: `${i18n('Default')}: 64 requests`,
   }),
 })
 
@@ -1118,19 +1147,19 @@ function formToFile(
     rpcallowip: prune ? rpcallowipPruned : rpcallowip,
 
     // Mempool - 1:1 pass-through
-    persistmempool,
+    persistmempool: persistmempool ?? undefined,
     maxmempool: maxmempool ?? undefined,
     mempoolexpiry: mempoolexpiry ?? undefined,
-    mempoolfullrbf,
-    permitbaremultisig,
-    datacarrier,
+    mempoolfullrbf: mempoolfullrbf ?? undefined,
+    permitbaremultisig: permitbaremultisig ?? undefined,
+    datacarrier: datacarrier ?? undefined,
     datacarriersize: datacarriersize ?? undefined,
-    permitbaredatacarrier,
-    rejectparasites,
-    rejecttokens,
+    permitbaredatacarrier: permitbaredatacarrier ?? undefined,
+    rejectparasites: rejectparasites ?? undefined,
+    rejecttokens: rejecttokens ?? undefined,
     mempoolreplacement,
     mempooltruc,
-    permitbareanchor,
+    permitbareanchor: permitbareanchor ?? undefined,
     permitephemeral: permitephemeral || undefined,
     minrelaytxfee: minrelaytxfee ?? undefined,
     bytespersigop: bytespersigop ?? undefined,
@@ -1140,41 +1169,48 @@ function formToFile(
     limitancestorsize: limitancestorsize ?? undefined,
     limitdescendantcount: limitdescendantcount ?? undefined,
     limitdescendantsize: limitdescendantsize ?? undefined,
-    permitbarepubkey,
+    permitbarepubkey: permitbarepubkey ?? undefined,
     maxscriptsize: maxscriptsize ?? undefined,
     datacarriercost,
-    acceptnonstddatacarrier,
+    acceptnonstddatacarrier: acceptnonstddatacarrier ?? undefined,
     dustrelayfee: dustrelayfee ?? undefined,
-    acceptunknownwitness,
+    acceptunknownwitness: acceptunknownwitness ?? undefined,
     minrelaycoinblocks: minrelaycoinblocks ?? undefined,
     minrelaymaturity: minrelaymaturity ?? undefined,
 
     // Wallet
-    disablewallet: !wallet?.enable,
-    avoidpartialspends: wallet?.avoidpartialspends,
+    disablewallet: wallet?.enable == null ? undefined : !wallet.enable,
+    avoidpartialspends: wallet?.avoidpartialspends ?? undefined,
     discardfee: wallet?.discardfee ?? undefined,
 
     // Other
     softwareexpiry,
-    txindex: prune ? false : txindex,
-    coinstatsindex,
-    peerbloomfilters,
-    peerblockfilters: blockfilters?.peerblockfilters,
-    blockfilterindex: blockfilters?.blockfilterindex ? 'basic' : false,
+    txindex: prune ? false : (txindex ?? undefined),
+    coinstatsindex: coinstatsindex ?? undefined,
+    peerbloomfilters: peerbloomfilters ?? undefined,
+    peerblockfilters: blockfilters?.peerblockfilters ?? undefined,
+    blockfilterindex:
+      blockfilters?.blockfilterindex == null
+        ? undefined
+        : blockfilters.blockfilterindex
+          ? 'basic'
+          : false,
     blocknotify: blocknotify || undefined,
     prune: prune ?? undefined,
     dbcache: dbcache ?? undefined,
     dbbatchsize: dbbatchsize ?? undefined,
     // ZMQ
-    ...(zmqEnabled
+    ...(zmqEnabled === true
       ? zmqBundle
-      : {
-          zmqpubrawblock: undefined,
-          zmqpubhashblock: undefined,
-          zmqpubrawtx: undefined,
-          zmqpubhashtx: undefined,
-          zmqpubsequence: undefined,
-        }),
+      : zmqEnabled === false
+        ? {
+            zmqpubrawblock: undefined,
+            zmqpubhashblock: undefined,
+            zmqpubrawtx: undefined,
+            zmqpubhashtx: undefined,
+            zmqpubsequence: undefined,
+          }
+        : {}),
 
     // Block Template & Reconstruction
     blockmaxsize: templateconstruction?.blockmaxsize ?? undefined,
@@ -1183,14 +1219,14 @@ function formToFile(
       blockreconstruction?.blockreconstructionextratxn ?? undefined,
     blockreconstructionextratxnsize:
       blockreconstruction?.blockreconstructionextratxnsize ?? undefined,
-    natpmp,
+    natpmp: natpmp ?? undefined,
     maxuploadtarget: maxuploadtarget ?? undefined,
 
     // Peers
-    v2transport,
+    v2transport: v2transport ?? undefined,
     onlynet: onlynet?.length ? input.onlynet?.filter((a) => !!a) : undefined,
     maxconnections: maxconnections ?? undefined,
-    blocksonly,
+    blocksonly: blocksonly ?? undefined,
     connect:
       connectpeer?.selection === 'connect'
         ? (connectpeer.value?.peers?.filter((a) => !!a) as string[] | undefined)
