@@ -296,24 +296,28 @@ export const fullConfigSpec = sdk.InputSpec.of({
     description: i18n(
       'Set to disabled to disable RBF entirely, "fee,optin" to honour RBF opt-out signal, or "fee,-optin" to always RBF aka full RBF',
     ),
-    default: 'fee,-optin',
+    default: 'default',
     values: {
+      default: i18n('Default'),
       '0': i18n('Disabled'),
       'fee,optin': 'fee,optin',
       'fee,-optin': 'fee,-optin',
     },
+    footnote: `${i18n('Default')}: fee,-optin`,
   } as const),
   mempooltruc: Value.select({
     name: i18n('Mempool TRUC'),
     description: i18n(
       'Behaviour for transactions requesting TRUC limits: "reject" the transactions entirely, "accept" them just like any other, or "enforce" to impose their requested restrictions',
     ),
-    default: 'accept',
+    default: 'default',
     values: {
+      default: i18n('Default'),
       reject: i18n('Reject'),
       accept: i18n('Accept'),
       enforce: i18n('Enforce'),
     },
+    footnote: `${i18n('Default')}: accept`,
   } as const),
   permitbareanchor: Value.triState({
     name: i18n('Permit Bare Anchor'),
@@ -965,8 +969,8 @@ function fileToForm(
     permitbaredatacarrier,
     rejectparasites,
     rejecttokens,
-    mempoolreplacement,
-    mempooltruc,
+    mempoolreplacement: mempoolreplacement ?? 'default',
+    mempooltruc: mempooltruc ?? 'default',
     permitbareanchor,
     permitephemeral,
     minrelaytxfee,
@@ -1144,8 +1148,9 @@ function formToFile(
     permitbaredatacarrier: permitbaredatacarrier ?? undefined,
     rejectparasites: rejectparasites ?? undefined,
     rejecttokens: rejecttokens ?? undefined,
-    mempoolreplacement,
-    mempooltruc,
+    mempoolreplacement:
+      mempoolreplacement === 'default' ? undefined : mempoolreplacement,
+    mempooltruc: mempooltruc === 'default' ? undefined : mempooltruc,
     permitbareanchor: permitbareanchor ?? undefined,
     permitephemeral: permitephemeral || undefined,
     minrelaytxfee: minrelaytxfee ?? undefined,
