@@ -40,17 +40,17 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_4 = VersionInfo.of({
-  version: '#knotsrdts:29.3:4',
+export const v29_3_5 = VersionInfo.of({
+  version: '#knotsrdts:29.3:5',
   releaseNotes: {
     en_US:
-      "Config toggles now have a third 'use upstream default' state, and each field's footnote shows the actual Knots default. Faster RPC readiness probe (port-listening check instead of a bitcoin-cli subprocess). Removed obsolete 0.3.5-era install migration. SDK and dependency updates.",
+      'Always persist the `prune` setting in bitcoin.conf. Existing archival nodes (where prune was absent) now explicitly record `prune=0`.',
   },
   migrations: {
     up: async ({ effects }) => {},
     down: IMPOSSIBLE,
     other: {
-      ['28.3:7']: {
+      ['28.3:8']: {
         // Core → Knots-RDTS
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -60,7 +60,7 @@ export const v29_3_4 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['29.3:7']: {
+      ['29.3:8']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
@@ -68,7 +68,7 @@ export const v29_3_4 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['30.2:7']: {
+      ['30.2:8']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
@@ -76,7 +76,7 @@ export const v29_3_4 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['31.0:7']: {
+      ['31.0:8']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
@@ -84,7 +84,7 @@ export const v29_3_4 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['#knots:29.3:4']: {
+      ['#knots:29.3:5']: {
         // Knots → Knots-RDTS
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -104,4 +104,4 @@ export const v29_3_4 = VersionInfo.of({
       },
     },
   },
-}).satisfies('29.3:7')
+}).satisfies('29.3:8')
