@@ -40,17 +40,17 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_5 = VersionInfo.of({
-  version: '#knotsrdts:29.3:5',
+export const v29_3_6 = VersionInfo.of({
+  version: '#knotsrdts:29.3:6',
   releaseNotes: {
     en_US:
-      'Always persist the `prune` setting in bitcoin.conf. Existing archival nodes (where prune was absent) now explicitly record `prune=0`.',
+      'Refresh cross-version migration metadata to track Bitcoin Core :9 revisions. No user-facing changes.',
   },
   migrations: {
     up: async ({ effects }) => {},
     down: IMPOSSIBLE,
     other: {
-      ['28.3:8']: {
+      ['28.3:9']: {
         // Core → Knots-RDTS
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -60,7 +60,7 @@ export const v29_3_5 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['29.3:8']: {
+      ['29.3:9']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
@@ -68,7 +68,7 @@ export const v29_3_5 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['30.2:8']: {
+      ['30.2:9']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
@@ -76,7 +76,7 @@ export const v29_3_5 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['31.0:8']: {
+      ['31.0:9']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
@@ -84,7 +84,7 @@ export const v29_3_5 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['#knots:29.3:5']: {
+      ['#knots:29.3:6']: {
         // Knots → Knots-RDTS
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -104,4 +104,4 @@ export const v29_3_5 = VersionInfo.of({
       },
     },
   },
-}).satisfies('29.3:8')
+}).satisfies('29.3:9')
