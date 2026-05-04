@@ -8,15 +8,19 @@ export const removewallet = sdk.Action.withoutInput(
   'remove-wallet',
 
   // metadata
-  async ({ effects }) => ({
-	name: i18n('Remove wallet'),
-	description:
-	  i18n('Remove the wallet in Bitcoin Knots'),
-	warning: i18n('⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.'),
-	allowedStatuses: 'any',
-	group: 'Wallet',
-	visibility: 'enabled',
-  }),
+  async ({ effects }) => {
+	const conf = (await bitcoinConfFile.read().const(effects))!
+	
+	return {
+		name: i18n('Remove wallet'),
+		description:
+		  i18n('Remove the wallet in Bitcoin Knots'),
+		warning: i18n('⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.'),
+		allowedStatuses: 'only-running',
+		group: 'Wallet',
+		visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
+	}
+  },
 
   // execution function
   async ({ effects }) => {
@@ -36,9 +40,16 @@ export const removewallet = sdk.Action.withoutInput(
 	  }).mountAssets({ subpath: null, mountpoint}),
 	  'Remove wallet',
 	  async (subc) => {
-		return await subc.execFail([
-		  `${mountpoint}/removewallet.sh`,
+		await subc.exec([
+		  'bitcoin-cli',
 		  ...rpcArgs({ prune: !!conf.prune }),
+		  'unloadwallet',
+		  'coin',
+		])
+		
+		return await subc.execFail([
+		  'rm',
+		  '-rf',
 		  `${rootDir}/coin`,
 		])
 	  },

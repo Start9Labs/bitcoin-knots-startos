@@ -319,6 +319,7 @@ const dict = {
 
   // Common
   Configuration: 1800,
+  'Wallet is disabled': 1801,
 
 
   // actions/wallet - getbalance.ts
