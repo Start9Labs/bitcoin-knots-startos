@@ -8,15 +8,19 @@ export const restorewallet = sdk.Action.withoutInput(
   'restore-wallet',
 
   // metadata
-  async ({ effects }) => ({
-	name: i18n('Restore wallet'),
-	description:
-	  i18n('Restore wallet from the backup'),
-	warning: null,
-	allowedStatuses: 'any',
-	group: 'Wallet',
-	visibility: 'enabled',
-  }),
+  async ({ effects }) => {
+	const conf = (await bitcoinConfFile.read().const(effects))!
+	
+	return {
+		name: i18n('Restore wallet'),
+		description:
+		  i18n('Restore wallet from the backup'),
+		warning: null,
+		allowedStatuses: 'only-running',
+		group: 'Wallet',
+		visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
+	}
+  },
 
   // execution function
   async ({ effects }) => {
@@ -25,7 +29,7 @@ export const restorewallet = sdk.Action.withoutInput(
 	
 	const conf = (await bitcoinConfFile.read().const(effects))!
 
-	const res = await sdk.SubContainer.withTemp(
+	await sdk.SubContainer.withTemp(
 	  effects,
 	  { imageId: 'bitcoind' },
 	  sdk.Mounts.of().mountVolume ({
@@ -37,8 +41,10 @@ export const restorewallet = sdk.Action.withoutInput(
 	  'Restore wallet',
 	  async (subc) => {
 		return await subc.execFail([
-		  `${mountpoint}/restorewallet.sh`,
+		  'bitcoin-cli',
 		  ...rpcArgs({ prune: !!conf.prune }),
+		  'restorewallet',
+		  'coin',
 		  `${rootDir}/coin.dat`,
 		])
 	  },
