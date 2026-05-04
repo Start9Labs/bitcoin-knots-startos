@@ -237,6 +237,7 @@ export default {
 
     // Common
     1800: 'Configuración',
+    1801: 'La billetera está desactivada.',
 
     // Knots peers additions
     1232: 'Disable I2P',
@@ -622,6 +623,7 @@ export default {
 
     // Common
     1800: 'Konfiguration',
+    1801: 'Wallet ist deaktiviert',
 
     // Knots peers additions
     1232: 'Disable I2P',
@@ -1007,6 +1009,7 @@ export default {
 
     // Common
     1800: 'Konfiguracja',
+    1801: 'Portfel jest wyłączony',
 
     // Knots peers additions
     1232: 'Disable I2P',
@@ -1392,6 +1395,7 @@ export default {
 
     // Common
     1800: 'Configuration',
+    1801: 'Le portefeuille est désactivé.',
 
     // Knots peers additions
     1232: 'Disable I2P',
