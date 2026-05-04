@@ -40,11 +40,14 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_6 = VersionInfo.of({
-  version: '#knots:29.3:6',
+export const v29_3_7 = VersionInfo.of({
+  version: '#knots:29.3:7',
   releaseNotes: {
-    en_US:
-      'Refresh cross-version migration metadata to track Bitcoin Core :9 revisions. No user-facing changes.',
+    en_US: 'Wallet actions are now more reliable, use GUIX binaries for bitcoind and bitcoin-cli, use Debian based images',
+    es_ES: 'Las acciones del monedero son ahora más fiables, use binarios GUIX para bitcoind y bitcoin-cli y utilice imágenes basadas en Debian',
+    de_DE: 'Wallet-Aktionen sind jetzt zuverlässiger, verwenden Sie GUIX-Binärdateien für bitcoind und bitcoin-cli sowie Debian-basierte Images',
+    pl_PL: 'Operacje portfela są teraz bardziej niezawodne, używaj binariów GUIX dla bitcoind i bitcoin-cli oraz obrazów opartych na Debianie',
+    fr_FR: 'Les actions du portefeuille sont désormais plus fiables, utilise les binaires GUIX pour bitcoind et bitcoin-cli, utilise des images basées sur Debian',
   },
   migrations: {
     up: async ({ effects }) => {},
