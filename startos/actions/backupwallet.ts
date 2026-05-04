@@ -8,15 +8,19 @@ export const backupwallet = sdk.Action.withoutInput(
   'backup-wallet',
 
   // metadata
-  async ({ effects }) => ({
-	name: i18n('Backup wallet'),
-	description:
-	  i18n('Backup wallet in a file for startOS system backup'),
-	warning: null,
-	allowedStatuses: 'any',
-	group: 'Wallet',
-	visibility: 'enabled',
-  }),
+  async ({ effects }) => {
+	const conf = (await bitcoinConfFile.read().const(effects))!
+	
+	return {
+		name: i18n('Backup wallet'),
+		description:
+		  i18n('Backup wallet in a file for startOS system backup'),
+		warning: null,
+		allowedStatuses: 'only-running',
+		group: 'Wallet',
+		visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
+	}
+  },
 
   // execution function
   async ({ effects }) => {
@@ -36,9 +40,24 @@ export const backupwallet = sdk.Action.withoutInput(
 	  }).mountAssets({ subpath: null, mountpoint}),
 	  'Backup wallet',
 	  async (subc) => {
+        await subc.exec([
+          'bitcoin-cli',
+          ...rpcArgs({ prune: !!conf.prune }),
+          'createwallet',
+          'coin',
+        ])
+        
+        await subc.exec([
+          'bitcoin-cli',
+          ...rpcArgs({ prune: !!conf.prune }),
+          'loadwallet',
+          'coin',
+        ])
+		
 		return await subc.execFail([
-		  `${mountpoint}/backupwallet.sh`,
+		  'bitcoin-cli',
 		  ...rpcArgs({ prune: !!conf.prune }),
+		  'backupwallet',
 		  `${rootDir}/coin.dat`,
 		])
 	  },

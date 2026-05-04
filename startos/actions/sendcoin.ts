@@ -39,14 +39,19 @@ export const sendCoin = sdk.Action.withInput(
   'send-coin',
 
   // metadata
-  async ({ effects }) => ({
-    name: i18n('Send Coins'),
-    description: i18n('Send coins to a Bitcoin address.'),
-    warning: null,
-    allowedStatuses: 'only-running',
-    group: i18n('Wallet'),
-    visibility: 'enabled',
-  }),
+  async ({ effects }) => {
+    const conf = (await bitcoinConfFile.read().const(effects))!
+    
+    return {
+      name: i18n('Send Coins'),
+      description: i18n('Send coins to a Bitcoin address.'),
+      warning: null,
+      allowedStatuses: 'only-running',
+      group: i18n('Wallet'),
+      visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
+    }
+    
+  },
 
   // input spec
   inputSpec,
@@ -75,12 +80,28 @@ export const sendCoin = sdk.Action.withInput(
         .mountAssets({ subpath: null, mountpoint }),
       'sendcoin',
       async (subc) => {
-        return await subc.execFail([
-          `${mountpoint}/sendcoin.sh`,
+        await subc.exec([
+          'bitcoin-cli',
           ...rpcArgs({ prune: !!conf.prune }),
-          `${address}`,
-          `${amount}`,
-          `${fee}`,
+          'createwallet',
+          'coin',
+        ])
+        
+        await subc.exec([
+          'bitcoin-cli',
+          ...rpcArgs({ prune: !!conf.prune }),
+          'loadwallet',
+          'coin',
+        ])
+        
+        return await subc.execFail([
+          'bitcoin-cli',
+          ...rpcArgs({ prune: !!conf.prune }),
+          '-named',
+          'sendtoaddress',
+          `address=${address}`,
+          `amount=${amount}`,
+          `fee_rate=${fee}`,
         ])
       },
     )

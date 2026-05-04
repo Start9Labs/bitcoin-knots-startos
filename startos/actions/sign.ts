@@ -33,14 +33,18 @@ export const signMessage = sdk.Action.withInput(
   'sign-message',
 
   // metadata
-  async ({ effects }) => ({
-    name: i18n('Sign Message'),
-    description: i18n('Sign a message with one of your Bitcoin addresses.'),
-    warning: null,
-    allowedStatuses: 'only-running',
-    group: i18n('Wallet'),
-    visibility: 'enabled',
-  }),
+  async ({ effects }) => {
+    const conf = (await bitcoinConfFile.read().const(effects))!
+    
+    return {
+      name: i18n('Sign Message'),
+      description: i18n('Sign a message with one of your Bitcoin addresses.'),
+      warning: null,
+      allowedStatuses: 'only-running',
+      group: i18n('Wallet'),
+      visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
+    }
+  },
 
   // input spec
   inputSpec,
@@ -69,9 +73,24 @@ export const signMessage = sdk.Action.withInput(
         .mountAssets({ subpath: null, mountpoint }),
       'sign-message',
       async (subc) => {
-        return await subc.execFail([
-          `${mountpoint}/sign.sh`,
+        await subc.exec([
+          'bitcoin-cli',
           ...rpcArgs({ prune: !!conf.prune }),
+          'createwallet',
+          'coin',
+        ])
+        
+        await subc.exec([
+          'bitcoin-cli',
+          ...rpcArgs({ prune: !!conf.prune }),
+          'loadwallet',
+          'coin',
+        ])
+        
+        return await subc.execFail([
+          'bitcoin-cli',
+          ...rpcArgs({ prune: !!conf.prune }),
+          'signmessage',
           `${address}`,
           `${message}`,
         ])
