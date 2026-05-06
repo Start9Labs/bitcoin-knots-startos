@@ -58,8 +58,14 @@ export const v29_3_7 = VersionInfo.of({
   migrations: {
     up: async ({ effects }) => {},
     down: IMPOSSIBLE,
+    // TEMPORARY: pinned `:N` keys instead of caret regex (`^28`/`^29`/...).
+    // Range-keyed `migrations.other` interacted with two StartOS bugs that
+    // could leave the on-disk data version stuck as a flavored range and
+    // dead-end a subsequent flavor switch. Both fixes ship in beta.9; once
+    // a node is on beta.9 or newer we can revert to range keys (one entry
+    // per Core major instead of one per Core `:N`).
     other: {
-      ['^28']: {
+      ['28.3:10']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -69,7 +75,7 @@ export const v29_3_7 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['^29']: {
+      ['29.3:10']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -79,7 +85,7 @@ export const v29_3_7 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['^30']: {
+      ['30.2:10']: {
         // Core → Knots: drop coinstatsindex written by Core 30+ at the new
         // path; Knots 29 only reads the old indexes/coinstats/ path, which
         // Core 30 deliberately preserved for downgrade.
@@ -95,10 +101,10 @@ export const v29_3_7 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['^31']: {
+      ['31.0:10']: {
         // Core → Knots: drop fee_estimates.dat (v31 bumped
         // CURRENT_FEES_FILE_VERSION 149900 → 309900; ≤30 hard-fails) and
-        // coinstatsindex (same reason as ^30).
+        // coinstatsindex (same reason as 30.x).
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
           await rm('/media/startos/volumes/main/fee_estimates.dat', {
