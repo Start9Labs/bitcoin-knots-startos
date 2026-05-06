@@ -20,8 +20,9 @@ RUN wget https://bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/$(cat /tarbal
          https://bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/SHA256SUMS.asc \
          https://bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/SHA256SUMS
 
-# GPG key pinning for regular signers
-RUN gpg --receive-keys 95636F3538D9262765AB29BEE952E584CA8C0F45 DAED928C727D3E613EC46635F5073C4F4882FFFC 1A3E761F19D2CC7785C5502EA291A2C45D0C504A
+# GPG key pinning for regular signers (embedded so the build doesn't depend on a keyserver)
+COPY assets/release-keys/ /tmp/release-keys/
+RUN gpg --import /tmp/release-keys/*.asc && rm -rf /tmp/release-keys
 # Fetch additional keys for the SHA256SUMS.asc file
 RUN curl -s "https://api.github.com/repos/bitcoinknots/guix.sigs/contents/builder-keys" | jq -r '.[].download_url' | while read url; do curl -s "$url" | gpg --import; done
 RUN gpg --verify SHA256SUMS.asc SHA256SUMS
