@@ -15,9 +15,6 @@ export const manifest = setupManifest({
   packageRepo: 'https://github.com/dathonohm/knots-startos/tree/bip110-startos0.4.0',
   upstreamRepo: 'https://github.com/dathonohm/bitcoin',
   marketingUrl: 'https://bip110.org/',
-  docsUrls: [
-    'https://docs.start9.com/bitcoin-guides/',
-  ],
   description: { short, long },
   volumes: ['main', 'i2pd'],
   images: {
