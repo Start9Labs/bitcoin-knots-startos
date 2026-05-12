@@ -12,7 +12,7 @@ export const manifest = setupManifest({
   title: 'Bitcoin Knots plus BIP-110',
   license: 'MIT',
   donationUrl: null,
-  packageRepo: 'https://github.com/dathonohm/knots-startos/tree/bip110-startos0.4.0',
+  packageRepo: 'https://github.com/Start9Labs/bitcoin-knots-startos/tree/bip-110/next',
   upstreamRepo: 'https://github.com/dathonohm/bitcoin',
   marketingUrl: 'https://bip110.org/',
   docsUrls: [
