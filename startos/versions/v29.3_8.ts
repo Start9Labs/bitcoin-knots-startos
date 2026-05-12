@@ -41,19 +41,29 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_7 = VersionInfo.of({
-  version: '#knots:29.3:7',
+export const v29_3_8 = VersionInfo.of({
+  version: '#knots:29.3:8',
   releaseNotes: {
-    en_US:
-      'Wallet actions are now more reliable, use GUIX binaries for bitcoind and bitcoin-cli, use Debian based images. Downgrades from Bitcoin Core v30 or v31 are now handled correctly.',
-    es_ES:
-      'Las acciones del monedero son ahora más fiables, use binarios GUIX para bitcoind y bitcoin-cli y utilice imágenes basadas en Debian. Ahora se gestionan correctamente las degradaciones desde Bitcoin Core v30 o v31.',
-    de_DE:
-      'Wallet-Aktionen sind jetzt zuverlässiger, verwenden Sie GUIX-Binärdateien für bitcoind und bitcoin-cli sowie Debian-basierte Images. Downgrades von Bitcoin Core v30 oder v31 werden jetzt korrekt verarbeitet.',
-    pl_PL:
-      'Operacje portfela są teraz bardziej niezawodne, używaj binariów GUIX dla bitcoind i bitcoin-cli oraz obrazów opartych na Debianie. Obniżenie wersji z Bitcoin Core v30 lub v31 jest teraz poprawnie obsługiwane.',
-    fr_FR:
-      'Les actions du portefeuille sont désormais plus fiables, utilise les binaires GUIX pour bitcoind et bitcoin-cli, utilise des images basées sur Debian. Les rétrogradations depuis Bitcoin Core v30 ou v31 sont désormais gérées correctement.',
+    en_US: `**Bumps**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0`,
+    es_ES: `**Actualizaciones**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0`,
+    de_DE: `**Aktualisierungen**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0`,
+    pl_PL: `**Aktualizacje**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0`,
+    fr_FR: `**Mises à jour**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0`,
   },
   migrations: {
     up: async ({ effects }) => {},
