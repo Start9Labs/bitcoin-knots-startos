@@ -6,6 +6,7 @@ import { setInterfaces } from '../interfaces'
 import { sdk } from '../sdk'
 import { seedFiles } from './seedFiles'
 import { watchHosts } from './watchHosts'
+import { taskConsensusRules } from './consensusrules'
 
 export const init = sdk.setupInit(
   restoreInit,
@@ -15,6 +16,7 @@ export const init = sdk.setupInit(
   setDependencies,
   actions,
   watchHosts,
+  taskConsensusRules,
 )
 
 export const uninit = sdk.setupUninit(versionGraph)

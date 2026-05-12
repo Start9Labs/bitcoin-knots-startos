@@ -1,4 +1,5 @@
 import { sdk } from '../sdk'
+import { activateRDTS } from './activatedrdts'
 import { assumeutxo } from './assumeutxo'
 import { backupwallet } from './backupwallet'
 import { autoconfig } from './config/autoconfig'
@@ -25,6 +26,7 @@ import { sendCoin } from './sendcoin'
 import { signMessage } from './sign'
 
 export const actions = sdk.Actions.of()
+  .addAction(activateRDTS)
   .addAction(mempoolConfig)
   .addAction(peerConfig)
   .addAction(rpcConfig)
