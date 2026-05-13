@@ -386,6 +386,12 @@ export default {
     2912: 'Solo bloques',
     2913: 'Reducir el ancho de banda al no retransmitir transacciones. Los bloques se seguirán descargando y validando normalmente. Desactiva el mempool, la transmisión de transacciones de la billetera y la estimación de comisiones.',
     2914: 'Por defecto',
+    3000: 'Confirmo',
+    3001: 'Entiendo que esta versión de Bitcoin Knots eventualmente aplicará las reglas de consenso BIP-110 (Reduced Data Temporary Softfork, o "RDTS").',
+    3002: 'Activar RDTS',
+    3004: 'Esta versión de Bitcoin Knots eventualmente aplicará la actualización de red BIP-110 (RDTS), que corrige vulnerabilidades críticas en el diseño de la red existente. Para evitar aplicar esta actualización por accidente, esta versión solicita una confirmación explícita. Importante: dado que esta actualización ya cuenta con amplio apoyo de la comunidad, omitir esta actualización o volver a una versión anterior del software no la rechaza. Ejecutar software desactualizado después de cualquier actualización de red solo deja su nodo vulnerable a mostrar transacciones falsas o fraudulentas. Para rechazar efectivamente esta actualización, debe ejecutar un software alternativo diseñado para separarse de la red actualizada. Más información en https://bitcoinknots.org/learn/2026-rdts. Si no está listo para adoptar la actualización RDTS, alternativamente puede cambiar a la variante "Bitcoin Knots (no-rdts)" disponible en el marketplace de start9, que es la misma versión de Bitcoin Knots sin soporte para RDTS.',
+    3005: 'Por favor, confirme',
+    3007: 'Esta versión de Bitcoin Knots eventualmente aplicará las reglas de consenso BIP-110 (RDTS). Active RDTS para confirmar, o cambie a la variante "Bitcoin Knots (no-rdts)" en el marketplace.',
   } satisfies LangDict,
   de_DE: {
     // main.ts
@@ -772,6 +778,12 @@ export default {
     2912: 'Nur Blöcke',
     2913: 'Bandbreite reduzieren, indem keine Transaktionen weitergeleitet werden. Blöcke werden weiterhin normal heruntergeladen und validiert. Deaktiviert den Mempool, die Wallet-Transaktionsübertragung und die Gebührenschätzung.',
     2914: 'Standard',
+    3000: 'Ich bestätige',
+    3001: 'Ich verstehe, dass diese Version von Bitcoin Knots schließlich die Konsensregeln des BIP-110 (Reduced Data Temporary Softfork, oder "RDTS") durchsetzen wird.',
+    3002: 'RDTS aktivieren',
+    3004: 'Diese Version von Bitcoin Knots wird schließlich das BIP-110 (RDTS) Netzwerk-Upgrade durchsetzen, das kritische Schwachstellen im langjährigen Netzwerkdesign behebt. Um zu vermeiden, dieses Upgrade versehentlich anzuwenden, fordert diese Version eine ausdrückliche Bestätigung an. Wichtig: Da dieses Upgrade bereits breite Unterstützung in der Community hat, lehnt das Überspringen dieses Updates oder das Zurücksetzen auf eine ältere Softwareversion es nicht ab. Das Ausführen veralteter Software nach einem Netzwerk-Upgrade macht Ihren Knoten nur anfällig dafür, gefälschte oder betrügerische Transaktionen anzuzeigen. Um dieses Upgrade effektiv abzulehnen, müssen Sie alternative Software ausführen, die darauf ausgelegt ist, sich vom aktualisierten Netzwerk abzuspalten. Erfahren Sie mehr unter https://bitcoinknots.org/learn/2026-rdts. Wenn Sie noch nicht bereit sind, das RDTS-Upgrade zu übernehmen, können Sie alternativ zur Variante "Bitcoin Knots (no-rdts)" wechseln, die im start9 Marktplatz verfügbar ist und dieselbe Version von Bitcoin Knots ohne RDTS-Unterstützung darstellt.',
+    3005: 'Bitte bestätigen',
+    3007: 'Diese Version von Bitcoin Knots wird schließlich die BIP-110 (RDTS) Konsensregeln durchsetzen. Aktivieren Sie RDTS zur Bestätigung oder wechseln Sie zur Variante "Bitcoin Knots (no-rdts)" im Marktplatz.',
   } satisfies LangDict,
   pl_PL: {
     // main.ts
@@ -1158,6 +1170,12 @@ export default {
     2912: 'Tylko bloki',
     2913: 'Zmniejsz zużycie pasma, nie przekazując transakcji. Bloki będą nadal pobierane i walidowane normalnie. Wyłącza mempool, transmisję transakcji portfela i szacowanie opłat.',
     2914: 'Domyślnie',
+    3000: 'Potwierdzam',
+    3001: 'Rozumiem, że ta wersja Bitcoin Knots ostatecznie wymusi zasady konsensusu BIP-110 (Reduced Data Temporary Softfork, lub "RDTS").',
+    3002: 'Aktywuj RDTS',
+    3004: 'Ta wersja Bitcoin Knots ostatecznie wymusi aktualizację sieci BIP-110 (RDTS), która naprawia krytyczne luki w długotrwałej konstrukcji sieci. Aby uniknąć przypadkowego zastosowania tej aktualizacji, ta wersja prosi o wyraźne potwierdzenie. Ważne: ponieważ ta aktualizacja ma już szerokie poparcie społeczności, pominięcie tej aktualizacji lub powrót do starszej wersji oprogramowania jej nie odrzuca. Uruchamianie nieaktualnego oprogramowania po jakiejkolwiek aktualizacji sieci pozostawia węzeł podatny na wyświetlanie fałszywych lub oszukańczych transakcji. Aby skutecznie odrzucić tę aktualizację, musisz uruchomić alternatywne oprogramowanie zaprojektowane do oddzielenia się od zaktualizowanej sieci. Dowiedz się więcej na https://bitcoinknots.org/learn/2026-rdts. Jeśli nie jesteś gotowy do przyjęcia aktualizacji RDTS, możesz alternatywnie przełączyć się na wariant "Bitcoin Knots (no-rdts)" dostępny w marketplace start9, który jest tą samą wersją Bitcoin Knots bez obsługi RDTS.',
+    3005: 'Proszę potwierdzić',
+    3007: 'Ta wersja Bitcoin Knots ostatecznie wymusi zasady konsensusu BIP-110 (RDTS). Aktywuj RDTS, aby potwierdzić, lub przełącz się na wariant "Bitcoin Knots (no-rdts)" w marketplace.',
   } satisfies LangDict,
   fr_FR: {
     // main.ts
@@ -1544,5 +1562,11 @@ export default {
     2912: 'Blocs uniquement',
     2913: "Réduire la bande passante en ne relayant pas les transactions. Les blocs seront toujours téléchargés et validés normalement. Désactive le mempool, la diffusion des transactions du portefeuille et l'estimation des frais.",
     2914: 'Par défaut',
+    3000: 'Je confirme',
+    3001: 'Je comprends que cette version de Bitcoin Knots finira par appliquer les règles de consensus BIP-110 (Reduced Data Temporary Softfork, ou « RDTS »).',
+    3002: 'Activer RDTS',
+    3004: "Cette version de Bitcoin Knots finira par appliquer la mise à niveau réseau BIP-110 (RDTS), qui corrige des vulnérabilités critiques dans la conception réseau existante. Pour éviter d'appliquer cette mise à niveau par accident, cette version demande une confirmation explicite. Important : comme cette mise à niveau bénéficie déjà d'un large soutien communautaire, ignorer cette mise à jour ou revenir à une version antérieure du logiciel ne la rejette pas. Exécuter un logiciel obsolète après toute mise à niveau réseau ne fait que rendre votre nœud vulnérable à l'affichage de transactions fausses ou frauduleuses. Pour rejeter efficacement cette mise à niveau, vous devez exécuter un logiciel alternatif conçu pour se séparer du réseau mis à niveau. En savoir plus sur https://bitcoinknots.org/learn/2026-rdts. Si vous n'êtes pas prêt à adopter la mise à niveau RDTS, vous pouvez basculer vers la variante « Bitcoin Knots (no-rdts) » disponible sur le marketplace start9, qui est la même version de Bitcoin Knots sans prise en charge de RDTS.",
+    3005: 'Veuillez confirmer',
+    3007: 'Cette version de Bitcoin Knots finira par appliquer les règles de consensus BIP-110 (RDTS). Activez RDTS pour confirmer, ou basculez vers la variante « Bitcoin Knots (no-rdts) » sur le marketplace.',
   } satisfies LangDict,
 }
