@@ -2,7 +2,7 @@
   <img src="icon.png" alt="Bitcoin Knots Logo" width="21%">
 </p>
 
-# Bitcoin Knots on StartOS
+# Bitcoin Knots (pre-RDTS) on StartOS
 
 > **Upstream docs:** <https://bitcoinknots.org/>
 >
@@ -12,7 +12,7 @@
 
 An enhanced Bitcoin full node implementation with additional policy controls for mempool filtering and spam prevention. See the [upstream repo](https://github.com/bitcoinknots/bitcoin) for general Bitcoin Knots documentation.
 
-This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos), allowing users to switch between flavors while preserving blockchain data and dependent service connections.
+This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos) and the other Knots flavors (`#knots`, the retiring `#knotsrdts`), allowing users to switch between flavors while preserving blockchain data and dependent service connections. This flavor (`#knotsprerdts`) is for users who want to remain on pre-RDTS Knots consensus rules — it ships the same Bitcoin Knots binary as `#knots` without the "Activate RDTS" critical-task gate.
 
 ---
 
@@ -294,7 +294,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development wo
 
 ```yaml
 package_id: bitcoind
-flavor: knots
+flavor: knotsprerdts
 image: custom Dockerfile (built from Bitcoin Knots source)
 additional_images:
   - ghcr.io/start9labs/btc-rpc-proxy (pruned node RPC proxy)

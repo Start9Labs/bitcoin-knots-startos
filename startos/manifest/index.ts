@@ -9,10 +9,11 @@ import {
 
 export const manifest = setupManifest({
   id: 'bitcoind',
-  title: 'Bitcoin Knots',
+  title: 'Bitcoin Knots (pre-RDTS)',
   license: 'MIT',
   donationUrl: null,
-  packageRepo: 'https://github.com/Start9Labs/bitcoin-knots-startos/tree/next',
+  packageRepo:
+    'https://github.com/Start9Labs/bitcoin-knots-startos/tree/29.x-prerdts',
   upstreamRepo: 'https://github.com/bitcoinknots/bitcoin',
   marketingUrl: 'https://bitcoinknots.org/',
   description: { short, long },

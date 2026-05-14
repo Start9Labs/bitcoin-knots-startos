@@ -1,6 +1,6 @@
 # Contributing
 
-This repo packages [Bitcoin Knots](https://github.com/bitcoinknots/bitcoin) for StartOS. It's a fork of `Retropex/knots-startos` and shares the `bitcoind` package id with [bitcoin-core-startos](https://github.com/Start9Labs/bitcoin-core-startos), so users can switch flavors with chain data preserved.
+This repo packages [Bitcoin Knots](https://github.com/bitcoinknots/bitcoin) for StartOS. This branch (`29.x-prerdts`) builds the `#knotsprerdts` flavor — the same Bitcoin Knots release as the `#knots` flavor (built from `29.x`), without the "Activate RDTS" critical-task gate. It's a fork of `Retropex/knots-startos` and shares the `bitcoind` package id with [bitcoin-core-startos](https://github.com/Start9Labs/bitcoin-core-startos) and the other Knots flavors, so users can switch flavors with chain data preserved.
 
 ## Documentation — keep it in sync
 
@@ -33,7 +33,7 @@ The `bitcoind` image is built locally from `Dockerfile`, which downloads the Kno
    - `PATH_VERSION` — the major track folder (e.g. `29.x`).
 2. Rename the version file under `startos/versions/v<X.Y>_<N>.ts` in place and update `version` and `releaseNotes`.
 3. Cross-flavor migrations with `bitcoin-core-startos` are declared inline in the current Knots version file's `migrations.other` map, keyed by Core version strings. When Bitcoin Core bumps its `:N`, add the matching entries here so the migration path runs.
-4. Sibling Knots branches (`next`, `bip-110/next`) share a Bitcoin Core revision suffix — bump one, bump the others in tandem.
+4. Sibling Knots branches (`29.x`, `29.x-prerdts`) share the upstream Knots release and the Bitcoin Core revision suffix tracked by `.satisfies('29.3:N')` — bump one, bump the other in tandem.
 5. Rebuild (`make`), sideload the `.s9pk`, and confirm it starts.
 6. Review `README.md` and `instructions.md` for anything the bump changed.
 
@@ -49,6 +49,6 @@ To bump any sidecar, change the `dockerTag` line, rebuild, and verify the affect
 
 ## How to contribute
 
-1. Fork the repository and create a branch from the appropriate sibling branch (`next` or `bip-110/next`).
+1. Fork the repository and create a branch from `29.x-prerdts`.
 2. Make your changes — including the doc updates above.
 3. Open a pull request.
