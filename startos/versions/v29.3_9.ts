@@ -41,8 +41,8 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_8 = VersionInfo.of({
-  version: '#knots:29.3:8',
+export const v29_3_9 = VersionInfo.of({
+  version: '#knots:29.3:9',
   releaseNotes: {
     en_US: `**Bumps**
 
@@ -145,6 +145,16 @@ export const v29_3_8 = VersionInfo.of({
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+        },
+      },
+      // `#knotsrdts` (the "Bitcoin Knots plus BIP-110" build) is being
+      // retired. Users on it can move here; preserve their RDTS acceptance
+      // so the consensusrules critical-task gate doesn't re-fire. No
+      // `down` — `#knotsrdts` is being de-listed, so the inverse path
+      // can't be selected by a user.
+      ['^#knotsrdts:29.3']: {
+        up: async ({ effects }) => {
+          await bitcoinConfFile.merge(effects, { consensusrules: 'rdts' })
         },
       },
     },

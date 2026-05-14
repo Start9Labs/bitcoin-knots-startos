@@ -4,6 +4,7 @@
 
 - [Start9 Bitcoin guides](https://docs.start9.com/bitcoin-guides/) — operating-a-Bitcoin-node guides curated for StartOS users (connecting wallets, dependent services, common workflows).
 - [About Bitcoin Knots](https://bitcoinknots.org/#about) — upstream project's description of how Knots differs from Bitcoin Core.
+- [About BIP-110 / RDTS](https://bitcoinknots.org/learn/2026-rdts) — background on the Reduced Data Temporary Softfork network upgrade this version will eventually enforce.
 
 ## What you get on StartOS
 
