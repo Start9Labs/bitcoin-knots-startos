@@ -4,11 +4,13 @@ import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 
 export const taskConsensusRules = sdk.setupOnInit(async (effects) => {
-  const conf = await bitcoinConfFile.read().const(effects)
-  if (conf?.consensusrules !== 'rdts') {
+  const consensusrules = await bitcoinConfFile
+    .read((b) => b.consensusrules)
+    .const(effects)
+  if (consensusrules !== 'rdts') {
     await sdk.action.createOwnTask(effects, activateRDTS, 'critical', {
       reason: i18n(
-        'This version of Bitcoin Knots will eventually enforce the BIP-110 (RDTS) consensus rules. Activate RDTS to acknowledge, or switch to the "Bitcoin Knots (no-rdts)" flavor in the marketplace.',
+        'Please confirm your understanding that this version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork (RDTS) consensus rules.',
       ),
     })
   }
