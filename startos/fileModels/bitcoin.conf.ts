@@ -178,6 +178,7 @@ export const shape = z
       .catch(undefined),
     peerblockfilters: iniBoolean,
     natpmp: iniBoolean,
+    consensusrules: z.literal('rdts').optional().catch(undefined),
     maxuploadtarget: iniNumber,
   })
   .loose()
@@ -505,6 +506,7 @@ export const fullConfigSpec = sdk.InputSpec.of({
   }),
 
   // === OTHER ===
+  consensusrules: Value.hidden(z.literal('rdts').optional().catch(undefined)),
   softwareexpiry: Value.number({
     name: i18n('Software Expiry'),
     description: i18n(
@@ -931,6 +933,7 @@ function fileToForm(
     zmqpubrawtx,
     zmqpubsequence,
     // Other
+    consensusrules,
     softwareexpiry,
     txindex,
     coinstatsindex,
@@ -999,6 +1002,7 @@ function fileToForm(
     minrelaymaturity,
 
     // Other - with transforms
+    consensusrules,
     softwareexpiry,
     zmqEnabled: !!(
       zmqpubhashblock &&
@@ -1103,6 +1107,7 @@ function formToFile(
     minrelaycoinblocks,
     minrelaymaturity,
     // Other
+    consensusrules,
     softwareexpiry,
     prune,
     wallet,
@@ -1186,6 +1191,7 @@ function formToFile(
     discardfee: wallet?.discardfee ?? undefined,
 
     // Other
+    consensusrules,
     softwareexpiry,
     txindex: prune ? false : (txindex ?? undefined),
     coinstatsindex: coinstatsindex ?? undefined,

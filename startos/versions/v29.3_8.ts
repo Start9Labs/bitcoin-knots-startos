@@ -41,31 +41,58 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_7 = VersionInfo.of({
-  version: '#knots:29.3:7',
+export const v29_3_8 = VersionInfo.of({
+  version: '#knots:29.3:8',
   releaseNotes: {
-    en_US:
-      'Wallet actions are now more reliable, use GUIX binaries for bitcoind and bitcoin-cli, use Debian based images. Downgrades from Bitcoin Core v30 or v31 are now handled correctly.',
-    es_ES:
-      'Las acciones del monedero son ahora más fiables, use binarios GUIX para bitcoind y bitcoin-cli y utilice imágenes basadas en Debian. Ahora se gestionan correctamente las degradaciones desde Bitcoin Core v30 o v31.',
-    de_DE:
-      'Wallet-Aktionen sind jetzt zuverlässiger, verwenden Sie GUIX-Binärdateien für bitcoind und bitcoin-cli sowie Debian-basierte Images. Downgrades von Bitcoin Core v30 oder v31 werden jetzt korrekt verarbeitet.',
-    pl_PL:
-      'Operacje portfela są teraz bardziej niezawodne, używaj binariów GUIX dla bitcoind i bitcoin-cli oraz obrazów opartych na Debianie. Obniżenie wersji z Bitcoin Core v30 lub v31 jest teraz poprawnie obsługiwane.',
-    fr_FR:
-      'Les actions du portefeuille sont désormais plus fiables, utilise les binaires GUIX pour bitcoind et bitcoin-cli, utilise des images basées sur Debian. Les rétrogradations depuis Bitcoin Core v30 ou v31 sont désormais gérées correctement.',
+    en_US: `**Bumps**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0
+
+**Features**
+
+- Adds an "Activate RDTS" action that acknowledges the BIP-110 (Reduced Data Temporary Softfork) consensus rules this version will eventually enforce. A critical task appears on install or upgrade until you acknowledge. Users not ready to adopt RDTS can switch to the "Bitcoin Knots (pre-RDTS)" flavor in the marketplace.`,
+    es_ES: `**Actualizaciones**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0
+
+**Funciones**
+
+- Añade una acción "Activar RDTS" que confirma las reglas de consenso BIP-110 (Reduced Data Temporary Softfork) que esta versión aplicará eventualmente. Aparece una tarea crítica en la instalación o actualización hasta que la confirme. Los usuarios que no estén listos para adoptar RDTS pueden cambiar a la variante "Bitcoin Knots (pre-RDTS)" en el marketplace.`,
+    de_DE: `**Aktualisierungen**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0
+
+**Funktionen**
+
+- Fügt eine Aktion "RDTS aktivieren" hinzu, mit der Sie die BIP-110 (Reduced Data Temporary Softfork) Konsensregeln bestätigen, die diese Version schließlich durchsetzen wird. Bei der Installation oder dem Upgrade erscheint eine kritische Aufgabe, bis Sie bestätigen. Benutzer, die noch nicht bereit sind, RDTS zu übernehmen, können zur Variante "Bitcoin Knots (pre-RDTS)" im Marktplatz wechseln.`,
+    pl_PL: `**Aktualizacje**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0
+
+**Funkcje**
+
+- Dodaje akcję "Aktywuj RDTS", która potwierdza zasady konsensusu BIP-110 (Reduced Data Temporary Softfork), które ta wersja ostatecznie wymusi. Krytyczne zadanie pojawia się przy instalacji lub aktualizacji, dopóki nie potwierdzisz. Użytkownicy, którzy nie są gotowi do przyjęcia RDTS, mogą przełączyć się na wariant "Bitcoin Knots (pre-RDTS)" w marketplace.`,
+    fr_FR: `**Mises à jour**
+
+- Bitcoin Knots → 29.3.knots20260508
+- start-sdk → 1.5.0
+
+**Fonctionnalités**
+
+- Ajoute une action « Activer RDTS » qui confirme les règles de consensus BIP-110 (Reduced Data Temporary Softfork) que cette version finira par appliquer. Une tâche critique apparaît à l'installation ou à la mise à niveau jusqu'à confirmation. Les utilisateurs qui ne sont pas prêts à adopter RDTS peuvent basculer vers la variante « Bitcoin Knots (pre-RDTS) » sur le marketplace.`,
   },
   migrations: {
     up: async ({ effects }) => {},
     down: IMPOSSIBLE,
-    // TEMPORARY: pinned `:N` keys instead of caret regex (`^28`/`^29`/...).
-    // Range-keyed `migrations.other` interacted with two StartOS bugs that
-    // could leave the on-disk data version stuck as a flavored range and
-    // dead-end a subsequent flavor switch. Both fixes ship in beta.9; once
-    // a node is on beta.9 or newer we can revert to range keys (one entry
-    // per Core major instead of one per Core `:N`).
+    // Keyed by Core major series as caret ranges — one entry per Core
+    // major, not per Core `:N`. Range-keyed `migrations.other` requires
+    // StartOS ≥ 0.4.0-beta.9 (Start9Labs/start-os#3214).
     other: {
-      ['28.3:10']: {
+      ['^28']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -75,7 +102,7 @@ export const v29_3_7 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['29.3:10']: {
+      ['^29']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
@@ -85,7 +112,7 @@ export const v29_3_7 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['30.2:10']: {
+      ['^30']: {
         // Core → Knots: drop coinstatsindex written by Core 30+ at the new
         // path; Knots 29 only reads the old indexes/coinstats/ path, which
         // Core 30 deliberately preserved for downgrade.
@@ -101,7 +128,7 @@ export const v29_3_7 = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      ['31.0:10']: {
+      ['^31']: {
         // Core → Knots: drop fee_estimates.dat (v31 bumped
         // CURRENT_FEES_FILE_VERSION 149900 → 309900; ≤30 hard-fails) and
         // coinstatsindex (same reason as 30.x).
@@ -122,4 +149,4 @@ export const v29_3_7 = VersionInfo.of({
       },
     },
   },
-}).satisfies('29.3:10')
+}).satisfies('29.3:11')

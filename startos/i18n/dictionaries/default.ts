@@ -11,6 +11,8 @@ const dict = {
   'RPC Proxy': 7,
   'The Bitcoin RPC Proxy is ready': 8,
   'The Bitcoin RPC Proxy is not ready': 9,
+  'Sync Complete': 10,
+  'The blockchain is fully synced.': 11,
 
   // interfaces.ts
   'RPC Interface': 100,
@@ -321,7 +323,6 @@ const dict = {
   Configuration: 1800,
   'Wallet is disabled': 1801,
 
-
   // actions/wallet - getbalance.ts
   'Get Balance': 1900,
   'Get the balance of your Bitcoin wallet.': 1901,
@@ -399,6 +400,13 @@ const dict = {
   'Blocks Only': 2912,
   'Reduce bandwidth by not relaying transactions. Blocks will still be downloaded and validated normally. Disables the mempool, wallet transaction broadcasting, and fee estimation.': 2913,
   Default: 2914,
+
+  // actions/activaterdts.ts + init/consensusrules.ts
+  'I acknowledge': 3000,
+  'Activate RDTS': 3002,
+  'This version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork ("RDTS") network upgrade, which fixes critical vulnerabilities in long-standing network design. To avoid applying this upgrade by accident, this version asks for explicit confirmation. Important: because this upgrade already has broad community support, skipping this update or reverting to an older software version does not reject it. Running outdated software after any network upgrade may leave your node vulnerable to displaying fake or fraudulent transactions. To effectively reject this upgrade, you need to run alternative software designed to split away from the upgraded network. Learn more at https://bitcoinknots.org/learn/2026-rdts. If you are not ready to adopt the RDTS upgrade, you can alternatively switch to the "Bitcoin Knots (pre-RDTS)" version available in the Start9 marketplace, which is the same version of Bitcoin Knots without RDTS support.': 3004,
+  'Please acknowledge': 3005,
+  'Please confirm your understanding that this version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork (RDTS) consensus rules.': 3007,
 } as const
 
 /**
