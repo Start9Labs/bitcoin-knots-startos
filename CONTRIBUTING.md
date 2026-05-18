@@ -26,7 +26,7 @@ This package has one primary upstream (Bitcoin Knots) plus three pinned sidecar 
 
 ### Bitcoin Knots
 
-The `bitcoind` image is built locally from `Dockerfile`, which downloads the Knots release tarball from `bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/`. There is no dockerTag — the version lives in `buildArgs`.
+The `bitcoind` image is built locally from `Dockerfile`, which downloads the Knots release tarball from `bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/` and verifies `SHA256SUMS.asc` against a pinned 3-of-5 quorum of Knots release signers (keys in `assets/release-keys/`, fingerprints in `PINNED_FINGERPRINTS`). There is no dockerTag — the version lives in `buildArgs`.
 
 1. In `startos/manifest/index.ts`, bump the `bitcoind` image `buildArgs`:
    - `VERSION` — the full release string (e.g. `29.3.knots20260508`).
@@ -34,8 +34,9 @@ The `bitcoind` image is built locally from `Dockerfile`, which downloads the Kno
 2. Rename the version file under `startos/versions/v<X.Y>_<N>.ts` in place and update `version` and `releaseNotes`.
 3. Cross-flavor migrations with `bitcoin-core-startos` are declared inline in the current Knots version file's `migrations.other` map, keyed by Core version strings. When Bitcoin Core bumps its `:N`, add the matching entries here so the migration path runs.
 4. Sibling Knots branches (`next`, `bip-110/next`) share a Bitcoin Core revision suffix — bump one, bump the others in tandem.
-5. Rebuild (`make`), sideload the `.s9pk`, and confirm it starts.
-6. Review `README.md` and `instructions.md` for anything the bump changed.
+5. If upstream rotated release signers, update `PINNED_FINGERPRINTS` in `Dockerfile` and refresh the keys in `assets/release-keys/`.
+6. Rebuild (`make`), sideload the `.s9pk`, and confirm it starts.
+7. Review `README.md` and `instructions.md` for anything the bump changed.
 
 ### Sidecar images
 
