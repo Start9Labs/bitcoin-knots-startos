@@ -1,55 +1,43 @@
 # Contributing
 
-This repo packages [Bitcoin Knots](https://github.com/bitcoinknots/bitcoin) for StartOS. It's a fork of `Retropex/knots-startos` and shares the `bitcoind` package id with [bitcoin-core-startos](https://github.com/Start9Labs/bitcoin-core-startos), so users can switch flavors with chain data preserved.
+## Keep these in sync
 
-## Documentation — keep it in sync
+- **[`README.md`](./README.md)** — what this package is and how it's built (image, volumes, interfaces). Technical reference for developers and AI assistants.
+- **[`instructions.md`](./instructions.md)** — the user-facing instructions packed into the `.s9pk` and shown on the **Instructions** tab in StartOS, for the person running the service.
+- **[`TODO.md`](./TODO.md)** — pending work on this package.
 
-- **`README.md`** — what this package is and how it's built (image, volumes, interfaces). For developers and AI assistants.
-- **`instructions.md`** — the user-facing instructions packed into the `.s9pk` and shown on the **Instructions** tab in StartOS, for the person running the service.
-- **`CONTRIBUTING.md`** — this file.
-- **`CLAUDE.md`** — operating rules for AI developers working in this repo.
+**Read all three before starting any work.** Any code change that affects user-visible behavior must update `README.md` and `instructions.md` in the same change; add to `TODO.md` when you defer work, and remove items when complete. Content rules: [Writing READMEs](https://docs.start9.com/packaging/writing-readmes.html), [Writing Instructions](https://docs.start9.com/packaging/writing-instructions.html).
 
-**Any code change that warrants it must update `README.md` and `instructions.md` in the same change** — a new or renamed action, an added or removed volume / port / interface / dependency, a changed default, a new limitation, any altered user-visible behavior. Don't defer: a package that ships with a stale README or stale instructions is not done, even if the code is perfect. Content rules live in the packaging guide: [Writing READMEs](https://docs.start9.com/packaging/writing-readmes.html) and [Writing Service Instructions](https://docs.start9.com/packaging/writing-instructions.html).
+## Environment setup
+
+See [Environment Setup](https://docs.start9.com/packaging/environment-setup.html)
 
 ## Building
-
-See the [StartOS Packaging Guide](https://docs.start9.com/packaging/) for environment setup, then:
 
 ```bash
 npm ci    # install dependencies
 make      # build the universal .s9pk
 ```
 
+For a complete list of build options, see [Makefile](https://docs.start9.com/packaging/makefile.html).
+
 ## Updating the upstream version
 
-This package has one primary upstream (Bitcoin Knots) plus three pinned sidecar images.
+1. Apply the upstream bump per [UPDATING.md](./UPDATING.md).
+2. Update `version` and `releaseNotes` in the file under `startos/versions/`, renaming it to the new version string. A _new_ version file is only needed when the bump requires a migration, or when you want the old release notes preserved in git history — see [Versions](https://docs.start9.com/packaging/versions.html).
 
-### Bitcoin Knots
+## CI/CD
 
-The `bitcoind` image is built locally from `Dockerfile`, which downloads the Knots release tarball from `bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/` and verifies `SHA256SUMS.asc` against a pinned 3-of-5 quorum of Knots release signers (keys in `assets/release-keys/`, fingerprints in `PINNED_FINGERPRINTS`). There is no dockerTag — the version lives in `buildArgs`.
+Three workflows under `.github/workflows/` wrap reusable workflows in [`start9labs/shared-workflows`](https://github.com/Start9Labs/shared-workflows):
 
-1. In `startos/manifest/index.ts`, bump the `bitcoind` image `buildArgs`:
-   - `VERSION` — the full release string (e.g. `29.3.knots20260508`).
-   - `PATH_VERSION` — the major track folder (e.g. `29.x`).
-2. Rename the version file under `startos/versions/v<X.Y>_<N>.ts` in place and update `version` and `releaseNotes`.
-3. Cross-flavor migrations with `bitcoin-core-startos` are declared inline in the current Knots version file's `migrations.other` map, keyed by Core version strings. When Bitcoin Core bumps its `:N`, add the matching entries here so the migration path runs.
-4. Sibling Knots branches (`next`, `bip-110/next`) share a Bitcoin Core revision suffix — bump one, bump the others in tandem.
-5. If upstream rotated release signers, update `PINNED_FINGERPRINTS` in `Dockerfile` and refresh the keys in `assets/release-keys/`.
-6. Rebuild (`make`), sideload the `.s9pk`, and confirm it starts.
-7. Review `README.md` and `instructions.md` for anything the bump changed.
+- **`build.yml`** — on PR, builds the `.s9pk` and uploads per-arch artifacts for sideload testing.
+- **`release.yml`** — on `v*` tag, builds per arch and publishes to the test registry.
+- **`tagAndRelease.yml`** — on push to `master`, tags `v<version>` and runs `release.yml`, skipping if already in production.
 
-### Sidecar images
-
-Each sidecar has its own `dockerTag` in the manifest:
-
-- `proxy` — `ghcr.io/start9labs/btc-rpc-proxy` (RPC proxy used when the node is pruned).
-- `python` — `python:<tag>` (runs `rpcauth.py` for RPC credential generation).
-- `i2pd` — `purplei2p/i2pd:release-<version>` (embedded I2P daemon).
-
-To bump any sidecar, change the `dockerTag` line, rebuild, and verify the affected behavior still works (RPC proxy on a pruned install; `Generate RPC User Credentials`; the I2P Daemon Console).
+Promotion to `beta` and `prod` is a separate, manual step.
 
 ## How to contribute
 
-1. Fork the repository and create a branch from the appropriate sibling branch (`next` or `bip-110/next`).
+1. Fork the repository and create a branch from `master`.
 2. Make your changes — including the doc updates above.
-3. Open a pull request.
+3. Open a pull request to `master`.
