@@ -43,19 +43,19 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-export const v29_3_9 = VersionInfo.of({
-  version: '#knotsprerdts:29.3:9',
+export const v29_3_10 = VersionInfo.of({
+  version: '#knotsprerdts:29.3:10',
   releaseNotes: {
     en_US:
-      'Initial release of the Bitcoin Knots (pre-RDTS) flavor, for users who want to stay on pre-RDTS Knots consensus rules. Same Bitcoin Knots binary as the `#knots` flavor without the "Activate RDTS" critical-task gate.',
+      'Fixes repeated "Sync Complete" notifications that could fire after the initial sync.',
     es_ES:
-      'Lanzamiento inicial de la variante Bitcoin Knots (pre-RDTS), para usuarios que quieren mantenerse en las reglas de consenso de Knots pre-RDTS. El mismo binario de Bitcoin Knots que la variante `#knots`, sin la tarea crítica "Activar RDTS".',
+      'Corrige notificaciones repetidas de "Sincronización completa" que podían aparecer tras la sincronización inicial.',
     de_DE:
-      'Erstveröffentlichung der Variante Bitcoin Knots (pre-RDTS) für Benutzer, die bei den Pre-RDTS-Konsensregeln von Knots bleiben möchten. Gleiches Bitcoin-Knots-Binary wie die Variante `#knots`, ohne die kritische Aufgabe „RDTS aktivieren".',
+      'Behebt wiederholte „Synchronisierung abgeschlossen"-Benachrichtigungen, die nach der ersten Synchronisierung auftreten konnten.',
     pl_PL:
-      'Pierwsze wydanie wariantu Bitcoin Knots (pre-RDTS), dla użytkowników, którzy chcą pozostać przy zasadach konsensusu Knots sprzed RDTS. To samo oprogramowanie Bitcoin Knots co wariant `#knots`, bez krytycznego zadania „Aktywuj RDTS".',
+      'Naprawia powtarzające się powiadomienia „Synchronizacja zakończona", które mogły pojawiać się po początkowej synchronizacji.',
     fr_FR:
-      'Première version de la variante Bitcoin Knots (pre-RDTS), pour les utilisateurs qui souhaitent rester sur les règles de consensus de Knots pré-RDTS. Même binaire Bitcoin Knots que la variante `#knots`, sans la tâche critique « Activer RDTS ».',
+      'Corrige les notifications « Synchronisation terminée » répétées qui pouvaient apparaître après la synchronisation initiale.',
   },
   migrations: {
     up: async ({ effects }) => {},
@@ -136,4 +136,4 @@ export const v29_3_9 = VersionInfo.of({
       },
     },
   },
-}).satisfies('29.3:11')
+}).satisfies('29.3:12')
