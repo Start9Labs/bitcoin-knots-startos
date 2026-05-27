@@ -79,6 +79,8 @@ Blockchain data directories (`blocks/`, `chainstate/`, `indexes/`) reside on the
 6. Bitcoin Knots begins syncing the blockchain (Initial Block Download)
 7. When sync completes, a **Sync Complete** notification is posted to the StartOS notifications panel. The notification fires once after initial sync, and again whenever a reindex (Reindex Blockchain / Reindex Chainstate) completes.
 
+> **RDTS activation (critical task):** On install — and until RDTS is activated — StartOS raises a **critical task** titled *Activate RDTS* (created at init while `consensusrules` is not yet `rdts`). It asks you to acknowledge that this version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork (RDTS) consensus rules; acknowledging writes `consensusrules=rdts` to `bitcoin.conf`. Skipping or reverting to older software does not reject the upgrade. To remain on pre-RDTS consensus rules, install the **Bitcoin Knots (pre-RDTS)** flavor instead, which ships the same binary without this gate. See <https://bitcoinknots.org/learn/2026-rdts>.
+
 ## Default Networking
 
 Out of the box, Bitcoin Knots on StartOS connects to the Bitcoin network over multiple transports with no user configuration required:
@@ -103,7 +105,7 @@ Bitcoin Knots is configured through **StartOS actions** that write to `bitcoin.c
 | Action               | Settings                                                                                                                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Mempool Settings** | persistmempool, maxmempool, mempoolexpiry, mempoolfullrbf, permitbaremultisig, OP_RETURN (datacarrier/datacarriersize, permitbaredatacarrier, datacarriercost, acceptnonstddatacarrier), rejectparasites, rejecttokens, mempoolreplacement, mempooltruc, permitbareanchor, permitephemeral, minrelaytxfee, bytespersigop, bytespersigopstrict, maxtxlegacysigops, limitancestorcount/size, limitdescendantcount/size, permitbarepubkey, maxscriptsize, dustrelayfee, acceptunknownwitness, minrelaycoinblocks, minrelaymaturity, blocksonly |
-| **Peer Settings**    | onlynet (ipv4/ipv6/onion/i2p/cjdns), BIP324 v2transport, I2P SAM proxy (enabled/disabled), connect/addnode peers, maxconnections                                                                |
+| **Peer Settings**    | onlynet (ipv4/ipv6/onion/i2p), BIP324 v2transport, I2P SAM proxy (enabled/disabled), connect/addnode peers, maxconnections                                                                       |
 | **RPC Settings**     | rpcservertimeout, rpcthreads, rpcworkqueue                                                                                                                                                       |
 | **Other Settings**   | softwareexpiry, ZMQ, txindex, blocknotify, block template construction (blockmaxsize/blockmaxweight), block reconstruction, coinstatsindex, wallet settings (enable/avoidpartialspends/discardfee), pruning, dbcache, dbbatchsize, BIP158/BIP157 block filters, bloom filters, natpmp, maxuploadtarget |
 
@@ -133,7 +135,8 @@ This is transparent to dependent services — port 8332 always serves RPC.
 | ----------- | ----- | -------- | -------------------------------- | ------------------------------------------ |
 | RPC         | 8332  | HTTP     | JSON-RPC commands                | Always                                     |
 | Peer        | 8333  | TCP      | Bitcoin peer-to-peer connections | Always                                     |
-| ZeroMQ      | 28332 | TCP      | Block/transaction notifications  | When ZMQ enabled                           |
+| ZeroMQ      | 28332 | TCP      | Block notifications (rawblock, hashblock)  | When ZMQ enabled                           |
+| ZeroMQ      | 28333 | TCP      | Transaction notifications (rawtx, hashtx, sequence) | When ZMQ enabled                |
 | I2P Console | 7070  | HTTP     | I2P daemon web console           | When embedded I2P enabled with web console |
 
 ## Actions (StartOS UI)
@@ -189,6 +192,14 @@ This is transparent to dependent services — port 8332 always serves RPC.
 | --------------------------------------- | --------------------------------------------------------------- | ------------ |
 | **Download UTXO Snapshot (assumeutxo)** | Load a UTXO snapshot for fast sync (hidden when fully synced)   | Running only |
 | **Runtime Information**                 | Display connections, block height, sync progress, softfork info | Running only |
+
+### Hidden (Dependent Service Automation)
+
+| Action                     | Purpose                                                                            | Availability |
+| -------------------------- | ---------------------------------------------------------------------------------- | ------------ |
+| **Auto-Configure**         | Automatically configure Bitcoin Knots for dependent services (prefills all config) | Any          |
+| **Create RPC Credentials** | Create RPC credentials with a provided username/password for dependent services    | Any          |
+| **Activate RDTS**          | Acknowledge the BIP-110 RDTS upgrade; writes `consensusrules=rdts`. Surfaced as a critical task on install until acknowledged | Any |
 
 ## Backups and Restore
 
@@ -271,6 +282,7 @@ Where our permanent default overrides upstream, the input spec's `default` and t
 6. **Shared package ID** — uses `bitcoind` as the package ID, shared with Bitcoin Core; only one flavor can be installed at a time
 7. **5-minute shutdown timeout** — SIGTERM allows 300 seconds for graceful database flush
 8. **Embedded I2P enabled by default** — a bundled `i2pd` daemon provides the I2P SAM proxy, with `i2pacceptincoming=true`; inbound I2P connections work out of the box with no user configuration. Can be disabled via Peer Settings
+9. **CJDNS not supported** — StartOS provides no CJDNS transport, so `cjdns` is not offered as an `onlynet` option and CJDNS peer connectivity is unavailable; the other three Bitcoin networks (clearnet, Tor, I2P) are fully supported
 
 ## What Is Unchanged from Upstream
 
@@ -307,7 +319,8 @@ volumes:
 ports:
   rpc: 8332
   peer: 8333
-  zmq: 28332 (conditional)
+  zmq-block: 28332 (conditional)
+  zmq-tx: 28333 (conditional)
   i2p-console: 7070 (conditional)
 dependencies:
   tor: conditional (onion connectivity)
@@ -319,7 +332,9 @@ actions:
   - rpc-config
   - other-config
   - generate-rpcuser
-  - generate-rpc-dependent
+  - generate-rpc-dependent (hidden, dependent service automation)
+  - autoconfig (hidden, dependent service automation)
+  - activate-rdts (hidden, surfaced as critical task)
   - delete-rpcauth
   - reindex-blockchain
   - reindex-chainstate
