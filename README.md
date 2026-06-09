@@ -12,7 +12,7 @@
 
 An enhanced Bitcoin full node implementation with additional policy controls for mempool filtering and spam prevention. See the [upstream repo](https://github.com/bitcoinknots/bitcoin) for general Bitcoin Knots documentation.
 
-This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos) and the other Knots flavors (`#knots`, the retiring `#knotsrdts`), allowing users to switch between flavors while preserving blockchain data and dependent service connections. This flavor (`#knotsprerdts`) is for users who want to remain on pre-RDTS Knots consensus rules — it ships the same Bitcoin Knots binary as `#knots` without the "Activate RDTS" critical-task gate.
+This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos) and the other Knots flavors (`#knots`, the retiring `#knotsrdts`), allowing users to switch between flavors while preserving blockchain data and dependent service connections. This flavor (`#knotsprerdts`) is for users who want to remain on pre-RDTS Knots consensus rules — it ships the last pre-RDTS Bitcoin Knots release (`29.3.knots20260507`), with no "Activate RDTS" critical-task gate. `#knots` tracks current Knots releases, which include RDTS.
 
 ---
 
