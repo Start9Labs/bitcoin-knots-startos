@@ -44,18 +44,18 @@ const mempoolReset = {
 }
 
 export const current = VersionInfo.of({
-  version: '#knotsprerdts:29.3:10',
+  version: '#knotsprerdts:29.3:11',
   releaseNotes: {
     en_US:
-      'Fixes repeated "Sync Complete" notifications that could fire after the initial sync.',
+      'Ships the correct pre-RDTS Bitcoin Knots binary (29.3.knots20260507). Previous builds mistakenly bundled the 20260508 release.',
     es_ES:
-      'Corrige notificaciones repetidas de "Sincronización completa" que podían aparecer tras la sincronización inicial.',
+      'Incluye el binario correcto de Bitcoin Knots pre-RDTS (29.3.knots20260507). Las compilaciones anteriores incluían por error la versión 20260508.',
     de_DE:
-      'Behebt wiederholte „Synchronisierung abgeschlossen"-Benachrichtigungen, die nach der ersten Synchronisierung auftreten konnten.',
+      'Liefert die korrekte Pre-RDTS-Binärdatei von Bitcoin Knots (29.3.knots20260507). Frühere Builds enthielten versehentlich die Version 20260508.',
     pl_PL:
-      'Naprawia powtarzające się powiadomienia „Synchronizacja zakończona", które mogły pojawiać się po początkowej synchronizacji.',
+      'Dostarcza poprawny binarny plik Bitcoin Knots pre-RDTS (29.3.knots20260507). Poprzednie kompilacje omyłkowo zawierały wydanie 20260508.',
     fr_FR:
-      'Corrige les notifications « Synchronisation terminée » répétées qui pouvaient apparaître après la synchronisation initiale.',
+      'Fournit le binaire Bitcoin Knots pré-RDTS correct (29.3.knots20260507). Les versions précédentes incluaient par erreur la version 20260508.',
   },
   migrations: {
     up: async ({ effects }) => {},
@@ -108,8 +108,9 @@ export const current = VersionInfo.of({
           await bitcoinConfFile.merge(effects, mempoolReset)
         },
       },
-      // #knots ↔ #knotsprerdts. Both use the same upstream Knots binary;
-      // switching to this flavor is an explicit opt-out of RDTS, so
+      // #knots ↔ #knotsprerdts. Same data layout; this flavor ships
+      // the last pre-RDTS Knots release (20260507). Switching here is
+      // an explicit opt-out of RDTS, so
       // clear any `consensusrules=rdts` acceptance carried over from
       // `#knots` — otherwise nothing else in this build would remove
       // it, and a later switch back to `#knots` would silently skip
