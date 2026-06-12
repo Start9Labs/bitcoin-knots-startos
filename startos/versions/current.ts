@@ -42,18 +42,18 @@ const mempoolReset = {
 }
 
 export const current = VersionInfo.of({
-  version: '#knots:29.3:10',
+  version: '#knots:29.3.1:10',
   releaseNotes: {
     en_US:
-      'Fixes repeated "Sync Complete" notifications that could fire after the initial sync.',
+      'Bump version to ensure migration for startOS 0.3.5.1 users.',
     es_ES:
-      'Corrige notificaciones repetidas de "Sincronización completa" que podían aparecer tras la sincronización inicial.',
+      'Actualizar la versión para garantizar la migración para los usuarios de startOS 0.3.5.1.',
     de_DE:
-      'Behebt wiederholte „Synchronisierung abgeschlossen"-Benachrichtigungen, die nach der ersten Synchronisierung auftreten konnten.',
+      'Versionsaktualisierung zur Sicherstellung der Migration für startOS 0.3.5.1-Benutzer.',
     pl_PL:
-      'Naprawia powtarzające się powiadomienia „Synchronizacja zakończona", które mogły pojawiać się po początkowej synchronizacji.',
+      'Podniesiono wersję, aby zapewnić migrację dla użytkowników startOS 0.3.5.1.',
     fr_FR:
-      'Corrige les notifications « Synchronisation terminée » répétées qui pouvaient apparaître après la synchronisation initiale.',
+      'Mise à jour de la version pour assurer la migration des utilisateurs de startOS 0.3.5.1.',
   },
   migrations: {
     up: async ({ effects }) => {},
