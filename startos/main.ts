@@ -319,9 +319,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
               return {
                 result: 'success' as const,
-                message: bitcoinConf.raw?.i2pacceptincoming !== false
-                  ? i18n('Inbound and outbound connections')
-                  : i18n('Outbound connections only'),
+                message:
+                  bitcoinConf.raw?.i2pacceptincoming !== false
+                    ? i18n('Inbound and outbound connections')
+                    : i18n('Outbound connections only'),
               }
             } catch {
               return { result: 'starting' as const, message: '' }
@@ -340,7 +341,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
           fn: () =>
             i2pEnabled
               ? excludedByOnlynetResult()
-              : { result: 'disabled' as const, message: i18n('I2P is disabled') },
+              : {
+                  result: 'disabled' as const,
+                  message: i18n('I2P is disabled'),
+                },
         },
         requires: [],
       })
