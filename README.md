@@ -157,16 +157,19 @@ This is transparent to dependent services — port 8332 always serves RPC.
 
 ### Wallet
 
-| Action             | Purpose                                                   | Availability |
-| ------------------ | --------------------------------------------------------- | ------------ |
-| **Get Address**    | Get a new segwit address from the hot wallet              | Running only |
-| **Get Balance**    | Show the hot wallet balance                               | Running only |
-| **Send Coin**      | Send bitcoin from the hot wallet to an address            | Running only |
-| **Send All Coin**  | Send entire hot wallet balance to an address              | Running only |
-| **Sign Message**   | Sign a message with a Bitcoin address from the hot wallet | Running only |
-| **Backup Wallet**  | Export a wallet backup file                               | Running only |
-| **Restore Wallet** | Restore a wallet from a backup file                       | Running only |
-| **Remove Wallet**  | Remove a wallet from the node                             | Running only |
+These actions operate on the **selected wallet** (default `coin`). Use **Select Wallet** to point them at a different wallet, including wallets created by dependent services such as BTCPay Server/NBXplorer. The selected wallet is passed to each RPC as `-rpcwallet`, so the actions keep working once more than one wallet is loaded.
+
+| Action             | Purpose                                                  | Availability |
+| ------------------ | -------------------------------------------------------- | ------------ |
+| **Select Wallet**  | Choose which wallet the Wallet actions operate on        | Running only |
+| **Get Address**    | Get a new segwit address from the selected wallet        | Running only |
+| **Get Balance**    | Show the selected wallet's balance                       | Running only |
+| **Send Coin**      | Send bitcoin from the selected wallet to an address      | Running only |
+| **Send All Coin**  | Send the entire selected wallet balance to an address    | Running only |
+| **Sign Message**   | Sign a message with an address from the selected wallet  | Running only |
+| **Backup Wallet**  | Export a backup file of the selected wallet              | Running only |
+| **Restore Wallet** | Restore the selected wallet from a backup file           | Running only |
+| **Remove Wallet**  | Remove the selected wallet from the node                 | Running only |
 
 ### Mining
 
@@ -340,6 +343,7 @@ actions:
   - assumeutxo
   - runtime-info
   - prioritise-transaction
+  - select-wallet
   - get-address
   - get-balance
   - send-coin

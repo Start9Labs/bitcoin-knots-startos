@@ -1,6 +1,11 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir, rpcArgs } from '../utils'
+import {
+  ensureWalletLoaded,
+  getSelectedWallet,
+  rootDir,
+  rpcArgs,
+} from '../utils'
 import { i18n } from '../i18n'
 
 const { InputSpec, Value } = sdk
@@ -35,14 +40,16 @@ export const signMessage = sdk.Action.withInput(
   // metadata
   async ({ effects }) => {
     const conf = (await bitcoinConfFile.read().const(effects))!
-    
+
     return {
       name: i18n('Sign Message'),
       description: i18n('Sign a message with one of your Bitcoin addresses.'),
       warning: null,
       allowedStatuses: 'only-running',
       group: i18n('Wallet'),
-      visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
+      visibility: !conf?.raw?.disablewallet
+        ? 'enabled'
+        : { disabled: i18n('Wallet is disabled') },
     }
   },
 
@@ -59,6 +66,7 @@ export const signMessage = sdk.Action.withInput(
     const mountpoint = '/scripts'
 
     const conf = (await bitcoinConfFile.read().const(effects))!
+    const wallet = await getSelectedWallet()
 
     const res = await sdk.SubContainer.withTemp(
       effects,
@@ -73,23 +81,11 @@ export const signMessage = sdk.Action.withInput(
         .mountAssets({ subpath: null, mountpoint }),
       'sign-message',
       async (subc) => {
-        await subc.exec([
-          'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
-          'createwallet',
-          'coin',
-        ])
-        
-        await subc.exec([
-          'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
-          'loadwallet',
-          'coin',
-        ])
-        
+        await ensureWalletLoaded(subc, { prune: !!conf.prune, wallet })
+
         return await subc.execFail([
           'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
+          ...rpcArgs({ prune: !!conf.prune, wallet }),
           'signmessage',
           `${address}`,
           `${message}`,
