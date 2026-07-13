@@ -5,6 +5,7 @@ import {
   getSelectedWallet,
   rootDir,
   rpcArgs,
+  walletLabel,
 } from '../utils'
 import { i18n } from '../i18n'
 
@@ -57,7 +58,7 @@ export const getbalance = sdk.Action.withoutInput(
         ])
         const result = JSON.parse(balancesRes.stdout as string)
 
-        return `wallet: ${wallet === '' ? '(default wallet)' : wallet} — trusted: ${result.mine.trusted}, untrusted: ${result.mine.untrusted_pending}, immature: ${result.mine.immature}`
+        return `wallet: ${walletLabel(wallet)} — trusted: ${result.mine.trusted}, untrusted: ${result.mine.untrusted_pending}, immature: ${result.mine.immature}`
       },
     )
 

@@ -6,6 +6,7 @@ import {
   isPathSafeWalletName,
   rootDir,
   rpcArgs,
+  walletLabel,
 } from '../utils'
 import { i18n } from '../i18n'
 
@@ -22,7 +23,7 @@ export const backupwallet = sdk.Action.withoutInput(
       description: i18n('Backup wallet in a file for startOS system backup'),
       warning: null,
       allowedStatuses: 'only-running',
-      group: 'Wallet',
+      group: i18n('Wallet'),
       visibility: !conf?.raw?.disablewallet
         ? 'enabled'
         : { disabled: i18n('Wallet is disabled') },
@@ -67,9 +68,9 @@ export const backupwallet = sdk.Action.withoutInput(
 
     return {
       version: '1',
-      title: 'Sucess',
+      title: i18n('Success'),
       message: i18n('Wallet ${wallet} has been backed up to ${file}', {
-        wallet: wallet === '' ? '(default wallet)' : wallet,
+        wallet: walletLabel(wallet),
         file: backupFile,
       }),
       result: null,

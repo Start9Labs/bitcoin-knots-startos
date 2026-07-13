@@ -1,3 +1,4 @@
+import { T } from '@start9labs/start-sdk'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
@@ -6,20 +7,16 @@ import {
   defaultWalletName,
   getSelectedWallet,
   rpcArgs,
+  walletLabel,
 } from '../utils'
 import { i18n } from '../i18n'
 
 const { InputSpec, Value } = sdk
 
-/** Human readable label for a wallet name ('' is bitcoind's default wallet). */
-function walletLabel(name: string): string {
-  return name === '' ? i18n('(default wallet)') : name
-}
-
-/** Query the node for every wallet it knows about: loaded wallets plus
- *  wallets on disk that aren't currently loaded. */
+/** Loaded wallets (listwallets) plus on-disk wallets not currently loaded
+ *  (listwalletdir), so a dependent service's wallet is selectable too. */
 async function listAllWallets(
-  effects: any,
+  effects: T.Effects,
   opts: { prune: boolean },
 ): Promise<string[]> {
   return sdk.SubContainer.withTemp(
@@ -112,8 +109,8 @@ export const selectWallet = sdk.Action.withInput(
   inputSpec,
 
   // optionally pre-fill form
-  async ({ effects }) => ({
-    wallet: await getSelectedWallet(effects),
+  async () => ({
+    wallet: await getSelectedWallet(),
   }),
 
   // execution function

@@ -5,6 +5,7 @@ import {
   defaultWalletName,
   getSelectedWallet,
   isPathSafeWalletName,
+  resolveWalletDir,
   rootDir,
   rpcArgs,
 } from '../utils'
@@ -25,7 +26,7 @@ export const removewallet = sdk.Action.withoutInput(
         '⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.',
       ),
       allowedStatuses: 'only-running',
-      group: 'Wallet',
+      group: i18n('Wallet'),
       visibility: !conf?.raw?.disablewallet
         ? 'enabled'
         : { disabled: i18n('Wallet is disabled') },
@@ -73,7 +74,8 @@ export const removewallet = sdk.Action.withoutInput(
           wallet,
         ])
 
-        return await subc.execFail(['rm', '-rf', `${rootDir}/${wallet}`])
+        const walletDir = await resolveWalletDir(subc, wallet)
+        return await subc.execFail(['rm', '-rf', walletDir])
       },
     )
 
@@ -82,7 +84,7 @@ export const removewallet = sdk.Action.withoutInput(
 
     return {
       version: '1',
-      title: 'Sucess',
+      title: i18n('Success'),
       message: i18n('Wallet ${wallet} has been removed.', { wallet }),
       result: null,
     }

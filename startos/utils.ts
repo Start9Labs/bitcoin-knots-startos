@@ -1,5 +1,6 @@
 import { T } from '@start9labs/start-sdk'
 import { storeJson } from './fileModels/store.json'
+import { i18n } from './i18n'
 import { sdk } from './sdk'
 
 export const rpcInterfaceId = 'rpc'
@@ -106,6 +107,11 @@ export function bitcoinCliArgs(opts: {
 /** Historical hardcoded wallet name used by the Wallet-group Actions. */
 export const defaultWalletName = 'coin'
 
+/** Display label for a wallet name — bitcoind's default wallet is '' (empty). */
+export function walletLabel(name: string): string {
+  return name === '' ? i18n('(default wallet)') : name
+}
+
 /** The wallet the Wallet-group Actions are currently pointed at
  *  (set via the Select Wallet action, defaults to `coin`).
  *  Pass `effects` to subscribe reactively (metadata builders); omit it for a
@@ -152,6 +158,20 @@ export async function ensureWalletLoaded(
     'loadwallet',
     opts.wallet,
   ])
+}
+
+/** Absolute on-disk path of a wallet's directory. Mirrors bitcoind's
+ *  GetWalletDir(): wallets live under `<datadir>/wallets/` when that directory
+ *  exists, otherwise directly in the datadir. Callers must pre-validate `wallet`
+ *  with isPathSafeWalletName before deleting the returned path. */
+export async function resolveWalletDir(
+  subc: { exec: (cmd: string[]) => Promise<{ exitCode: number | null }> },
+  wallet: string,
+): Promise<string> {
+  const walletsRoot = `${rootDir}/wallets`
+  const hasWalletsRoot =
+    (await subc.exec(['test', '-d', walletsRoot])).exitCode === 0
+  return `${hasWalletsRoot ? walletsRoot : rootDir}/${wallet}`
 }
 
 export const zmqBundle = {
