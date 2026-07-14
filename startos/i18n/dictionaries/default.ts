@@ -15,9 +15,9 @@ const dict = {
   'The blockchain is fully synced.': 11,
 
   // interfaces.ts
-  'RPC': 100,
+  RPC: 100,
   'Listens for JSON-RPC commands': 101,
-  'Peer': 102,
+  Peer: 102,
   'Listens for incoming connections from peers on the bitcoin network': 103,
   'ZeroMQ Block': 104,
   'I2P Daemon Console': 105,
