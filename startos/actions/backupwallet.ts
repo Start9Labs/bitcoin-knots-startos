@@ -1,6 +1,12 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir, rpcArgs } from '../utils'
+import {
+  ensureWalletLoaded,
+  getSelectedWallet,
+  isPathSafeWalletName,
+  rootDir,
+  rpcArgs,
+} from '../utils'
 import { i18n } from '../i18n'
 
 export const backupwallet = sdk.Action.withoutInput(
@@ -9,65 +15,64 @@ export const backupwallet = sdk.Action.withoutInput(
 
   // metadata
   async ({ effects }) => {
-	const conf = (await bitcoinConfFile.read().const(effects))!
-	
-	return {
-		name: i18n('Backup wallet'),
-		description:
-		  i18n('Backup wallet in a file for startOS system backup'),
-		warning: null,
-		allowedStatuses: 'only-running',
-		group: 'Wallet',
-		visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
-	}
+    const conf = (await bitcoinConfFile.read().const(effects))!
+
+    return {
+      name: i18n('Backup wallet'),
+      description: i18n('Backup wallet in a file for startOS system backup'),
+      warning: null,
+      allowedStatuses: 'only-running',
+      group: 'Wallet',
+      visibility: !conf?.raw?.disablewallet
+        ? 'enabled'
+        : { disabled: i18n('Wallet is disabled') },
+    }
   },
 
   // execution function
   async ({ effects }) => {
+    const mountpoint = '/scripts'
 
-	const mountpoint = '/scripts'
-	
-	const conf = (await bitcoinConfFile.read().const(effects))!
+    const conf = (await bitcoinConfFile.read().const(effects))!
+    const wallet = await getSelectedWallet()
 
-	const res = await sdk.SubContainer.withTemp(
-	  effects,
-	  { imageId: 'bitcoind' },
-	  sdk.Mounts.of().mountVolume ({
-	  volumeId: 'main',
-	  subpath: null, 
-	  mountpoint: rootDir,  
-	  readonly: false,
-	  }).mountAssets({ subpath: null, mountpoint}),
-	  'Backup wallet',
-	  async (subc) => {
-        await subc.exec([
+    // The default wallet '' has no path-safe name; back it up as default.dat
+    const backupFile = isPathSafeWalletName(wallet)
+      ? `${rootDir}/${wallet}.dat`
+      : `${rootDir}/default.dat`
+
+    const res = await sdk.SubContainer.withTemp(
+      effects,
+      { imageId: 'bitcoind' },
+      sdk.Mounts.of()
+        .mountVolume({
+          volumeId: 'main',
+          subpath: null,
+          mountpoint: rootDir,
+          readonly: false,
+        })
+        .mountAssets({ subpath: null, mountpoint }),
+      'Backup wallet',
+      async (subc) => {
+        await ensureWalletLoaded(subc, { prune: !!conf.prune, wallet })
+
+        return await subc.execFail([
           'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
-          'createwallet',
-          'coin',
+          ...rpcArgs({ prune: !!conf.prune, wallet }),
+          'backupwallet',
+          backupFile,
         ])
-        
-        await subc.exec([
-          'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
-          'loadwallet',
-          'coin',
-        ])
-		
-		return await subc.execFail([
-		  'bitcoin-cli',
-		  ...rpcArgs({ prune: !!conf.prune }),
-		  'backupwallet',
-		  `${rootDir}/coin.dat`,
-		])
-	  },
-	)
-	
-	return {
-	  version: '1',
-	  title: 'Sucess',
-	  message: i18n('Your wallet has backup in coin.dat'),
-	  result: null,
-	}
+      },
+    )
+
+    return {
+      version: '1',
+      title: 'Sucess',
+      message: i18n('Wallet ${wallet} has been backed up to ${file}', {
+        wallet: wallet === '' ? '(default wallet)' : wallet,
+        file: backupFile,
+      }),
+      result: null,
+    }
   },
 )

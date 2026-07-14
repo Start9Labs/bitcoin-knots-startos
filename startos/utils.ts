@@ -1,3 +1,5 @@
+import { T } from '@start9labs/start-sdk'
+import { storeJson } from './fileModels/store.json'
 import { sdk } from './sdk'
 
 export const rpcInterfaceId = 'rpc'
@@ -81,18 +83,75 @@ export type GetBlockchainInfo = {
   warnings: string
 }
 
-/** RPC connection args shared by bitcoin-cli and shell-script wrappers. */
-export function rpcArgs(opts: { prune: boolean }): string[] {
+/** RPC connection args shared by bitcoin-cli and shell-script wrappers.
+ *  Pass `wallet` to scope a wallet RPC to a specific wallet — required once
+ *  more than one wallet is loaded, or bitcoind fails with error -19. */
+export function rpcArgs(opts: { prune: boolean; wallet?: string }): string[] {
   return [
     `-conf=${rootDir}/bitcoin.conf`,
     `-rpccookiefile=${rootDir}/.cookie`,
     `-rpcport=${opts.prune ? rpcPortPruned : rpcPort}`,
+    ...(opts.wallet !== undefined ? [`-rpcwallet=${opts.wallet}`] : []),
   ]
 }
 
 /** Full bitcoin-cli command prefix for actions running in temp subcontainers. */
-export function bitcoinCliArgs(opts: { prune: boolean }): string[] {
+export function bitcoinCliArgs(opts: {
+  prune: boolean
+  wallet?: string
+}): string[] {
   return ['bitcoin-cli', ...rpcArgs(opts)]
+}
+
+/** Historical hardcoded wallet name used by the Wallet-group Actions. */
+export const defaultWalletName = 'coin'
+
+/** The wallet the Wallet-group Actions are currently pointed at
+ *  (set via the Select Wallet action, defaults to `coin`).
+ *  Pass `effects` to subscribe reactively (metadata builders); omit it for a
+ *  one-shot read (execution functions). */
+export async function getSelectedWallet(effects?: T.Effects): Promise<string> {
+  const store = effects
+    ? await storeJson.read().const(effects)
+    : await storeJson.read().once()
+  return store?.selectedWallet ?? defaultWalletName
+}
+
+/** True if `name` is safe to embed in a filesystem path under the datadir.
+ *  Notably rejects the default wallet '' (its wallet dir IS the datadir root)
+ *  and anything containing path separators. */
+export function isPathSafeWalletName(name: string): boolean {
+  return (
+    name.length > 0 &&
+    name !== '.' &&
+    name !== '..' &&
+    !name.includes('/') &&
+    !name.includes('\\')
+  )
+}
+
+/** Make sure the selected wallet is loaded before issuing wallet RPCs.
+ *  For the historical default wallet `coin` this preserves the old behavior
+ *  of creating it if it doesn't exist yet. For any other wallet we only
+ *  attempt a load — "already loaded" errors are ignored via non-failing exec. */
+export async function ensureWalletLoaded(
+  subc: { exec: (cmd: string[]) => Promise<unknown> },
+  opts: { prune: boolean; wallet: string },
+): Promise<void> {
+  if (opts.wallet === defaultWalletName) {
+    await subc.exec([
+      'bitcoin-cli',
+      ...rpcArgs({ prune: opts.prune }),
+      'createwallet',
+      defaultWalletName,
+    ])
+  }
+  await subc.exec([
+    'bitcoin-cli',
+    ...rpcArgs({ prune: opts.prune }),
+    'loadwallet',
+    opts.wallet,
+  ])
 }
 
 export const zmqBundle = {
