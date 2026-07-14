@@ -1,6 +1,12 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir, rpcArgs } from '../utils'
+import {
+  ensureWalletLoaded,
+  getSelectedWallet,
+  rootDir,
+  rpcArgs,
+  walletLabel,
+} from '../utils'
 import { i18n } from '../i18n'
 
 export const getbalance = sdk.Action.withoutInput(
@@ -10,14 +16,16 @@ export const getbalance = sdk.Action.withoutInput(
   // metadata
   async ({ effects }) => {
     const conf = (await bitcoinConfFile.read().const(effects))!
-    
+
     return {
       name: i18n('Get Balance'),
       description: i18n('Get the balance of your Bitcoin wallet.'),
       warning: null,
       allowedStatuses: 'only-running',
       group: i18n('Wallet'),
-      visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
+      visibility: !conf?.raw?.disablewallet
+        ? 'enabled'
+        : { disabled: i18n('Wallet is disabled') },
     }
   },
 
@@ -26,6 +34,7 @@ export const getbalance = sdk.Action.withoutInput(
     const mountpoint = '/scripts'
 
     const conf = (await bitcoinConfFile.read().const(effects))!
+    const wallet = await getSelectedWallet()
 
     const res = await sdk.SubContainer.withTemp(
       effects,
@@ -40,28 +49,16 @@ export const getbalance = sdk.Action.withoutInput(
         .mountAssets({ subpath: null, mountpoint }),
       'getbalance',
       async (subc) => {
-        await subc.exec([
-          'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
-          'createwallet',
-          'coin',
-        ])
-        
-        await subc.exec([
-          'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
-          'loadwallet',
-          'coin',
-        ])
-        
+        await ensureWalletLoaded(subc, { prune: !!conf.prune, wallet })
+
         const balancesRes = await subc.execFail([
           'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
+          ...rpcArgs({ prune: !!conf.prune, wallet }),
           'getbalances',
         ])
         const result = JSON.parse(balancesRes.stdout as string)
-        
-        return `trusted: ${result.mine.trusted}, untrusted: ${result.mine.untrusted_pending}, immature: ${result.mine.immature}`
+
+        return `wallet: ${walletLabel(wallet)} — trusted: ${result.mine.trusted}, untrusted: ${result.mine.untrusted_pending}, immature: ${result.mine.immature}`
       },
     )
 

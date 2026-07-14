@@ -44,18 +44,18 @@ const mempoolReset = {
 }
 
 export const current = VersionInfo.of({
-  version: '#knotsprerdts:29.3:11',
+  version: '#knotsprerdts:29.3:12',
   releaseNotes: {
     en_US:
-      'Ships the correct pre-RDTS Bitcoin Knots binary (29.3.knots20260507). Previous builds mistakenly bundled the 20260508 release.',
+      'Add a Select Wallet action to choose which wallet the Wallet actions operate on, and scope every Wallet action to the selected wallet — fixing RPC error -19 when a second wallet (for example one created by BTCPay Server) is loaded.',
     es_ES:
-      'Incluye el binario correcto de Bitcoin Knots pre-RDTS (29.3.knots20260507). Las compilaciones anteriores incluían por error la versión 20260508.',
+      'Se añade una acción Seleccionar cartera para elegir sobre qué cartera operan las acciones de Cartera, y cada acción de Cartera se limita a la cartera seleccionada, lo que corrige el error RPC -19 cuando se carga una segunda cartera (por ejemplo, una creada por BTCPay Server).',
     de_DE:
-      'Liefert die korrekte Pre-RDTS-Binärdatei von Bitcoin Knots (29.3.knots20260507). Frühere Builds enthielten versehentlich die Version 20260508.',
+      'Neue Aktion „Wallet auswählen“, um festzulegen, auf welche Wallet die Wallet-Aktionen angewendet werden; jede Wallet-Aktion wird auf die ausgewählte Wallet beschränkt. Das behebt den RPC-Fehler -19, wenn eine zweite Wallet (zum Beispiel eine von BTCPay Server erstellte) geladen ist.',
     pl_PL:
-      'Dostarcza poprawny binarny plik Bitcoin Knots pre-RDTS (29.3.knots20260507). Poprzednie kompilacje omyłkowo zawierały wydanie 20260508.',
+      'Dodano akcję „Wybierz portfel”, aby wskazać, na którym portfelu działają akcje Portfela; każda akcja Portfela jest ograniczona do wybranego portfela. Naprawia to błąd RPC -19, gdy załadowany jest drugi portfel (na przykład utworzony przez BTCPay Server).',
     fr_FR:
-      'Fournit le binaire Bitcoin Knots pré-RDTS correct (29.3.knots20260507). Les versions précédentes incluaient par erreur la version 20260508.',
+      "Ajout d'une action « Sélectionner le portefeuille » pour choisir le portefeuille sur lequel les actions Portefeuille opèrent ; chaque action Portefeuille est limitée au portefeuille sélectionné. Cela corrige l'erreur RPC -19 lorsqu'un second portefeuille (par exemple créé par BTCPay Server) est chargé.",
   },
   migrations: {
     up: async ({ effects }) => {},

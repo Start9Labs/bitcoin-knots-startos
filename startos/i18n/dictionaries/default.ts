@@ -371,17 +371,29 @@ const dict = {
   'Backup wallet': 2500,
   'Backup wallet in a file for startOS system backup': 2501,
   'Your wallet has backup in coin.dat': 2502,
+  'Wallet ${wallet} has been backed up to ${file}': 2503,
 
   // actions/restorewallet.ts
   'Restore wallet': 2600,
   'Restore wallet from the backup': 2601,
   'Your wallet has been restored': 2602,
+  'Wallet ${wallet} has been restored from ${file}': 2603,
 
   // actions/removewallet.ts
   'Remove wallet': 2700,
   'Remove the wallet in Bitcoin Knots': 2701,
   '⚠️ Please be sure that your wallet is empty, or that you have a backup. Without a backup this will lead to a permanent loss of funds.': 2702,
   'Your wallet has been removed.': 2703,
+  'Not removed': 2704,
+  'The selected wallet cannot be removed from here. Select a different wallet with the Select Wallet action, or manage it from the service that created it.': 2705,
+  'Wallet ${wallet} has been removed.': 2706,
+
+  // actions/selectwallet.ts
+  'Select Wallet': 3100,
+  'Choose which wallet the Wallet actions operate on. Currently selected: ${wallet}': 3101,
+  '(default wallet)': 3102,
+  'The wallet that all Wallet actions (Get Balance, Get Address, Send Coins, Sign Message, Backup Wallet, etc.) will operate on. Includes wallets created by dependent services such as BTCPay Server/NBXplorer.': 3103,
+  'Wallet actions will now operate on wallet: ${wallet}': 3104,
 
   // actions/config/autoconfig.ts
   'Auto-Configure': 2800,
