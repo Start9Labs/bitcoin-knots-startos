@@ -1,6 +1,11 @@
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { sdk } from '../sdk'
-import { rootDir, rpcArgs } from '../utils'
+import {
+  ensureWalletLoaded,
+  getSelectedWallet,
+  rootDir,
+  rpcArgs,
+} from '../utils'
 import { i18n } from '../i18n'
 
 export const getaddress = sdk.Action.withoutInput(
@@ -10,14 +15,16 @@ export const getaddress = sdk.Action.withoutInput(
   // metadata
   async ({ effects }) => {
     const conf = (await bitcoinConfFile.read().const(effects))!
-    
+
     return {
       name: i18n('Get Address'),
       description: i18n('Get a new segwit address.'),
       warning: null,
       allowedStatuses: 'only-running',
       group: i18n('Wallet'),
-      visibility: !conf?.raw?.disablewallet ? 'enabled' : { disabled: i18n('Wallet is disabled') },
+      visibility: !conf?.raw?.disablewallet
+        ? 'enabled'
+        : { disabled: i18n('Wallet is disabled') },
     }
   },
 
@@ -26,6 +33,7 @@ export const getaddress = sdk.Action.withoutInput(
     const mountpoint = '/scripts'
 
     const conf = (await bitcoinConfFile.read().const(effects))!
+    const wallet = await getSelectedWallet()
 
     const res = await sdk.SubContainer.withTemp(
       effects,
@@ -40,23 +48,11 @@ export const getaddress = sdk.Action.withoutInput(
         .mountAssets({ subpath: null, mountpoint }),
       'getaddress',
       async (subc) => {
-        await subc.exec([
-          'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
-          'createwallet',
-          'coin',
-        ])
-        
-        await subc.exec([
-          'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
-          'loadwallet',
-          'coin',
-        ])
-        
+        await ensureWalletLoaded(subc, { prune: !!conf.prune, wallet })
+
         return await subc.execFail([
           'bitcoin-cli',
-          ...rpcArgs({ prune: !!conf.prune }),
+          ...rpcArgs({ prune: !!conf.prune, wallet }),
           'getnewaddress',
           '',
           'bech32',

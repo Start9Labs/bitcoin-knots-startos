@@ -45,14 +45,15 @@ Four configuration actions cover the full set of editable `bitcoin.conf` values,
 - **Generate RPC User Credentials** — create a username/password pair for an external client.
 - **Delete RPC Users** — remove credentials you no longer need.
 
-### Wallet (hot wallet on the node)
+### Wallet (on-node wallets)
 
-When wallets are not disabled, the node ships with a basic hot-wallet toolkit you can drive from actions:
+When wallets are not disabled, the node ships with a basic wallet toolkit you can drive from actions:
 
+- **Select Wallet** — choose which wallet the other Wallet actions operate on. It defaults to `coin`, and the dropdown also lists wallets created by dependent services such as BTCPay Server/NBXplorer (including bitcoind's unnamed default wallet).
 - **Get Address**, **Get Balance**, **Send Coin**, **Send All Coin**, **Sign Message**.
 - **Backup Wallet** / **Restore Wallet** / **Remove Wallet**.
 
-For day-to-day use prefer a dedicated wallet pointed at the RPC interface; the action surface here is mainly for one-off recovery and maintenance.
+Every action above acts on the currently selected wallet, so if you run more than one wallet (for example alongside BTCPay Server) use **Select Wallet** to point them at the right one first — otherwise they operate on `coin`. For day-to-day use prefer a dedicated wallet pointed at the RPC interface; the action surface here is mainly for one-off recovery and maintenance.
 
 ### Mining
 

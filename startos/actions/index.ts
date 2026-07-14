@@ -22,6 +22,7 @@ import { removewallet } from './removewallet'
 import { restorewallet } from './restorewallet'
 import { runtimeInfo } from './runtimeInfo'
 import { sendAllCoin } from './sendallcoin'
+import { selectWallet } from './selectwallet'
 import { sendCoin } from './sendcoin'
 import { signMessage } from './sign'
 
@@ -42,6 +43,7 @@ export const actions = sdk.Actions.of()
   .addAction(reindexChainstate)
   .addAction(runtimeInfo)
   .addAction(autoconfig)
+  .addAction(selectWallet)
   .addAction(getbalance)
   .addAction(getaddress)
   .addAction(sendCoin)

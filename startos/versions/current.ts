@@ -42,18 +42,18 @@ const mempoolReset = {
 }
 
 export const current = VersionInfo.of({
-  version: '#knots:29.3.1:10',
+  version: '#knots:29.3.1:11',
   releaseNotes: {
     en_US:
-      'Bump version to ensure migration for startOS 0.3.5.1 users.',
+      'Add a Select Wallet action to choose which wallet the Wallet actions operate on, and scope every Wallet action to the selected wallet — fixing RPC error -19 when a second wallet (for example one created by BTCPay Server) is loaded.',
     es_ES:
-      'Actualizar la versión para garantizar la migración para los usuarios de startOS 0.3.5.1.',
+      'Se añade una acción Seleccionar cartera para elegir sobre qué cartera operan las acciones de Cartera, y cada acción de Cartera se limita a la cartera seleccionada, lo que corrige el error RPC -19 cuando se carga una segunda cartera (por ejemplo, una creada por BTCPay Server).',
     de_DE:
-      'Versionsaktualisierung zur Sicherstellung der Migration für startOS 0.3.5.1-Benutzer.',
+      'Neue Aktion „Wallet auswählen“, um festzulegen, auf welche Wallet die Wallet-Aktionen angewendet werden; jede Wallet-Aktion wird auf die ausgewählte Wallet beschränkt. Das behebt den RPC-Fehler -19, wenn eine zweite Wallet (zum Beispiel eine von BTCPay Server erstellte) geladen ist.',
     pl_PL:
-      'Podniesiono wersję, aby zapewnić migrację dla użytkowników startOS 0.3.5.1.',
+      'Dodano akcję „Wybierz portfel”, aby wskazać, na którym portfelu działają akcje Portfela; każda akcja Portfela jest ograniczona do wybranego portfela. Naprawia to błąd RPC -19, gdy załadowany jest drugi portfel (na przykład utworzony przez BTCPay Server).',
     fr_FR:
-      'Mise à jour de la version pour assurer la migration des utilisateurs de startOS 0.3.5.1.',
+      "Ajout d'une action « Sélectionner le portefeuille » pour choisir le portefeuille sur lequel les actions Portefeuille opèrent ; chaque action Portefeuille est limitée au portefeuille sélectionné. Cela corrige l'erreur RPC -19 lorsqu'un second portefeuille (par exemple créé par BTCPay Server) est chargé.",
   },
   migrations: {
     up: async ({ effects }) => {},
