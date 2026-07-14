@@ -13,6 +13,18 @@ import { i18n } from '../i18n'
 
 const { InputSpec, Value } = sdk
 
+/** UI-only sentinel used to represent bitcoind's default wallet ('') in the
+ *  dropdown. StartOS's dynamicSelect treats '' as "no selection" (same as an
+ *  HTML `<option value="">`) and refuses to submit it, so we display an
+ *  opaque token in the form and translate to/from '' at the form boundary.
+ *  The store, RPC helpers, and every wallet-scoped action continue to
+ *  operate on the real bitcoind wallet name. */
+const DEFAULT_WALLET_UI_KEY = '__default__'
+const toUiKey = (name: string): string =>
+  name === '' ? DEFAULT_WALLET_UI_KEY : name
+const fromUiKey = (key: string): string =>
+  key === DEFAULT_WALLET_UI_KEY ? '' : key
+
 /** Loaded wallets (listwallets) plus on-disk wallets not currently loaded
  *  (listwalletdir), so a dependent service's wallet is selectable too. */
 async function listAllWallets(
@@ -67,7 +79,7 @@ const inputSpec = InputSpec.of({
     const names = new Set<string>([...wallets, selected, defaultWalletName])
 
     const values = Object.fromEntries(
-      [...names].sort().map((name) => [name, walletLabel(name)]),
+      [...names].sort().map((name) => [toUiKey(name), walletLabel(name)]),
     )
 
     return {
@@ -75,7 +87,7 @@ const inputSpec = InputSpec.of({
       description: i18n(
         'The wallet that all Wallet actions (Get Balance, Get Address, Send Coins, Sign Message, Backup Wallet, etc.) will operate on. Includes wallets created by dependent services such as BTCPay Server/NBXplorer.',
       ),
-      default: names.has(selected) ? selected : defaultWalletName,
+      default: toUiKey(names.has(selected) ? selected : defaultWalletName),
       values,
     }
   }),
@@ -110,12 +122,12 @@ export const selectWallet = sdk.Action.withInput(
 
   // optionally pre-fill form
   async () => ({
-    wallet: await getSelectedWallet(),
+    wallet: toUiKey(await getSelectedWallet()),
   }),
 
   // execution function
   async ({ effects, input }) => {
-    const { wallet } = input
+    const wallet = fromUiKey(input.wallet)
 
     const conf = (await bitcoinConfFile.read().const(effects))!
 
