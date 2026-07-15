@@ -129,4 +129,6 @@ export const current = VersionInfo.of({
       },
     },
   },
-}).satisfies('29.3:13')
+})
+  .satisfies('29.4:0')
+  .satisfies('28.4:13')
