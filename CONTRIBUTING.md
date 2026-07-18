@@ -19,6 +19,16 @@ npm ci    # install dependencies
 make      # build the universal .s9pk
 ```
 
+> **Note:** `29.x` and `next/29.x` pin different `@start9labs/start-sdk` majors
+> (1.x vs 2.x). A stale `node_modules` from the other branch produces large,
+> misleading typecheck cascades (missing `tsconfig.base.json`, `esModuleInterop`
+> and `downlevelIteration` errors, unresolved SDK members). After switching
+> between these branches, reinstall before running `tsc`:
+>
+> ```bash
+> rm -rf node_modules && npm ci
+> ```
+
 For a complete list of build options, see [Makefile](https://docs.start9.com/packaging/makefile.html).
 
 ## Updating the upstream version
