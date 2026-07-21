@@ -44,18 +44,18 @@ const mempoolReset = {
 }
 
 export const current = VersionInfo.of({
-  version: '#knotsprerdts:29.3:12',
+  version: '#knotsprerdts:29.3:13',
   releaseNotes: {
     en_US:
-      'Add a Select Wallet action to choose which wallet the Wallet actions operate on, and scope every Wallet action to the selected wallet — fixing RPC error -19 when a second wallet (for example one created by BTCPay Server) is loaded.',
+      'Internal updates (start-sdk 2.0.x). Bitcoin now reaches Tor at a fixed internal bridge address and no longer restarts when Tor is installed, updated, or removed.',
     es_ES:
-      'Se añade una acción Seleccionar cartera para elegir sobre qué cartera operan las acciones de Cartera, y cada acción de Cartera se limita a la cartera seleccionada, lo que corrige el error RPC -19 cuando se carga una segunda cartera (por ejemplo, una creada por BTCPay Server).',
+      'Actualizaciones internas (start-sdk 2.0.x). Bitcoin ahora alcanza Tor en una dirección fija del puente interno y ya no se reinicia cuando Tor se instala, actualiza o elimina.',
     de_DE:
-      'Neue Aktion „Wallet auswählen“, um festzulegen, auf welche Wallet die Wallet-Aktionen angewendet werden; jede Wallet-Aktion wird auf die ausgewählte Wallet beschränkt. Das behebt den RPC-Fehler -19, wenn eine zweite Wallet (zum Beispiel eine von BTCPay Server erstellte) geladen ist.',
+      'Interne Aktualisierungen (start-sdk 2.0.x). Bitcoin erreicht Tor jetzt über eine feste interne Bridge-Adresse und startet nicht mehr neu, wenn Tor installiert, aktualisiert oder entfernt wird.',
     pl_PL:
-      'Dodano akcję „Wybierz portfel”, aby wskazać, na którym portfelu działają akcje Portfela; każda akcja Portfela jest ograniczona do wybranego portfela. Naprawia to błąd RPC -19, gdy załadowany jest drugi portfel (na przykład utworzony przez BTCPay Server).',
+      'Aktualizacje wewnętrzne (start-sdk 2.0.x). Bitcoin łączy się teraz z Torem pod stałym adresem wewnętrznego mostka i nie restartuje się już przy instalacji, aktualizacji ani usunięciu Tora.',
     fr_FR:
-      "Ajout d'une action « Sélectionner le portefeuille » pour choisir le portefeuille sur lequel les actions Portefeuille opèrent ; chaque action Portefeuille est limitée au portefeuille sélectionné. Cela corrige l'erreur RPC -19 lorsqu'un second portefeuille (par exemple créé par BTCPay Server) est chargé.",
+      'Mises à jour internes (start-sdk 2.0.x). Bitcoin atteint désormais Tor à une adresse fixe du pont interne et ne redémarre plus lorsque Tor est installé, mis à jour ou supprimé.',
   },
   migrations: {
     up: async ({ effects }) => {},
@@ -137,4 +137,6 @@ export const current = VersionInfo.of({
       },
     },
   },
-}).satisfies('29.3:12')
+})
+  .satisfies('29.4:0')
+  .satisfies('28.4:13')

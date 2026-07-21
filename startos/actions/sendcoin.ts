@@ -104,7 +104,7 @@ export const sendCoin = sdk.Action.withInput(
     return {
       version: '1',
       title: i18n('Success'),
-      message: `TXID: ${res.stdout}`,
+      message: `TXID: ${res.stdout as string}`,
       result: null,
     }
   },
