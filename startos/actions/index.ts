@@ -16,8 +16,10 @@ import { generateRpcUserDependent } from './generateRpcUserDependent'
 import { getaddress } from './getaddress'
 import { getbalance } from './getbalance'
 import { prioritiseTransaction } from './prioritiseTransaction'
+import { reconsiderInvalidBlocks } from './reconsiderInvalidBlocks'
 import { reindexBlockchain } from './reindexBlockchain'
 import { reindexChainstate } from './reindexChainstate'
+import { revalidateRdts } from './revalidateRdts'
 import { removewallet } from './removewallet'
 import { restorewallet } from './restorewallet'
 import { runtimeInfo } from './runtimeInfo'
@@ -41,6 +43,8 @@ export const actions = sdk.Actions.of()
   .addAction(otherConfig)
   .addAction(reindexBlockchain)
   .addAction(reindexChainstate)
+  .addAction(reconsiderInvalidBlocks)
+  .addAction(revalidateRdts)
   .addAction(runtimeInfo)
   .addAction(autoconfig)
   .addAction(selectWallet)

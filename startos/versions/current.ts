@@ -1,6 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 import { rm } from 'fs/promises'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
+import { storeJson } from '../fileModels/store.json'
 /**
  * Reset all mempool settings to undefined so the new flavor's upstream
  * defaults take effect. This is the primary reason users switch between
@@ -41,19 +42,42 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
+/**
+ * Chain-split recovery flags (see startos/forkRecovery.ts), set on every
+ * cross-flavor sidegrade and consumed by the destination flavor's
+ * chain-recovery oneshot at next start (clean no-ops when there is nothing
+ * to fix). The shared datadir carries each flavor's persisted per-block
+ * verdicts across a switch, so:
+ *
+ * - Entering this (enforcing) flavor: if the chain advanced past the
+ *   RDTS-applicable range without enforcement, that range must be
+ *   re-validated (the publicly disclosed BIP-110 late-upgrade
+ *   validation gap). The shipped
+ *   RUNTIME_WARN binary enforces from its first start, so the switch
+ *   itself is the enforcement transition. The oneshot's store marker
+ *   (rdtsEnforcedLastRun) detects the same transition independently;
+ *   setting the flag here makes the switch case deterministic even if a
+ *   prior run never recorded a marker.
+ * - Leaving for a non-enforcing flavor: RDTS-driven invalid verdicts must
+ *   be reconsidered so they cannot pin Core / pre-RDTS Knots to a stale
+ *   chain across a split.
+ */
+const enteringRdtsFlavor = { revalidateFromRdts: true }
+const leavingRdtsFlavor = { reconsiderInvalidTips: true }
+
 export const current = VersionInfo.of({
   version: '#knots:29.3.1:12',
   releaseNotes: {
     en_US:
-      'Internal updates (start-sdk 2.0.x). Bitcoin now reaches Tor at a fixed internal bridge address and no longer restarts when Tor is installed, updated, or removed.',
+      'Internal updates (start-sdk 2.0.x). Bitcoin now reaches Tor at a fixed internal bridge address and no longer restarts when Tor is installed, updated, or removed. Adds chain-split recovery for the BIP-110 (RDTS) era: flavor switches now automatically correct persisted block verdicts (clearing inherited invalid marks, or re-validating the RDTS range when enforcement arrives), and a new Chain Recovery action group (Reconsider Invalid Blocks, Re-validate Against RDTS) gives manual control.',
     es_ES:
-      'Actualizaciones internas (start-sdk 2.0.x). Bitcoin ahora alcanza Tor en una dirección fija del puente interno y ya no se reinicia cuando Tor se instala, actualiza o elimina.',
+      'Actualizaciones internas (start-sdk 2.0.x). Bitcoin ahora alcanza Tor en una dirección fija del puente interno y ya no se reinicia cuando Tor se instala, actualiza o elimina. Añade recuperación ante divisiones de cadena para la era BIP-110 (RDTS): los cambios de variante ahora corrigen automáticamente los veredictos de bloques persistidos (borrando marcas de invalidez heredadas o revalidando el rango RDTS cuando llega su aplicación), y un nuevo grupo de acciones Recuperación de cadena (Reconsiderar bloques inválidos, Revalidar contra RDTS) ofrece control manual.',
     de_DE:
-      'Interne Aktualisierungen (start-sdk 2.0.x). Bitcoin erreicht Tor jetzt über eine feste interne Bridge-Adresse und startet nicht mehr neu, wenn Tor installiert, aktualisiert oder entfernt wird.',
+      'Interne Aktualisierungen (start-sdk 2.0.x). Bitcoin erreicht Tor jetzt über eine feste interne Bridge-Adresse und startet nicht mehr neu, wenn Tor installiert, aktualisiert oder entfernt wird. Fügt Chain-Split-Wiederherstellung für die BIP-110-(RDTS-)Ära hinzu: Variantenwechsel korrigieren jetzt automatisch persistierte Block-Urteile (geerbte Ungültigkeitsmarkierungen werden gelöscht bzw. der RDTS-Bereich bei eintreffender Durchsetzung neu validiert), und eine neue Aktionsgruppe Chain-Wiederherstellung (Ungültige Blöcke überdenken, Gegen RDTS neu validieren) bietet manuelle Kontrolle.',
     pl_PL:
-      'Aktualizacje wewnętrzne (start-sdk 2.0.x). Bitcoin łączy się teraz z Torem pod stałym adresem wewnętrznego mostka i nie restartuje się już przy instalacji, aktualizacji ani usunięciu Tora.',
+      'Aktualizacje wewnętrzne (start-sdk 2.0.x). Bitcoin łączy się teraz z Torem pod stałym adresem wewnętrznego mostka i nie restartuje się już przy instalacji, aktualizacji ani usunięciu Tora. Dodaje odzyskiwanie po podziale łańcucha na erę BIP-110 (RDTS): zmiany wariantu automatycznie korygują teraz utrwalone werdykty bloków (czyszcząc odziedziczone oznaczenia nieważności lub ponownie weryfikując zakres RDTS, gdy pojawia się egzekwowanie), a nowa grupa akcji Odzyskiwanie łańcucha (Rozważ ponownie nieważne bloki, Zweryfikuj ponownie względem RDTS) daje ręczną kontrolę.',
     fr_FR:
-      'Mises à jour internes (start-sdk 2.0.x). Bitcoin atteint désormais Tor à une adresse fixe du pont interne et ne redémarre plus lorsque Tor est installé, mis à jour ou supprimé.',
+      "Mises à jour internes (start-sdk 2.0.x). Bitcoin atteint désormais Tor à une adresse fixe du pont interne et ne redémarre plus lorsque Tor est installé, mis à jour ou supprimé. Ajoute la récupération après scission de chaîne pour l'ère BIP-110 (RDTS) : les changements de variante corrigent désormais automatiquement les verdicts de blocs persistants (effacement des marques d'invalidité héritées, ou revalidation de la plage RDTS à l'arrivée de l'application des règles), et un nouveau groupe d'actions Récupération de chaîne (Reconsidérer les blocs invalides, Revalider par rapport à RDTS) offre un contrôle manuel.",
   },
   migrations: {
     up: async ({ effects }) => {},
@@ -61,25 +85,35 @@ export const current = VersionInfo.of({
     // Keyed by Core major series as caret ranges — one entry per Core
     // major, not per Core `:N`. Range-keyed `migrations.other` requires
     // StartOS ≥ 0.4.0-beta.9 (Start9Labs/start-os#3214).
+    //
+    // Intentional asymmetry: there is no `^#knotsprerdts` key here for the
+    // pre-RDTS Knots sibling (B). The B↔C migration belt lives on B's own
+    // `^#knots` entry (its `down` edge, B→C, sets revalidateFromRdts), which
+    // fires because this flavor satisfies B's `canMigrateTo`; the runtime
+    // rdtsEnforcedLastRun marker double-covers it. Not a gap — no mirror key.
     other: {
       ['^28']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+          await storeJson.merge(effects, enteringRdtsFlavor)
         },
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+          await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
       ['^29']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+          await storeJson.merge(effects, enteringRdtsFlavor)
         },
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+          await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
       ['^30']: {
@@ -88,6 +122,7 @@ export const current = VersionInfo.of({
         // Core 30 deliberately preserved for downgrade.
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+          await storeJson.merge(effects, enteringRdtsFlavor)
           await rm('/media/startos/volumes/main/indexes/coinstatsindex', {
             recursive: true,
             force: true,
@@ -96,6 +131,7 @@ export const current = VersionInfo.of({
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+          await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
       ['^31']: {
@@ -104,6 +140,7 @@ export const current = VersionInfo.of({
         // coinstatsindex (same reason as 30.x).
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+          await storeJson.merge(effects, enteringRdtsFlavor)
           await rm('/media/startos/volumes/main/fee_estimates.dat', {
             force: true,
           }).catch(console.error)
@@ -115,6 +152,7 @@ export const current = VersionInfo.of({
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
+          await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
       // `#knotsrdts` (the "Bitcoin Knots plus BIP-110" build) is being
@@ -125,6 +163,10 @@ export const current = VersionInfo.of({
       ['^#knotsrdts:29.3']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, { consensusrules: 'rdts' })
+          // Also queue the RDTS re-validation: nothing proves the retired
+          // build enforced RDTS over this datadir's whole history, and the
+          // check self-clears when the chain never advanced unenforced.
+          await storeJson.merge(effects, enteringRdtsFlavor)
         },
       },
     },

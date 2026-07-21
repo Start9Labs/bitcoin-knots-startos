@@ -2,9 +2,16 @@ import { TOML } from '@start9labs/start-sdk'
 import { access, rm, writeFile } from 'fs/promises'
 import { request } from 'node:https'
 import { socksHostId, socksPort } from 'tor-startos/startos/utils'
+import { reindexBlockchain as reindexBlockchainAction } from './actions/reindexBlockchain'
 import { bitcoinConfFile } from './fileModels/bitcoin.conf'
 import { i2pdConfFile } from './fileModels/i2pd.conf'
 import { storeJson } from './fileModels/store.json'
+import {
+  getRdtsDeployment,
+  rdtsAnchorHeight,
+  reconsiderInvalidTips,
+  revalidateAgainstRdts,
+} from './forkRecovery'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
 import {
@@ -269,6 +276,224 @@ export const main = sdk.setupMain(async ({ effects }) => {
         },
       },
       requires: ['sync-progress'],
+    })
+    /**
+     * Chain-split recovery (see forkRecovery.ts). Detects enforcement-regime
+     * transitions via the rdtsEnforcedLastRun marker and consumes the store
+     * flags set by cross-flavor migrations and the Re-validate Against RDTS
+     * action. Runs once per start as soon as RPC answers; nothing depends on
+     * it, so it never blocks the service.
+     */
+    .addOneshot('chain-recovery', {
+      subcontainer: null,
+      exec: {
+        fn: async () => {
+          const prune = !!bitcoinConf.prune
+
+          // Ground truth from the running binary: enforcing ⇔ the
+          // reduced_data deployment is enabled. The shipped RUNTIME_WARN
+          // build enforces regardless of `consensusrules`, so config is not
+          // a valid proxy (see forkRecovery.ts).
+          const dep = await getRdtsDeployment(bitcoindSub, { prune })
+          const enforcing = dep !== undefined
+          const anchor = rdtsAnchorHeight(dep)
+
+          // Materialize an enforcement-regime transition into the durable
+          // recovery flags BEFORE updating the marker, so a crash between
+          // the writes re-detects the transition instead of losing it. An
+          // UNKNOWN marker (legacy datadir — e.g. one last advanced by a
+          // published package version that predates the marker) is treated
+          // as "the previous binary may have differed": entering
+          // enforcement re-validates, and a non-enforcing binary
+          // reconsiders (a free no-op when there are no invalid tips).
+          // This catches the paths no cross-flavor migration covers, such
+          // as the package update that moved the pinned binary from a
+          // pre-RDTS release to an enforcing one. The in-memory `store`
+          // mirrors every merge so a bitcoind health-flap re-running this
+          // oneshot within one main run doesn't repeat completed work.
+          let wantReconsider = store.reconsiderInvalidTips
+          let wantRevalidate = store.revalidateFromRdts
+          if (enforcing && store.rdtsEnforcedLastRun !== true) {
+            wantRevalidate = true
+            store.revalidateFromRdts = true
+            await storeJson.merge(effects, { revalidateFromRdts: true })
+          }
+          if (!enforcing && store.rdtsEnforcedLastRun !== false) {
+            wantReconsider = true
+            store.reconsiderInvalidTips = true
+            await storeJson.merge(effects, { reconsiderInvalidTips: true })
+          }
+          if (store.rdtsEnforcedLastRun !== enforcing) {
+            store.rdtsEnforcedLastRun = enforcing
+            await storeJson.merge(effects, { rdtsEnforcedLastRun: enforcing })
+          }
+
+          if (wantReconsider) {
+            if (enforcing) {
+              // Stale: queued when this datadir last left an enforcing
+              // flavor, but enforcement is active here — this node's
+              // verdicts are authoritative (and revalidateFromRdts governs
+              // rebuilding them).
+              store.reconsiderInvalidTips = false
+              await storeJson.merge(effects, { reconsiderInvalidTips: false })
+            } else {
+              try {
+                const res = await reconsiderInvalidTips(bitcoindSub, { prune })
+                store.reconsiderInvalidTips = false
+                await storeJson.merge(effects, {
+                  reconsiderInvalidTips: false,
+                })
+                if (res.reconsidered.length) {
+                  await sdk.notification.create(effects, {
+                    level: 'info',
+                    title: i18n('Chain Verdicts Reset'),
+                    message: i18n(
+                      "Cleared invalid-block verdicts inherited from the previously installed bitcoind flavor on ${count} chain tip(s). The node now follows the best chain that is valid under this flavor's rules; reorganizing onto it may take a while and requires peers on that chain.",
+                      { count: String(res.reconsidered.length) },
+                    ),
+                  })
+                }
+                if (res.skippedPruned.length) {
+                  await sdk.notification.create(effects, {
+                    level: 'warning',
+                    title: i18n('Some Chains Not Recoverable'),
+                    message: i18n(
+                      '${count} invalid chain branch(es) inherited from the previous bitcoind flavor could not be reconsidered: this pruned node no longer stores the blocks needed to reorganize onto them. If the node appears stuck on the wrong chain, run Reindex Blockchain (on a pruned node this re-downloads the chain).',
+                      { count: String(res.skippedPruned.length) },
+                    ),
+                  })
+                }
+              } catch (e) {
+                console.error('chain-recovery: reconsider failed', e)
+                await sdk.notification.create(effects, {
+                  level: 'error',
+                  title: i18n('Chain Recovery Failed'),
+                  message: i18n(
+                    'Clearing invalid-block verdicts inherited from the previous bitcoind flavor failed; it will be retried at the next restart. You can also run the Reconsider Invalid Blocks action manually. Error: ${error}',
+                    { error: String(e) },
+                  ),
+                })
+              }
+            }
+          }
+
+          if (wantRevalidate && enforcing) {
+            // When not enforcing, the flag stays dormant: it engages on the
+            // restart that follows RDTS enforcement arriving.
+            try {
+              const res = await revalidateAgainstRdts(
+                bitcoindSub,
+                { prune },
+                anchor,
+                async () => {
+                  await sdk.notification.create(effects, {
+                    level: 'warning',
+                    title: i18n('RDTS Re-validation Started'),
+                    message: i18n(
+                      'RDTS (BIP-110) enforcement is active but this chain advanced past the RDTS-applicable range without it, so blocks from height ${height} are being re-validated under the RDTS rules. This can take from minutes to many hours, and it may reorganize this node onto a different chain — during a chain split that reorg can be deep. If you run dependent services, especially Lightning (LND, Core Lightning), check them afterward: a deep enough reorg can force-close channels. A notification follows when it completes.',
+                      { height: String(anchor) },
+                    ),
+                  })
+                },
+              )
+              switch (res.outcome) {
+                case 'not-applicable':
+                  // Chain below the applicable range: every applicable block
+                  // will connect under the active rules — nothing to replay,
+                  // nothing worth notifying.
+                  store.revalidateFromRdts = false
+                  store.rdtsReindexWarned = false
+                  await storeJson.merge(effects, {
+                    revalidateFromRdts: false,
+                    rdtsReindexWarned: false,
+                  })
+                  break
+                case 'revalidated':
+                  store.revalidateFromRdts = false
+                  store.rdtsReindexWarned = false
+                  await storeJson.merge(effects, {
+                    revalidateFromRdts: false,
+                    rdtsReindexWarned: false,
+                  })
+                  await sdk.notification.create(effects, {
+                    level: 'success',
+                    title: i18n('RDTS Re-validation Complete'),
+                    message: i18n(
+                      'All blocks from height ${height} have been re-validated under the RDTS (BIP-110) consensus rules. The node is following the best RDTS-valid chain.',
+                      { height: String(res.fromHeight) },
+                    ),
+                  })
+                  break
+                case 'requires-reindex':
+                  // Keep the flag either way: it is re-checked each start.
+                  // For 'assumeutxo' the blocker clears itself when
+                  // background validation completes and the replay then
+                  // runs automatically — nothing is required of the user,
+                  // so no task; reindex is offered only as the immediate
+                  // alternative. For 'pruned' the replay is impossible in
+                  // place: warn and raise a critical Reindex Blockchain
+                  // task; the flag is then cleared by the below-anchor gate
+                  // at the start that performs the reindex.
+                  // Post the "cannot replay in place" warning only once per
+                  // unresolved episode (rdtsReindexWarned) so a deferred
+                  // reindex does not re-warn on every restart; the marker is
+                  // cleared when re-validation resolves. The critical Reindex
+                  // task is still (idempotently) re-created each start.
+                  if (res.reason === 'pruned') {
+                    if (!store.rdtsReindexWarned) {
+                      await sdk.notification.create(effects, {
+                        level: 'warning',
+                        title: i18n('RDTS Re-validation Requires Reindex'),
+                        message: i18n(
+                          'RDTS (BIP-110) enforcement was enabled after this pruned node had already synced past the RDTS-applicable range, and the blocks needed to re-validate that range have been pruned away. Until the chain is re-validated, this node may be following a chain that violates RDTS. Run the Reindex Blockchain action — on a pruned node this re-downloads and re-validates the entire chain under the active rules.',
+                        ),
+                      })
+                    }
+                    await sdk.action.createOwnTask(
+                      effects,
+                      reindexBlockchainAction,
+                      'critical',
+                      {
+                        reason: i18n(
+                          'RDTS (BIP-110) enforcement needs the blockchain re-validated, and this node cannot replay the affected range in place.',
+                        ),
+                      },
+                    )
+                  } else if (!store.rdtsReindexWarned) {
+                    await sdk.notification.create(effects, {
+                      level: 'warning',
+                      title: i18n('RDTS Re-validation Pending'),
+                      message: i18n(
+                        "This node's chainstate was bootstrapped from a UTXO snapshot (assumeutxo) whose background validation has not yet finished, so the RDTS-applicable block range cannot be re-validated in place yet. No action is required: the re-validation runs automatically at the first restart after background validation completes. To force a full rebuild now instead, run the Reindex Blockchain action.",
+                      ),
+                    })
+                  }
+                  if (!store.rdtsReindexWarned) {
+                    store.rdtsReindexWarned = true
+                    await storeJson.merge(effects, { rdtsReindexWarned: true })
+                  }
+                  break
+              }
+            } catch (e) {
+              console.error('chain-recovery: RDTS re-validation failed', e)
+              await sdk.notification.create(effects, {
+                level: 'error',
+                title: i18n('RDTS Re-validation Failed'),
+                message: i18n(
+                  'Re-validating the RDTS-applicable block range failed; it will be retried at the next restart. If the node is stuck below height ${height} with an invalid-marked chain, run the Reconsider Invalid Blocks action. Error: ${error}',
+                  {
+                    height: String(anchor),
+                    error: String(e),
+                  },
+                ),
+              })
+            }
+          }
+
+          return null
+        },
+      },
+      requires: ['bitcoind'],
     })
     // I2P daemon (conditional)
     .addDaemon('i2pd', async () => {
