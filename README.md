@@ -118,7 +118,7 @@ Settings **not** managed by StartOS (hardcoded):
 | `bind`          | `0.0.0.0:58333` | Internal peer listening port                                     |
 | `whitebind`     | `0.0.0.0:8333`  | Required for peer connections                                    |
 | `deprecatedrpc` | `create_bdb`    | Required for wallet creation                                     |
-| `-onion`        | `<torIp>:9050`  | StartOS Tor proxy (resolved via `sdk.getContainerIp` at runtime) |
+| `-onion`        | `10.0.3.1:9050` | Tor SOCKS on the internal bridge (resolved at startup; always set — harmless connection-refused when Tor is absent) |
 
 ### Pruned Node Architecture
 
