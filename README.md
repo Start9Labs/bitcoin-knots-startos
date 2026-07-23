@@ -12,7 +12,7 @@
 
 An enhanced Bitcoin full node implementation with additional policy controls for mempool filtering and spam prevention. See the [upstream repo](https://github.com/bitcoinknots/bitcoin) for general Bitcoin Knots documentation.
 
-This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos) and the other Knots flavors (`#knots`, the retiring `#knotsrdts`), allowing users to switch between flavors while preserving blockchain data and dependent service connections. This flavor (`#knotsprerdts`) is for users who want to remain on pre-RDTS Knots consensus rules — it ships the last pre-RDTS Bitcoin Knots release (`29.3.knots20260507`), with no "Activate RDTS" critical-task gate. `#knots` tracks current Knots releases, which include RDTS.
+This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos) and the other Knots flavors (`#knots`, the retiring `#knotsrdts`), allowing users to switch between flavors while preserving blockchain data and dependent service connections. Because the shared datadir also carries bitcoind's persisted per-block validity verdicts across a switch, the package runs a chain-recovery pass at startup so a flavor switch during a BIP-110 (RDTS) chain split lands the node on the chain this flavor considers valid — see [Chain-Split Recovery](#chain-split-recovery). This flavor (`#knotsprerdts`) is for users who want to remain on pre-RDTS Knots consensus rules — it ships the last pre-RDTS Bitcoin Knots release (`29.3.knots20260507`), with no "Activate RDTS" critical-task gate. `#knots` tracks current Knots releases, which include RDTS.
 
 ---
 
@@ -25,6 +25,7 @@ This package shares the `bitcoind` package ID with [Bitcoin Core](https://github
 - [Configuration Management](#configuration-management)
 - [Network Access and Interfaces](#network-access-and-interfaces)
 - [Actions](#actions-startos-ui)
+- [Chain-Split Recovery](#chain-split-recovery)
 - [Backups and Restore](#backups-and-restore)
 - [Health Checks](#health-checks)
 - [Dependencies](#dependencies)
@@ -63,9 +64,9 @@ Three additional containers are used:
 
 StartOS-specific files on the `main` volume:
 
-| File         | Purpose                                                                       |
-| ------------ | ----------------------------------------------------------------------------- |
-| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking) |
+| File         | Purpose                                                                                                                                         |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking, chain-recovery flags and the `rdtsEnforcedLastRun` enforcement marker) |
 
 Blockchain data directories (`blocks/`, `chainstate/`, `indexes/`) reside on the `main` volume alongside the standard `bitcoin.conf` and `.cookie` files.
 
@@ -200,6 +201,18 @@ These actions operate on the **selected wallet** (default `coin`). Use **Select 
 | -------------------------- | ---------------------------------------------------------------------------------- | ------------ |
 | **Auto-Configure**         | Automatically configure Bitcoin Knots for dependent services (prefills all config) | Any          |
 | **Create RPC Credentials** | Create RPC credentials with a provided username/password for dependent services    | Any          |
+
+## Chain-Split Recovery
+
+bitcoind persists a validity verdict for every block it has evaluated (`CBlockIndex::nStatus` in `blocks/index/`) and trusts those verdicts verbatim on startup — they are never re-derived, and they don't record _which_ consensus rules produced them. Because all `bitcoind` flavors share one datadir, a flavor switch changes the rules without changing the verdicts. Around a BIP-110 (RDTS) chain split, arriving here from the RDTS-enforcing Knots flavor would leave this node holding RDTS-driven `BLOCK_FAILED_VALID` marks it never produced, silently pinning it to the wrong chain.
+
+This flavor never enforces RDTS, so it implements only the "leaving the enforcing flavor" half of the recovery; the other half — replaying the RDTS-applicable range when enforcement _arrives_ — lives in the RDTS-enforcing Knots flavor (the [`29.x` branch](https://github.com/Start9Labs/bitcoin-knots-startos/tree/29.x), `startos/forkRecovery.ts`). The pieces here (`startos/forkRecovery.ts` + the `chain-recovery` oneshot in `startos/main.ts`):
+
+1. **A durable enforcement marker.** `store.json` records `rdtsEnforcedLastRun` — whether the binary that last advanced this datadir enforced RDTS. This flavor records `false` on every start; the enforcing flavor records its own state. This is the package-level marker bitcoind itself lacks.
+2. **Transition detection.** At each start (after RPC is ready), the oneshot materializes a true/unknown→false marker transition (the datadir was last advanced by an enforcing binary — or by a package version predating the marker, treated conservatively; the reconsider pass is a free no-op when there are no invalid tips) into the `reconsiderInvalidTips` store flag _before_ updating the marker, so a crash between the writes re-detects rather than loses the transition. The cross-flavor migrations (`startos/versions/current.ts`) set the same flag deterministically at switch time as a belt-and-suspenders path. All flavors carry both recovery flags in their store shape so a switch never strips a pending flag; `revalidateFromRdts` is set here on a `down` migration toward the enforcing sibling but never consumed — it stays dormant for that flavor to act on.
+3. **The remedy.** `reconsiderInvalidTips` — `getchaintips` → `reconsiderblock` every `invalid` tip. Clears the verdict on the block, its ancestors, and descendants (persisted); reconnection re-validates fully, so genuinely-invalid branches re-flag themselves. Idempotent and a clean no-op when there are no invalid tips. Tips whose fork point lies below `pruneheight` are skipped (reorganizing onto them would hit a fatal disconnect on pruned data) and reported in a warning notification pointing at **Reindex Blockchain** (on a pruned node: a full re-download).
+
+Notifications accompany every consequential outcome (verdicts cleared, some chains not recoverable, recovery failed). Peering is the one thing the package cannot fix: after verdicts are corrected the node still needs peers serving the intended chain, which the user docs call out.
 
 ## Backups and Restore
 
