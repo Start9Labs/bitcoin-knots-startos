@@ -280,8 +280,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     /**
      * Chain-split recovery (see forkRecovery.ts). Detects enforcement-regime
      * transitions via the rdtsEnforcedLastRun marker and consumes the store
-     * flags set by cross-flavor migrations and the Re-validate Against RDTS
-     * action. Runs once per start as soon as RPC answers; nothing depends on
+     * flags set by cross-flavor migrations. Runs once per start as soon as RPC answers; nothing depends on
      * it, so it never blocks the service.
      */
     .addOneshot('chain-recovery', {
@@ -369,7 +368,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
                   level: 'error',
                   title: i18n('Chain Recovery Failed'),
                   message: i18n(
-                    'Clearing invalid-block verdicts inherited from the previous bitcoind flavor failed; it will be retried at the next restart. You can also run the Reconsider Invalid Blocks action manually. Error: ${error}',
+                    'Clearing invalid-block verdicts inherited from the previous bitcoind flavor failed; it will be retried at the next restart. Error: ${error}',
                     { error: String(e) },
                   ),
                 })
@@ -480,9 +479,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
                 level: 'error',
                 title: i18n('RDTS Re-validation Failed'),
                 message: i18n(
-                  'Re-validating the RDTS-applicable block range failed; it will be retried at the next restart. If the node is stuck below height ${height} with an invalid-marked chain, run the Reconsider Invalid Blocks action. Error: ${error}',
+                  'Re-validating the RDTS-applicable block range failed; it will be retried at the next restart. Error: ${error}',
                   {
-                    height: String(anchor),
                     error: String(e),
                   },
                 ),

@@ -423,27 +423,14 @@ const dict = {
   'Please acknowledge': 3005,
   'Please confirm your understanding that this version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork (RDTS) consensus rules.': 3007,
 
-  // Chain Recovery: forkRecovery.ts, main.ts chain-recovery oneshot,
-  // actions/{reconsiderInvalidBlocks,revalidateRdts}.ts
+  // Chain Recovery: forkRecovery.ts, main.ts chain-recovery oneshot
   // (3200 block — 31xx is used by the pre-RDTS flavor's own strings)
-  'Chain Recovery': 3200,
-  'Reconsider Invalid Blocks': 3214,
-  'Clear the persisted invalid verdict from every invalid chain tip, letting the node re-evaluate those branches under the currently running consensus rules and follow the best chain that is valid under them. Use after switching bitcoind flavors across a chain split, so verdicts inherited from the previous flavor cannot pin the node to the wrong chain. Safe: branches that are invalid under the running rules are re-marked invalid automatically, and the action is a no-op when no invalid tips exist.': 3215,
-  'If a reconsidered branch has more work than the current chain, the node reorganizes onto it after re-validating it, which can take a while. Reaching a branch this node has not downloaded also requires peers that serve it.': 3216,
-  'No invalid chain tips found — there was nothing to reconsider.': 3217,
-  '${count} invalid tip(s) were left alone because this pruned node no longer stores the blocks needed to reorganize onto them; recovering those chains requires Reindex Blockchain (a re-download on pruned nodes).': 3218,
-  'Cleared invalid verdicts on ${count} chain tip(s). The node will now follow the best chain that is valid under its current consensus rules; reorganizing onto a better chain may take a while and requires peers that serve it.': 3219,
-  'Re-validate Against RDTS': 3220,
-  'Re-validate every block from the first RDTS-applicable height (${height}) under the BIP-110 (RDTS) consensus rules. Needed when RDTS enforcement arrives on a chain that already advanced past that height without it — for example after switching from Bitcoin Core or the pre-RDTS flavor — because bitcoind trusts its persisted block verdicts and never re-checks buried blocks against rules that were not active when they were connected. StartOS queues this automatically when a flavor switch or package update changes the enforcement regime; run it manually only as a recovery measure. If the service is running it restarts immediately to begin the replay; if it is stopped, the replay runs at the next start. Either way the node disconnects to the anchor height and replays the chain with full validation, rejecting any block that violates RDTS.': 3221,
-  'Replaying the chain from the anchor height can take from minutes to many hours depending on how far the chain has advanced, and it may reorganize this node onto a different chain than the one it currently follows — that is the point. Pruned nodes that no longer store the anchor height cannot replay locally and are directed to Reindex Blockchain instead. A node running from a not-yet-validated UTXO snapshot also cannot replay in place yet, but needs no action — the replay runs automatically once the snapshot finishes background validation; Reindex Blockchain is offered only to force it sooner.': 3222,
-  'Restarting bitcoind to re-validate the RDTS-applicable block range if the chain has advanced past it. Any replay runs with its progress in the service logs and a notification on completion; if there is nothing to replay it clears without further notice.': 3224,
-  'The RDTS-applicable block range will be re-validated the next time bitcoind starts.': 3225,
   'Chain Verdicts Reset': 3226,
   "Cleared invalid-block verdicts inherited from the previously installed bitcoind flavor on ${count} chain tip(s). The node now follows the best chain that is valid under this flavor's rules; reorganizing onto it may take a while and requires peers on that chain.": 3227,
   'Some Chains Not Recoverable': 3228,
   '${count} invalid chain branch(es) inherited from the previous bitcoind flavor could not be reconsidered: this pruned node no longer stores the blocks needed to reorganize onto them. If the node appears stuck on the wrong chain, run Reindex Blockchain (on a pruned node this re-downloads the chain).': 3229,
   'Chain Recovery Failed': 3230,
-  'Clearing invalid-block verdicts inherited from the previous bitcoind flavor failed; it will be retried at the next restart. You can also run the Reconsider Invalid Blocks action manually. Error: ${error}': 3231,
+  'Clearing invalid-block verdicts inherited from the previous bitcoind flavor failed; it will be retried at the next restart. Error: ${error}': 3231,
   'RDTS Re-validation Started': 3232,
   'RDTS (BIP-110) enforcement is active but this chain advanced past the RDTS-applicable range without it, so blocks from height ${height} are being re-validated under the RDTS rules. This can take from minutes to many hours, and it may reorganize this node onto a different chain — during a chain split that reorg can be deep. If you run dependent services, especially Lightning (LND, Core Lightning), check them afterward: a deep enough reorg can force-close channels. A notification follows when it completes.': 3233,
   'RDTS Re-validation Complete': 3234,
@@ -454,7 +441,7 @@ const dict = {
   'RDTS (BIP-110) enforcement needs the blockchain re-validated, and this node cannot replay the affected range in place.': 3239,
   'RDTS Re-validation Failed': 3240,
   'RDTS Re-validation Pending': 3243,
-  'Re-validating the RDTS-applicable block range failed; it will be retried at the next restart. If the node is stuck below height ${height} with an invalid-marked chain, run the Reconsider Invalid Blocks action. Error: ${error}': 3241,
+  'Re-validating the RDTS-applicable block range failed; it will be retried at the next restart. Error: ${error}': 3241,
 } as const
 
 /**

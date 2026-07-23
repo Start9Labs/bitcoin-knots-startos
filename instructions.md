@@ -66,13 +66,6 @@ Every action above acts on the currently selected wallet, so if you run more tha
 - **Delete Peer List** — wipe `peers.dat` if peer discovery is misbehaving.
 - **Delete Transaction Index** / **Delete Coinstats Index** — clear a corrupted index so it can be rebuilt.
 
-### Chain Recovery
-
-These actions manage bitcoind's _persisted_ per-block validity verdicts — the records that survive restarts and flavor switches. They exist for chain-split scenarios; most users never need to run them manually because the package runs the right one automatically after a flavor switch (see below).
-
-- **Reconsider Invalid Blocks** — clear the invalid verdict from every invalid chain tip so the node re-evaluates those branches under its current consensus rules. Safe: genuinely invalid branches are re-marked automatically; no-op when there is nothing to clear.
-- **Re-validate Against RDTS** — replay the chain from the first RDTS-applicable height (961,632) under the RDTS rules at the next start. Queued automatically when RDTS enforcement arrives on a chain that synced past that height without it.
-
 ### Switching flavors during a chain split
 
 Bitcoin Core and both Bitcoin Knots flavors share the `bitcoind` package id and data volume, so switching flavors keeps the synced chain. However, bitcoind permanently records its verdict on every block it has seen, and those verdicts do not record _which_ rules produced them — a freshly switched binary trusts them as-is and never re-checks buried blocks on its own. If the network splits over BIP-110 (RDTS), that inheritance would silently pin your node to the previous flavor's chain. This package corrects it automatically at the first start after a switch:

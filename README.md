@@ -192,15 +192,6 @@ These actions operate on the **selected wallet** (default `coin`). Use **Select 
 | **Delete Transaction Index** | Delete corrupted txindex                                          | Stopped only |
 | **Delete Coinstats Index**   | Delete corrupted coinstatsindex                                   | Stopped only |
 
-### Chain Recovery
-
-| Action                        | Purpose                                                                                                     | Availability |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------ |
-| **Reconsider Invalid Blocks** | Clear persisted invalid verdicts on all invalid chain tips (`reconsiderblock` each; prune-aware)            | Running only |
-| **Re-validate Against RDTS**  | Queue a replay of the chain from the first RDTS-applicable height at next start (sets `revalidateFromRdts`) | Any          |
-
-See [Chain-Split Recovery](#chain-split-recovery) for the automation around these.
-
 ### Advanced
 
 | Action                                  | Purpose                                                         | Availability |
@@ -376,8 +367,6 @@ actions:
   - delete-rpcauth
   - reindex-blockchain
   - reindex-chainstate
-  - reconsider-invalid-blocks
-  - revalidate-rdts
   - delete-peers
   - delete-txindex
   - delete-coinstats-index
