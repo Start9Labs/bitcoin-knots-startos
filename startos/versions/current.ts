@@ -68,7 +68,7 @@ const enteringRdtsFlavor = { revalidateFromRdts: true }
 const leavingRdtsFlavor = { reconsiderInvalidTips: true }
 
 export const current = VersionInfo.of({
-  version: '#knotsprerdts:29.3:13',
+  version: '#knotsprerdts:29.3:14',
   releaseNotes: {
     en_US:
       'Internal updates (start-sdk 2.0.x). Bitcoin now reaches Tor at a fixed internal bridge address and no longer restarts when Tor is installed, updated, or removed. Adds chain-split recovery for the BIP-110 (RDTS) era: switching flavors now automatically clears invalid-block verdicts inherited from the RDTS-enforcing flavor.',
@@ -170,5 +170,5 @@ export const current = VersionInfo.of({
     },
   },
 })
-  .satisfies('29.4:0')
-  .satisfies('28.4:13')
+  .satisfies('29.4:1')
+  .satisfies('28.4:14')
