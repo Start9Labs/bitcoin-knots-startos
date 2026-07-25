@@ -66,18 +66,23 @@ const enteringRdtsFlavor = { revalidateFromRdts: true }
 const leavingRdtsFlavor = { reconsiderInvalidTips: true }
 
 export const current = VersionInfo.of({
-  version: '#knots:29.3.1:13',
+  version: '#knots:29.3.1:14',
   releaseNotes: {
-    en_US:
-      'Internal updates (start-sdk 2.0.x). Bitcoin now reaches Tor at a fixed internal bridge address and no longer restarts when Tor is installed, updated, or removed. Adds chain-split recovery for the BIP-110 (RDTS) era: flavor switches now automatically correct persisted block verdicts (clearing inherited invalid marks, or re-validating the RDTS range when enforcement arrives).',
-    es_ES:
-      'Actualizaciones internas (start-sdk 2.0.x). Bitcoin ahora alcanza Tor en una dirección fija del puente interno y ya no se reinicia cuando Tor se instala, actualiza o elimina. Añade recuperación ante divisiones de cadena para la era BIP-110 (RDTS): los cambios de variante ahora corrigen automáticamente los veredictos de bloques persistidos (borrando marcas de invalidez heredadas o revalidando el rango RDTS cuando llega su aplicación).',
-    de_DE:
-      'Interne Aktualisierungen (start-sdk 2.0.x). Bitcoin erreicht Tor jetzt über eine feste interne Bridge-Adresse und startet nicht mehr neu, wenn Tor installiert, aktualisiert oder entfernt wird. Fügt Chain-Split-Wiederherstellung für die BIP-110-(RDTS-)Ära hinzu: Variantenwechsel korrigieren jetzt automatisch persistierte Block-Urteile (geerbte Ungültigkeitsmarkierungen werden gelöscht bzw. der RDTS-Bereich bei eintreffender Durchsetzung neu validiert).',
-    pl_PL:
-      'Aktualizacje wewnętrzne (start-sdk 2.0.x). Bitcoin łączy się teraz z Torem pod stałym adresem wewnętrznego mostka i nie restartuje się już przy instalacji, aktualizacji ani usunięciu Tora. Dodaje odzyskiwanie po podziale łańcucha na erę BIP-110 (RDTS): zmiany wariantu automatycznie korygują teraz utrwalone werdykty bloków (czyszcząc odziedziczone oznaczenia nieważności lub ponownie weryfikując zakres RDTS, gdy pojawia się egzekwowanie).',
-    fr_FR:
-      "Mises à jour internes (start-sdk 2.0.x). Bitcoin atteint désormais Tor à une adresse fixe du pont interne et ne redémarre plus lorsque Tor est installé, mis à jour ou supprimé. Ajoute la récupération après scission de chaîne pour l'ère BIP-110 (RDTS) : les changements de variante corrigent désormais automatiquement les verdicts de blocs persistants (effacement des marques d'invalidité héritées, ou revalidation de la plage RDTS à l'arrivée de l'application des règles).",
+    en_US: `Resolves the addresses of connected services more reliably.
+
+Bitcoin Knots looked up where to reach its dependencies through a field that only applies to one of the two ways a service can publish a port. It now reads the address itself, so a dependency changing how it serves TLS can no longer leave Bitcoin Knots unable to find it. Nothing changes in normal operation.`,
+    es_ES: `Resuelve de forma más fiable las direcciones de los servicios conectados.
+
+Bitcoin Knots localizaba sus dependencias mediante un campo que solo se aplica a una de las dos formas en que un servicio puede publicar un puerto. Ahora lee la dirección en sí, de modo que si una dependencia cambia su forma de servir TLS, Bitcoin Knots seguirá encontrándola. En funcionamiento normal no cambia nada.`,
+    de_DE: `Ermittelt die Adressen verbundener Dienste zuverlässiger.
+
+Bitcoin Knots suchte seine Abhängigkeiten über ein Feld, das nur für eine der beiden Arten gilt, auf die ein Dienst einen Port veröffentlichen kann. Jetzt wird die Adresse selbst gelesen, sodass eine Abhängigkeit, die ihre TLS-Bereitstellung ändert, für Bitcoin Knots auffindbar bleibt. Im normalen Betrieb ändert sich nichts.`,
+    pl_PL: `Pewniej ustala adresy połączonych usług.
+
+Bitcoin Knots wyszukiwał swoje zależności przez pole, które dotyczy tylko jednego z dwóch sposobów publikowania portu przez usługę. Teraz odczytuje sam adres, więc zależność zmieniająca sposób udostępniania TLS nadal pozostanie odnajdywalna dla Bitcoin Knots. W normalnej pracy nic się nie zmienia.`,
+    fr_FR: `Détermine plus fiablement les adresses des services connectés.
+
+Bitcoin Knots localisait ses dépendances via un champ qui ne s'applique qu'à l'un des deux modes de publication d'un port par un service. Il lit désormais l'adresse elle-même : une dépendance qui change sa façon de servir TLS reste donc trouvable par Bitcoin Knots. Rien ne change en fonctionnement normal.`,
   },
   migrations: {
     up: async ({ effects }) => {},
@@ -172,5 +177,5 @@ export const current = VersionInfo.of({
     },
   },
 })
-  .satisfies('29.4:1')
-  .satisfies('28.4:14')
+  .satisfies('29.4:2')
+  .satisfies('28.4:15')
