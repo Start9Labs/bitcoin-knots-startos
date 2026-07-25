@@ -39,11 +39,11 @@ This package shares the `bitcoind` package ID with [Bitcoin Core](https://github
 
 ## Image and Container Runtime
 
-| Property      | Value                                                                        |
-| ------------- | ---------------------------------------------------------------------------- |
-| Image         | Custom Dockerfile (multi-stage Alpine build from Bitcoin Knots source)       |
-| Architectures | x86_64, aarch64, riscv64                                                     |
-| Entrypoint    | `bitcoind`                                                                   |
+| Property      | Value                                                                  |
+| ------------- | ---------------------------------------------------------------------- |
+| Image         | Custom Dockerfile (multi-stage Alpine build from Bitcoin Knots source) |
+| Architectures | x86_64, aarch64, riscv64                                               |
+| Entrypoint    | `bitcoind`                                                             |
 
 The custom Dockerfile cross-compiles Bitcoin Knots with ZMQ support and adds runtime utilities (curl, yq, jq, tini).
 
@@ -105,22 +105,22 @@ Bitcoin Knots is configured through **StartOS actions** that write to `bitcoin.c
 
 ### Configuration Actions
 
-| Action               | Settings                                                                                                                                                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Action               | Settings                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Mempool Settings** | persistmempool, maxmempool, mempoolexpiry, mempoolfullrbf, permitbaremultisig, OP_RETURN (datacarrier/datacarriersize, permitbaredatacarrier, datacarriercost, acceptnonstddatacarrier), rejectparasites, rejecttokens, mempoolreplacement, mempooltruc, permitbareanchor, permitephemeral, minrelaytxfee, bytespersigop, bytespersigopstrict, maxtxlegacysigops, limitancestorcount/size, limitdescendantcount/size, permitbarepubkey, maxscriptsize, dustrelayfee, acceptunknownwitness, minrelaycoinblocks, minrelaymaturity, blocksonly |
-| **Peer Settings**    | onlynet (ipv4/ipv6/onion/i2p), BIP324 v2transport, I2P SAM proxy (enabled/disabled), connect/addnode peers, maxconnections                                                                       |
-| **RPC Settings**     | rpcservertimeout, rpcthreads, rpcworkqueue                                                                                                                                                       |
-| **Other Settings**   | softwareexpiry, ZMQ, txindex, blocknotify, block template construction (blockmaxsize/blockmaxweight), block reconstruction, coinstatsindex, wallet settings (enable/avoidpartialspends/discardfee), pruning, dbcache, dbbatchsize, BIP158/BIP157 block filters, bloom filters, natpmp, maxuploadtarget |
+| **Peer Settings**    | onlynet (ipv4/ipv6/onion/i2p), BIP324 v2transport, I2P SAM proxy (enabled/disabled), connect/addnode peers, maxconnections                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **RPC Settings**     | rpcservertimeout, rpcthreads, rpcworkqueue                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Other Settings**   | softwareexpiry, ZMQ, txindex, blocknotify, block template construction (blockmaxsize/blockmaxweight), block reconstruction, coinstatsindex, wallet settings (enable/avoidpartialspends/discardfee), pruning, dbcache, dbbatchsize, BIP158/BIP157 block filters, bloom filters, natpmp, maxuploadtarget                                                                                                                                                                                                                                      |
 
 Settings **not** managed by StartOS (hardcoded):
 
-| Setting         | Value           | Reason                                                           |
-| --------------- | --------------- | ---------------------------------------------------------------- |
-| `rpccookiefile` | `.cookie`       | Fixed RPC authentication                                         |
-| `listen`        | `1`             | Always accepting connections                                     |
-| `bind`          | `0.0.0.0:58333` | Internal peer listening port                                     |
-| `whitebind`     | `0.0.0.0:8333`  | Required for peer connections                                    |
-| `deprecatedrpc` | `create_bdb`    | Required for wallet creation                                     |
+| Setting         | Value           | Reason                                                                                                              |
+| --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `rpccookiefile` | `.cookie`       | Fixed RPC authentication                                                                                            |
+| `listen`        | `1`             | Always accepting connections                                                                                        |
+| `bind`          | `0.0.0.0:58333` | Internal peer listening port                                                                                        |
+| `whitebind`     | `0.0.0.0:8333`  | Required for peer connections                                                                                       |
+| `deprecatedrpc` | `create_bdb`    | Required for wallet creation                                                                                        |
 | `-onion`        | `10.0.3.1:9050` | Tor SOCKS on the internal bridge (resolved at startup; always set — harmless connection-refused when Tor is absent) |
 
 ### Pruned Node Architecture
@@ -134,24 +134,24 @@ This is transparent to dependent services — port 8332 always serves RPC.
 
 ## Network Access and Interfaces
 
-| Interface   | Port  | Protocol | Purpose                          | Condition                                  |
-| ----------- | ----- | -------- | -------------------------------- | ------------------------------------------ |
-| RPC         | 8332  | HTTP     | JSON-RPC commands                | Always                                     |
-| Peer        | 8333  | TCP      | Bitcoin peer-to-peer connections | Always                                     |
-| ZeroMQ      | 28332 | TCP      | Block notifications (rawblock, hashblock)  | When ZMQ enabled                           |
-| ZeroMQ      | 28333 | TCP      | Transaction notifications (rawtx, hashtx, sequence) | When ZMQ enabled                |
-| I2P Console | 7070  | HTTP     | I2P daemon web console           | When embedded I2P enabled with web console |
+| Interface   | Port  | Protocol | Purpose                                             | Condition                                  |
+| ----------- | ----- | -------- | --------------------------------------------------- | ------------------------------------------ |
+| RPC         | 8332  | HTTP     | JSON-RPC commands                                   | Always                                     |
+| Peer        | 8333  | TCP      | Bitcoin peer-to-peer connections                    | Always                                     |
+| ZeroMQ      | 28332 | TCP      | Block notifications (rawblock, hashblock)           | When ZMQ enabled                           |
+| ZeroMQ      | 28333 | TCP      | Transaction notifications (rawtx, hashtx, sequence) | When ZMQ enabled                           |
+| I2P Console | 7070  | HTTP     | I2P daemon web console                              | When embedded I2P enabled with web console |
 
 ## Actions (StartOS UI)
 
 ### Configuration
 
-| Action               | Purpose                                                                  | Availability |
-| -------------------- | ------------------------------------------------------------------------ | ------------ |
-| **Mempool Settings** | Configure mempool behavior                                               | Any          |
-| **Peer Settings**    | Configure networking, I2P, peer connections                              | Any          |
-| **RPC Settings**     | Configure RPC server parameters                                          | Any          |
-| **Other Settings**   | Configure ZMQ, indexes, wallets, pruning, performance tuning             | Any          |
+| Action               | Purpose                                                      | Availability |
+| -------------------- | ------------------------------------------------------------ | ------------ |
+| **Mempool Settings** | Configure mempool behavior                                   | Any          |
+| **Peer Settings**    | Configure networking, I2P, peer connections                  | Any          |
+| **RPC Settings**     | Configure RPC server parameters                              | Any          |
+| **Other Settings**   | Configure ZMQ, indexes, wallets, pruning, performance tuning | Any          |
 
 ### RPC Users
 
@@ -164,17 +164,17 @@ This is transparent to dependent services — port 8332 always serves RPC.
 
 These actions operate on the **selected wallet** (default `coin`). Use **Select Wallet** to point them at a different wallet, including wallets created by dependent services such as BTCPay Server/NBXplorer. The selected wallet is passed to each RPC as `-rpcwallet`, so the actions keep working once more than one wallet is loaded.
 
-| Action             | Purpose                                                  | Availability |
-| ------------------ | -------------------------------------------------------- | ------------ |
-| **Select Wallet**  | Choose which wallet the Wallet actions operate on        | Running only |
-| **Get Address**    | Get a new segwit address from the selected wallet        | Running only |
-| **Get Balance**    | Show the selected wallet's balance                       | Running only |
-| **Send Coin**      | Send bitcoin from the selected wallet to an address      | Running only |
-| **Send All Coin**  | Send the entire selected wallet balance to an address    | Running only |
-| **Sign Message**   | Sign a message with an address from the selected wallet  | Running only |
-| **Backup Wallet**  | Export a backup file of the selected wallet              | Running only |
-| **Restore Wallet** | Restore the selected wallet from a backup file           | Running only |
-| **Remove Wallet**  | Remove the selected wallet from the node                 | Running only |
+| Action             | Purpose                                                 | Availability |
+| ------------------ | ------------------------------------------------------- | ------------ |
+| **Select Wallet**  | Choose which wallet the Wallet actions operate on       | Running only |
+| **Get Address**    | Get a new segwit address from the selected wallet       | Running only |
+| **Get Balance**    | Show the selected wallet's balance                      | Running only |
+| **Send Coin**      | Send bitcoin from the selected wallet to an address     | Running only |
+| **Send All Coin**  | Send the entire selected wallet balance to an address   | Running only |
+| **Sign Message**   | Sign a message with an address from the selected wallet | Running only |
+| **Backup Wallet**  | Export a backup file of the selected wallet             | Running only |
+| **Restore Wallet** | Restore the selected wallet from a backup file          | Running only |
+| **Remove Wallet**  | Remove the selected wallet from the node                | Running only |
 
 ### Mining
 
@@ -253,9 +253,9 @@ Notifications accompany every consequential outcome (verdicts cleared, replay st
 
 ## Dependencies
 
-| Dependency | Condition                                                                                | Required State              |
-| ---------- | ---------------------------------------------------------------------------------------- | --------------------------- |
-| **Tor**    | When `externalip` contains `.onion` or `onlynet` includes `onion` | Running |
+| Dependency | Condition                                                         | Required State |
+| ---------- | ----------------------------------------------------------------- | -------------- |
+| **Tor**    | When `externalip` contains `.onion` or `onlynet` includes `onion` | Running        |
 
 When a Tor onion address is added to the peer interface, it is automatically set as `externalip` in `bitcoin.conf` and advertised to peers. Other StartOS services (LND, Core Lightning, Electrs, etc.) depend on Bitcoin Knots.
 
@@ -265,17 +265,17 @@ Only settings that **diverge from upstream Bitcoin Knots defaults** are seeded i
 
 ### Seeded overrides (written to `bitcoin.conf` on install)
 
-| Setting | Upstream Default | Our Default | Reason |
-| --- | --- | --- | --- |
-| `dbcache` | 450 MiB | 25% of system RAM (max 5120 MiB) | Faster IBD; reset to upstream default automatically after initial sync completes |
-| `dbbatchsize` | 16777216 (16 MiB) | RAM-scaled (16–32 MiB) | Faster UTXO writes during sync; reset to upstream default after initial sync |
-| `blockfilterindex` | off | `basic` | Required by dependent services (Electrs, etc.) for BIP158 filters |
-| `natpmp` | true | false | NAT-PMP disabled to avoid unexpected port mapping on StartOS |
-| `datacarriercost` | 4 | 1 | Treat extra data as 1 vbyte per actual byte (more permissive relay) |
-| `zmqpubrawblock`, `zmqpubhashblock` | off | `tcp://0.0.0.0:28332` | Required by dependent services (LND, etc.) |
-| `zmqpubrawtx`, `zmqpubhashtx`, `zmqpubsequence` | off | `tcp://0.0.0.0:28333` | Required by dependent services (LND, etc.) |
-| `i2psam` | off | `127.0.0.1:7656` | Embedded I2P daemon for peer-to-peer privacy |
-| `prune` (disk < 900 GB only) | 0 (off) | 550 MiB | Automatic pruning on smaller disks |
+| Setting                                         | Upstream Default  | Our Default                      | Reason                                                                           |
+| ----------------------------------------------- | ----------------- | -------------------------------- | -------------------------------------------------------------------------------- |
+| `dbcache`                                       | 450 MiB           | 25% of system RAM (max 5120 MiB) | Faster IBD; reset to upstream default automatically after initial sync completes |
+| `dbbatchsize`                                   | 16777216 (16 MiB) | RAM-scaled (16–32 MiB)           | Faster UTXO writes during sync; reset to upstream default after initial sync     |
+| `blockfilterindex`                              | off               | `basic`                          | Required by dependent services (Electrs, etc.) for BIP158 filters                |
+| `natpmp`                                        | true              | false                            | NAT-PMP disabled to avoid unexpected port mapping on StartOS                     |
+| `datacarriercost`                               | 4                 | 1                                | Treat extra data as 1 vbyte per actual byte (more permissive relay)              |
+| `zmqpubrawblock`, `zmqpubhashblock`             | off               | `tcp://0.0.0.0:28332`            | Required by dependent services (LND, etc.)                                       |
+| `zmqpubrawtx`, `zmqpubhashtx`, `zmqpubsequence` | off               | `tcp://0.0.0.0:28333`            | Required by dependent services (LND, etc.)                                       |
+| `i2psam`                                        | off               | `127.0.0.1:7656`                 | Embedded I2P daemon for peer-to-peer privacy                                     |
+| `prune` (disk < 900 GB only)                    | 0 (off)           | 550 MiB                          | Automatic pruning on smaller disks                                               |
 
 ### Knots-Specific Mempool Policy Defaults
 
