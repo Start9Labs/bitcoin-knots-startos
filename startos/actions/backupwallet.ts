@@ -42,7 +42,7 @@ export const backupwallet = sdk.Action.withoutInput(
       ? `${rootDir}/${wallet}.dat`
       : `${rootDir}/default.dat`
 
-    const res = await sdk.SubContainer.withTemp(
+    await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'bitcoind' },
       sdk.Mounts.of()
