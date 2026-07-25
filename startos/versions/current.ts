@@ -66,7 +66,7 @@ const enteringRdtsFlavor = { revalidateFromRdts: true }
 const leavingRdtsFlavor = { reconsiderInvalidTips: true }
 
 export const current = VersionInfo.of({
-  version: '#knots:29.3.1:14',
+  version: '#knots:29.3.1:15',
   releaseNotes: {
     en_US: `Resolves the addresses of connected services more reliably.
 
