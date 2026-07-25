@@ -1689,7 +1689,7 @@ export default {
     3239: "L'application de RDTS (BIP-110) nécessite la revalidation de la blockchain, et ce nœud ne peut pas rejouer la plage concernée sur place.",
     3240: 'Échec de la revalidation RDTS',
     3243: 'Revalidation RDTS en attente',
-    3241: "La revalidation de la plage de blocs applicable de RDTS a échoué ; nouvelle tentative au prochain redémarrage. Erreur : ${error}",
+    3241: 'La revalidation de la plage de blocs applicable de RDTS a échoué ; nouvelle tentative au prochain redémarrage. Erreur : ${error}',
     2503: 'Le portefeuille ${wallet} a été sauvegardé dans ${file}',
     2603: 'Le portefeuille ${wallet} a été restauré depuis ${file}',
     2704: 'Non supprimé',

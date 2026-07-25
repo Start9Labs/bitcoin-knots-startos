@@ -17,7 +17,6 @@ import { sdk } from './sdk'
 import {
   bitcoinCliArgs,
   bitcoinMounts,
-  bridgeAddress,
   GetBlockchainInfo,
   i2pControlPort,
   rootDir,
@@ -85,12 +84,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // install/update/uninstall, so this .const() never restarts Bitcoin unless
   // tor lands on a different port (then one healing restart). A dead bridge
   // address is just connection-refused, so -onion is always safe to pass.
-  const torSocks = await bridgeAddress(effects, {
-    packageId: 'tor',
-    hostId: socksHostId,
-    internalPort: socksPort,
-    fallbackPort: socksPort,
-  }).const()
+  const torSocks = await sdk.host
+    .getBridgeAddress(effects, {
+      packageId: 'tor',
+      hostId: socksHostId,
+      internalPort: socksPort,
+      fallbackPort: socksPort,
+    })
+    .const()
 
   // track Tor install/run state dynamically for the health check (no restart)
   let torInstalled = false
