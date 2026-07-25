@@ -54,7 +54,7 @@ export const removewallet = sdk.Action.withoutInput(
       }
     }
 
-    const res = await sdk.SubContainer.withTemp(
+    await sdk.SubContainer.withTemp(
       effects,
       { imageId: 'bitcoind' },
       sdk.Mounts.of()

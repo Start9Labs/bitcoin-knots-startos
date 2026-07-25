@@ -114,8 +114,8 @@ Settings **not** managed by StartOS (hardcoded):
 | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `rpccookiefile` | `.cookie`       | Fixed RPC authentication                                                                                            |
 | `listen`        | `1`             | Always accepting connections                                                                                        |
-| `bind`          | `0.0.0.0:58333` | Internal peer listening port                                                                                        |
-| `whitebind`     | `0.0.0.0:8333`  | Required for peer connections                                                                                       |
+| `bind`          | `0.0.0.0:58333` | Public p2p listener; the `peer` binding maps the host's 8333 onto it                                                |
+| `whitebind`     | `0.0.0.0:58334` | Whitelisted p2p listener, reachable only over the LXC bridge (the `peer-local` host)                                |
 | `deprecatedrpc` | `create_bdb`    | Required for wallet creation                                                                                        |
 | `-onion`        | `10.0.3.1:9050` | Tor SOCKS on the internal bridge (resolved at startup; always set — harmless connection-refused when Tor is absent) |
 
@@ -137,6 +137,8 @@ This is transparent to dependent services — port 8332 always serves RPC.
 | ZeroMQ      | 28332 | TCP      | Block notifications (rawblock, hashblock)           | When ZMQ enabled                           |
 | ZeroMQ      | 28333 | TCP      | Transaction notifications (rawtx, hashtx, sequence) | When ZMQ enabled                           |
 | I2P Console | 7070  | HTTP     | I2P daemon web console                              | When embedded I2P enabled with web console |
+
+A further binding, `peer-local`, publishes bitcoind's whitelisted p2p listener (container port 58334) on the LXC bridge alone. It exports no interface, so it never reaches the LAN or the internet. A dependent that fetches blocks over p2p resolves it with `sdk.host.getBridgeAddress({ hostId: peerLocalHostId, internalPort: peerPortLocal })` and connects with `noban` + `download` permissions — exempt from inbound eviction and from the historical-block upload limit. The public `peer` binding grants neither, because anonymous inbound peers arrive on it.
 
 ## Actions (StartOS UI)
 
@@ -311,7 +313,7 @@ Where our permanent default overrides upstream, the input spec's `default` and t
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development workflow.
+Build and development workflow follow the StartOS packaging guide: <https://docs.start9.com/packaging>. Keep `README.md`, `instructions.md`, and `AGENTS.md` in sync with any change to user-visible behavior or package structure.
 
 ---
 
@@ -332,6 +334,7 @@ volumes:
 ports:
   rpc: 8332
   peer: 8333
+  peer-local: 58334 (bridge only, no exported interface)
   zmq-block: 28332 (conditional)
   zmq-tx: 28333 (conditional)
   i2p-console: 7070 (conditional)
