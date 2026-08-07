@@ -45,26 +45,20 @@ const mempoolReset = {
 }
 
 /**
- * Chain-split recovery flags (see startos/forkRecovery.ts), set on the
- * sidegrades between this flavor and the RDTS-enforcing `#knots` flavor
- * and consumed by the destination flavor's chain-recovery oneshot at next
- * start (clean no-ops when there is nothing to fix). The shared datadir
- * carries each flavor's persisted per-block verdicts across a switch, so —
- * from this (never-enforcing) flavor's perspective:
+ * Chain-split recovery flag (see startos/forkRecovery.ts), set on the `up`
+ * sidegrade from the RDTS-enforcing `#knots` sibling and consumed by this
+ * flavor's chain-recovery oneshot at next start (a clean no-op when there is
+ * nothing to fix). The shared datadir carries the sibling's persisted
+ * per-block verdicts across the switch, so its RDTS-driven invalid verdicts
+ * must be reconsidered or they pin this node to a stale chain across a
+ * split. The runtime rdtsEnforcedLastRun marker detects the same transition
+ * independently; setting the flag here makes the switch case deterministic
+ * even if a prior run never recorded a marker.
  *
- * - `up` from the enforcing sibling is *leaving* enforcement: RDTS-driven
- *   invalid verdicts must be reconsidered so they cannot pin this node to
- *   a stale chain across a split. This flavor's oneshot consumes the flag.
- * - `down` toward the enforcing sibling is *entering* enforcement: if the
- *   chain advanced past the RDTS-applicable range without enforcement,
- *   that range must be re-validated (the publicly disclosed BIP-110
- *   late-upgrade validation gap).
- *   The flag stays dormant here; the sibling's oneshot consumes it on its
- *   first start. Its own store marker (rdtsEnforcedLastRun) detects the
- *   same transition independently; setting the flag here makes the switch
- *   case deterministic even if a prior run never recorded a marker.
+ * The `down` edge toward the sibling needs nothing: the Knots release it
+ * pins re-validates the RDTS-applicable range itself when it starts on a
+ * datadir that advanced without enforcement.
  */
-const enteringRdtsFlavor = { revalidateFromRdts: true }
 const leavingRdtsFlavor = { reconsiderInvalidTips: true }
 
 export const current = VersionInfo.of({
@@ -154,19 +148,16 @@ L'action « Télécharger l'instantané UTXO (assumeutxo) » a également été 
       // `#knots` — otherwise nothing else in this build would remove
       // it, and a later switch back to `#knots` would silently skip
       // the critical-task gate — and queue the invalid-verdict
-      // reconsideration. `down` leaves `consensusrules` absent (`#knots`'s
-      // init hook re-prompts for acceptance when the key is absent) and
-      // queues the RDTS re-validation the enforcing sibling runs on its
-      // first start.
+      // reconsideration. No `down`: `consensusrules` is already absent
+      // here (`#knots`'s init hook re-prompts on arrival when the key is
+      // missing), and the sibling's own binary re-validates the
+      // RDTS-applicable range on its first start.
       ['^#knots:29.3']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, {
             raw: { consensusrules: undefined },
           })
           await storeJson.merge(effects, leavingRdtsFlavor)
-        },
-        down: async ({ effects }) => {
-          await storeJson.merge(effects, enteringRdtsFlavor)
         },
       },
       // `#knotsrdts` (the retired "Bitcoin Knots plus BIP-110" build)
