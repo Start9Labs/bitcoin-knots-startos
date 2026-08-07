@@ -1,7 +1,6 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 import { rm } from 'fs/promises'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
-import { storeJson } from '../fileModels/store.json'
 /**
  * Reset all mempool settings to undefined so the new flavor's upstream
  * defaults take effect. This is the primary reason users switch between
@@ -42,29 +41,6 @@ const mempoolReset = {
   minrelaymaturity: undefined,
 }
 
-/**
- * Chain-split recovery flags (see startos/forkRecovery.ts), set on every
- * cross-flavor sidegrade and consumed by the destination flavor's
- * chain-recovery oneshot at next start (clean no-ops when there is nothing
- * to fix). The shared datadir carries each flavor's persisted per-block
- * verdicts across a switch, so:
- *
- * - Entering this (enforcing) flavor: if the chain advanced past the
- *   RDTS-applicable range without enforcement, that range must be
- *   re-validated (the publicly disclosed BIP-110 late-upgrade
- *   validation gap). The shipped
- *   RUNTIME_WARN binary enforces from its first start, so the switch
- *   itself is the enforcement transition. The oneshot's store marker
- *   (rdtsEnforcedLastRun) detects the same transition independently;
- *   setting the flag here makes the switch case deterministic even if a
- *   prior run never recorded a marker.
- * - Leaving for a non-enforcing flavor: RDTS-driven invalid verdicts must
- *   be reconsidered so they cannot pin Core / pre-RDTS Knots to a stale
- *   chain across a split.
- */
-const enteringRdtsFlavor = { revalidateFromRdts: true }
-const leavingRdtsFlavor = { reconsiderInvalidTips: true }
-
 export const current = VersionInfo.of({
   version: '#knots:29.3.1:16',
   releaseNotes: {
@@ -90,35 +66,25 @@ Les services de ce serveur qui récupèrent des blocs auprès de Bitcoin Knots v
     // Keyed by Core major series as caret ranges — one entry per Core
     // major, not per Core `:N`. Range-keyed `migrations.other` requires
     // StartOS ≥ 0.4.0-beta.9 (Start9Labs/start-os#3214).
-    //
-    // Intentional asymmetry: there is no `^#knotsprerdts` key here for the
-    // pre-RDTS Knots sibling (B). The B↔C migration belt lives on B's own
-    // `^#knots` entry (its `down` edge, B→C, sets revalidateFromRdts), which
-    // fires because this flavor satisfies B's `canMigrateTo`; the runtime
-    // rdtsEnforcedLastRun marker double-covers it. Not a gap — no mirror key.
     other: {
       ['^28']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, enteringRdtsFlavor)
         },
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
       ['^29']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, enteringRdtsFlavor)
         },
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
       ['^30']: {
@@ -127,7 +93,6 @@ Les services de ce serveur qui récupèrent des blocs auprès de Bitcoin Knots v
         // Core 30 deliberately preserved for downgrade.
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, enteringRdtsFlavor)
           await rm('/media/startos/volumes/main/indexes/coinstatsindex', {
             recursive: true,
             force: true,
@@ -136,7 +101,6 @@ Les services de ce serveur qui récupèrent des blocs auprès de Bitcoin Knots v
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
       ['^31']: {
@@ -145,7 +109,6 @@ Les services de ce serveur qui récupèrent des blocs auprès de Bitcoin Knots v
         // coinstatsindex (same reason as 30.x).
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, enteringRdtsFlavor)
           await rm('/media/startos/volumes/main/fee_estimates.dat', {
             force: true,
           }).catch(console.error)
@@ -157,7 +120,6 @@ Les services de ce serveur qui récupèrent des blocs auprès de Bitcoin Knots v
         // Knots → Core
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
       // `#knotsrdts` (the "Bitcoin Knots plus BIP-110" build) is being
@@ -168,10 +130,6 @@ Les services de ce serveur qui récupèrent des blocs auprès de Bitcoin Knots v
       ['^#knotsrdts:29.3']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, { consensusrules: 'rdts' })
-          // Also queue the RDTS re-validation: nothing proves the retired
-          // build enforced RDTS over this datadir's whole history, and the
-          // check self-clears when the chain never advanced unenforced.
-          await storeJson.merge(effects, enteringRdtsFlavor)
         },
       },
     },
