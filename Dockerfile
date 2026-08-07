@@ -9,15 +9,22 @@ WORKDIR /build
 
 RUN apt-get update && apt-get install -y wget pgp ca-certificates
 
-# Pinned Bitcoin Knots release signers. Each has signed recent Knots
-# 29.x releases. Build requires REQUIRED_QUORUM valid signatures from
-# this set; signatures from non-pinned signers are ignored. Adding a
+# Pinned Bitcoin Knots release signers. Build requires REQUIRED_QUORUM
+# valid signatures from this set; not every signer signs every release,
+# which is why the gate is a quorum rather than all of them. Adding a
 # signer here is an explicit trust decision — do not delegate to
 # upstream key directories or keyservers.
+#
+# This list must stay in lockstep with assets/release-keys/: every .asc
+# there is imported, and the quorum counts GOODSIG from any imported key.
+# Dropping a fingerprint here without deleting its key file does not
+# de-trust that signer — it only stops asserting the key is present.
 ENV PINNED_FINGERPRINTS="\
 1A3E761F19D2CC7785C5502EA291A2C45D0C504A \
-A47D99B6DB0D715D40C59A2023AE8A8EA7E24E38 \
+1D5889CB9E0564C154E18BB512EC9519DB43CC27 \
 658E64021E5793C6C4E15E45C2E581F5B998F30E \
+95636F3538D9262765AB29BEE952E584CA8C0F45 \
+A47D99B6DB0D715D40C59A2023AE8A8EA7E24E38 \
 DAED928C727D3E613EC46635F5073C4F4882FFFC"
 ENV REQUIRED_QUORUM=3
 
