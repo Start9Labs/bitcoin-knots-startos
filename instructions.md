@@ -79,7 +79,7 @@ Caveats that apply during an actual split:
 
 ### Advanced
 
-- **Download UTXO Snapshot (assumeutxo)** — pull a UTXO snapshot to short-cut IBD; the action hides itself once the node is fully synced.
+- **Download UTXO Snapshot (assumeutxo)** — pull a UTXO snapshot to short-cut IBD; the action hides itself once the node is fully synced. The URL must be a direct link to a `.dat` snapshot file, which can be one you serve from your own machine over the LAN.
 - **Runtime Information** — current connection count, block height, sync progress, softfork state, and other runtime details at a glance.
 
 ## Limitations
