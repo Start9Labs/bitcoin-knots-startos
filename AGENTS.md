@@ -11,7 +11,7 @@ Work this package's `TODO.md` from top to bottom. Keep `README.md` (architecture
 ## This repo
 
 - **Bitcoin Knots** — a Bitcoin Core fork packaged as `bitcoind` (same package id as Core; the two are drop-in flavors). Multi-branch package: worktrees `29.x` and `29.x-prerdts`.
-- **`.satisfies('29.3:N')` tracks Bitcoin Core 29.x's current `:N`** — when Core 29.x bumps its revision, bump this to match (Knots' own `#knots:` version string is independent). Cross-flavor migrations live in this version file's `migrations.other` map, keyed by whole-series regex (`^29` etc.), not pinned `:N`.
+- **`.satisfies('29.4:N')` mirrors Bitcoin Core 29.x's current version, and `.satisfies('28.4:N')` mirrors Core 28.x's** — when either Core line releases, bump the matching entry (this branch's own `#knots:` / `#knotsprerdts:` version string is independent). Cross-flavor migrations live in this version file's `migrations.other` map, keyed by whole-series exver caret ranges (`^29`, `^#knots:29.3`, …), not pinned `:N`.
 
 ## Inspecting a running install
 
