@@ -275,10 +275,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
     /**
      * Chain-split recovery (see forkRecovery.ts). This flavor never
      * enforces RDTS, so only the "leaving the enforcing flavor" half
-     * applies: clear invalid-block verdicts inherited from the
-     * RDTS-enforcing flavor. The revalidateFromRdts flag is carried in the
-     * store but stays dormant here — it exists for the enforcing flavor to
-     * consume. Consumes the store flags set by cross-flavor migrations.
+     * applies: record the durable rdtsEnforcedLastRun=false marker each
+     * start and clear invalid-block verdicts inherited from the
+     * RDTS-enforcing flavor. The opposite direction needs nothing from the
+     * package — the enforcing flavor's own binary re-validates on arrival.
+     * Consumes the store flag set by cross-flavor migrations.
      * Runs once per start as soon as RPC answers; nothing depends on it,
      * so it never blocks the service.
      */
