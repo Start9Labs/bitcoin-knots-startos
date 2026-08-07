@@ -12,7 +12,7 @@
 
 An enhanced Bitcoin full node implementation with additional policy controls for mempool filtering and spam prevention. See the [upstream repo](https://github.com/bitcoinknots/bitcoin) for general Bitcoin Knots documentation.
 
-This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos), allowing users to switch between flavors while preserving blockchain data and dependent service connections. Because the shared datadir also carries bitcoind's persisted per-block validity verdicts across a switch, the package runs a chain-recovery pass at startup so a flavor switch during a BIP-110 (RDTS) chain split lands the node on the chain the running flavor considers valid — see [Chain-Split Recovery](#chain-split-recovery).
+This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos), allowing users to switch between flavors while preserving blockchain data and dependent service connections.
 
 ---
 
@@ -25,7 +25,6 @@ This package shares the `bitcoind` package ID with [Bitcoin Core](https://github
 - [Configuration Management](#configuration-management)
 - [Network Access and Interfaces](#network-access-and-interfaces)
 - [Actions](#actions-startos-ui)
-- [Chain-Split Recovery](#chain-split-recovery)
 - [Backups and Restore](#backups-and-restore)
 - [Health Checks](#health-checks)
 - [Dependencies](#dependencies)
@@ -64,9 +63,9 @@ Three additional containers are used:
 
 StartOS-specific files on the `main` volume:
 
-| File         | Purpose                                                                                                                                         |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking, chain-recovery flags and the `rdtsEnforcedLastRun` enforcement marker) |
+| File         | Purpose                                                                       |
+| ------------ | ----------------------------------------------------------------------------- |
+| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking) |
 
 Blockchain data directories (`blocks/`, `chainstate/`, `indexes/`) reside on the `main` volume alongside the standard `bitcoin.conf` and `.cookie` files.
 
@@ -80,20 +79,18 @@ Blockchain data directories (`blocks/`, `chainstate/`, `indexes/`) reside on the
 6. Bitcoin Knots begins syncing the blockchain (Initial Block Download)
 7. When sync completes, a **Sync Complete** notification is posted to the StartOS notifications panel. The notification fires once after initial sync, and again whenever a reindex (Reindex Blockchain / Reindex Chainstate) completes.
 
-> **RDTS activation (critical task):** On install — and until RDTS is activated — StartOS raises a **critical task** titled _Activate RDTS_ (created at init while `consensusrules` is not yet `rdts`). It asks you to acknowledge that this version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork (RDTS) consensus rules; acknowledging writes `consensusrules=rdts` to `bitcoin.conf`. Skipping or reverting to older software does not reject the upgrade. To remain on pre-RDTS consensus rules, install the **Bitcoin Knots (pre-RDTS)** flavor instead, which ships the last pre-RDTS Knots release (`29.3.knots20260507`) and has no such gate. See <https://bitcoinknots.org/learn/2026-rdts>.
->
-> Enforcement-model precision (matters for development): the official Knots release binaries this package ships are built with `RDTS_CONSENT=RUNTIME_WARN` (upstream `contrib/guix/libexec/build.sh`), so the binary **enforces RDTS on mainnet from its first start regardless of `consensusrules`** — the config option records user _consent_ (and silences an hourly warning); it is not an enforcement toggle. Never derive "is this node enforcing" from `bitcoin.conf`; the chain-recovery oneshot asks the node itself (`getdeploymentinfo` — the `reduced_data` deployment is present exactly when enforcement is enabled).
+> **RDTS activation (critical task):** On install — and until RDTS is activated — StartOS raises a **critical task** titled *Activate RDTS* (created at init while `consensusrules` is not yet `rdts`). It asks you to acknowledge that this version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork (RDTS) consensus rules; acknowledging writes `consensusrules=rdts` to `bitcoin.conf`. Skipping or reverting to older software does not reject the upgrade. To remain on pre-RDTS consensus rules, install the **Bitcoin Knots (pre-RDTS)** flavor instead, which ships the last pre-RDTS Knots release (`29.3.knots20260507`) and has no such gate. See <https://bitcoinknots.org/learn/2026-rdts>.
 
 ## Default Networking
 
 Out of the box, Bitcoin Knots on StartOS connects to the Bitcoin network over multiple transports with no user configuration required:
 
-| Transport     | Default                                   | Inbound                             | How to change                                 |
-| ------------- | ----------------------------------------- | ----------------------------------- | --------------------------------------------- |
-| **I2P**       | Enabled (embedded `i2pd` SAM proxy)       | Accepted (`i2pacceptincoming=true`) | Peer Settings → I2P SAM Proxy → Disabled      |
-| **Tor**       | Outbound via StartOS Tor proxy (`-onion`) | No (no onion address advertised)    | Add an onion address on the peer interface    |
-| **IPv4/IPv6** | Enabled (clearnet peer discovery)         | No (`externalip` not set)           | Publish an IP address on the peer interface   |
-| **BIP324 v2** | Enabled (`v2transport=true`)              | —                                   | Peer Settings → Use V2 P2P Transport Protocol |
+| Transport     | Default                                   | Inbound                             | How to change                                       |
+| ------------- | ----------------------------------------- | ----------------------------------- | --------------------------------------------------- |
+| **I2P**       | Enabled (embedded `i2pd` SAM proxy)       | Accepted (`i2pacceptincoming=true`) | Peer Settings → I2P SAM Proxy → Disabled            |
+| **Tor**       | Outbound via StartOS Tor proxy (`-onion`) | No (no onion address advertised)    | Add an onion address on the peer interface           |
+| **IPv4/IPv6** | Enabled (clearnet peer discovery)         | No (`externalip` not set)           | Publish an IP address on the peer interface          |
+| **BIP324 v2** | Enabled (`v2transport=true`)              | —                                   | Peer Settings → Use V2 P2P Transport Protocol       |
 
 To restrict outbound connections to specific networks only, use the **onlynet** setting in Peer Settings.
 
@@ -209,34 +206,11 @@ These actions operate on the **selected wallet** (default `coin`). Use **Select 
 
 ### Hidden (Dependent Service Automation)
 
-| Action                     | Purpose                                                                                                                       | Availability |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| **Auto-Configure**         | Automatically configure Bitcoin Knots for dependent services (prefills all config)                                            | Any          |
-| **Create RPC Credentials** | Create RPC credentials with a provided username/password for dependent services                                               | Any          |
-| **Activate RDTS**          | Acknowledge the BIP-110 RDTS upgrade; writes `consensusrules=rdts`. Surfaced as a critical task on install until acknowledged | Any          |
-
-## Chain-Split Recovery
-
-bitcoind persists a validity verdict for every block it has evaluated (`CBlockIndex::nStatus` in `blocks/index/`) and trusts those verdicts verbatim on startup — they are never re-derived, and they don't record _which_ consensus rules produced them. Because all `bitcoind` flavors share one datadir, a flavor switch changes the rules without changing the verdicts. Around a BIP-110 (RDTS) chain split that breaks the node in both directions (the publicly disclosed BIP-110 late-upgrade validation gap):
-
-- a non-enforcing flavor inherits RDTS-driven `BLOCK_FAILED_VALID` marks and refuses the majority chain;
-- the enforcing flavor inherits cache-valid verdicts for blocks that were never checked against RDTS and keeps building on an RDTS-invalid chain.
-
-The package closes the gap with three cooperating pieces (all in `startos/forkRecovery.ts` + the `chain-recovery` oneshot in `startos/main.ts`):
-
-1. **A durable enforcement marker.** `store.json` records `rdtsEnforcedLastRun` — whether the binary that last advanced this datadir enforced RDTS (asked from the node itself via `getdeploymentinfo`; the `reduced_data` key is present exactly when enforcement is enabled). Every flavor updates it each start. This is the package-level equivalent of the `NeedsRedownload()` marker SegWit had and BIP-110 lacks.
-2. **Transition detection.** At each start (after RPC is ready), the oneshot compares the marker to the running binary. An off/unknown→on transition queues `revalidateFromRdts`; an on/unknown→off transition queues `reconsiderInvalidTips` (an unknown marker — a legacy datadir last advanced by a package version that predates it — is treated conservatively on both sides; the reconsider pass is a free no-op when there are no invalid tips). Cross-flavor migrations set the same flags deterministically at switch time as a belt-and-suspenders path, and flags are materialized _before_ the marker is updated so a crash between writes re-detects rather than loses the transition. All flavors carry both flags in their store shape so a switch never strips a pending flag.
-3. **The remedies** (each idempotent, each a no-op when there is nothing to fix):
-   - `reconsiderInvalidTips` — `getchaintips` → `reconsiderblock` every `invalid` tip. Clears the verdict on the block, its ancestors, and descendants (persisted); reconnection re-validates fully, so genuinely-invalid branches re-flag themselves. Tips whose fork point lies below `pruneheight` are skipped (reorganizing onto them would hit a fatal disconnect on pruned data) and reported.
-   - `revalidateAgainstRdts` — replay from the anchor height: `getblockhash(anchor)` → `invalidateblock` → `reconsiderblock`. The anchor is min(961,632 — the mandatory-signaling window start, node-derived `max_activation_height − 2×2016`, node-reported first-enforced height). Every re-connected block passes through `ConnectBlock`, where all three RDTS rule classes are enforced (signaling and output-size unconditionally; script rules because the release's `assumevalid` point, height 912,683, is below the range). Gates first: a below-anchor chain with no invalid branch reaching into the range is a silent no-op, while a below-anchor chain _with_ one (a previously interrupted replay) is recovered by reconsidering those branches — with notifications; pruned-past-anchor datadirs get a warning plus a critical task pointing at **Reindex Blockchain** (on a pruned node: a full re-download); a not-yet-validated assumeutxo chainstate only gets a notification that re-validation is pending, since it runs automatically once background validation completes. The `requires-reindex` outcomes keep the store flag set so the check repeats each start until resolved.
-
-Notifications accompany every consequential outcome (verdicts cleared, replay started/completed/failed, reindex required). Peering is the one thing the package cannot fix: after verdicts are corrected the node still needs peers serving the intended chain, which the user docs call out.
-
-**Maintainer invariants** (re-verify on every pinned-release bump):
-
-- Official Knots binaries are `RDTS_CONSENT=RUNTIME_WARN` → enforcement is binary-level, never config-level. If a future release changes consent semantics, revisit the marker logic.
-- The release's default `assumevalid` height must stay below the RDTS-applicable range (else the replay's script-rule re-checks weaken to the same trust assumption as assumevalid itself).
-- The anchor constant `RDTS_FIRST_APPLICABLE_HEIGHT` (961,632) must match the release's deployment params (`max_activation_height` 965,664, window 2,016).
+| Action                     | Purpose                                                                            | Availability |
+| -------------------------- | ---------------------------------------------------------------------------------- | ------------ |
+| **Auto-Configure**         | Automatically configure Bitcoin Knots for dependent services (prefills all config) | Any          |
+| **Create RPC Credentials** | Create RPC credentials with a provided username/password for dependent services    | Any          |
+| **Activate RDTS**          | Acknowledge the BIP-110 RDTS upgrade; writes `consensusrules=rdts`. Surfaced as a critical task on install until acknowledged | Any |
 
 ## Backups and Restore
 
