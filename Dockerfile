@@ -10,15 +10,15 @@ WORKDIR /build
 RUN apt-get update && apt-get install -y wget pgp ca-certificates
 
 # Pinned Bitcoin Knots release signers. Build requires REQUIRED_QUORUM
-# valid signatures from this set; not every signer signs every release,
+# DISTINCT signers from this set; not every signer signs every release,
 # which is why the gate is a quorum rather than all of them. Adding a
 # signer here is an explicit trust decision — do not delegate to
 # upstream key directories or keyservers.
 #
-# This list must stay in lockstep with assets/release-keys/: every .asc
-# there is imported, and the quorum counts GOODSIG from any imported key.
-# Dropping a fingerprint here without deleting its key file does not
-# de-trust that signer — it only stops asserting the key is present.
+# This list must stay in lockstep with assets/release-keys/: the build
+# asserts the imported keyring is exactly this set, so a key file with no
+# fingerprint here — or a fingerprint here with no key file — fails the
+# build rather than silently widening or narrowing who can sign.
 ENV PINNED_FINGERPRINTS="\
 1A3E761F19D2CC7785C5502EA291A2C45D0C504A \
 1D5889CB9E0564C154E18BB512EC9519DB43CC27 \
@@ -41,23 +41,56 @@ RUN wget https://bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/$(cat /tarbal
          https://bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/SHA256SUMS
 
 COPY assets/release-keys/ /tmp/release-keys/
-RUN gpg --import /tmp/release-keys/*.asc && \
-    for fp in ${PINNED_FINGERPRINTS}; do \
-        gpg --list-keys "$fp" >/dev/null 2>&1 || { echo "MISSING PINNED KEY: $fp"; exit 1; }; \
-    done && \
-    rm -rf /tmp/release-keys
 
-# Verify SHA256SUMS.asc: any BADSIG from a pinned key fails the build,
-# and at least REQUIRED_QUORUM pinned signers must verify successfully.
-# (We don't use gpg's exit code because GnuPG 2.4+ treats ERRSIG —
-# signatures from non-pinned signers — as a non-zero exit even when
-# pinned-key signatures verified fine.)
-RUN gpg --verify --status-fd 1 SHA256SUMS.asc SHA256SUMS 2>/dev/null > /tmp/gpg-status; \
+# Verify SHA256SUMS.asc against the pinned signer set.
+#
+# The quorum counts DISTINCT signers, identified by primary fingerprint. GnuPG
+# emits one status line per signature PACKET, so counting packets would let a
+# single compromised key satisfy the quorum by signing REQUIRED_QUORUM times,
+# leaving no tolerance at all for a compromised signer. VALIDSIG's last field is
+# the signing key's primary fingerprint, so a signature made by a subkey rolls
+# up to the signer that owns it.
+#
+# A VALIDSIG alone is not enough to count: GnuPG also emits one for a signature
+# by an expired or revoked key, pairing it with EXPKEYSIG/REVKEYSIG instead of
+# GOODSIG. Knots releases carry such a signature today, and counting it would be
+# laxer than what this replaced, so the walk below only counts a VALIDSIG whose
+# signature reported GOODSIG.
+#
+# The keyring is asserted equal to the pinned primaries first, so the count can
+# be taken over the keyring as a whole: a stray key dropped into
+# assets/release-keys/ fails the build rather than voting in the quorum.
+#
+# gpg's exit code is unusable here: GnuPG 2.4+ returns non-zero for ERRSIG
+# (signatures by signers outside the keyring) even when the pinned-key
+# signatures verified fine.
+RUN set -e; \
+    export LC_ALL=C; \
+    gpg --import /tmp/release-keys/*.asc; \
+    rm -rf /tmp/release-keys; \
+    : > /tmp/pinned-primaries.raw; \
+    for fp in ${PINNED_FINGERPRINTS}; do \
+        gpg --with-colons --list-keys "$fp" 2>/dev/null \
+          | awk -F: '/^fpr:/{print $10; exit}' >> /tmp/pinned-primaries.raw; \
+    done; \
+    sort -u /tmp/pinned-primaries.raw > /tmp/pinned-primaries; \
+    expected=$(echo ${PINNED_FINGERPRINTS} | wc -w); \
+    if [ "$(wc -l < /tmp/pinned-primaries)" -ne "${expected}" ]; then \
+        echo "PINNED KEY MISSING OR DUPLICATED (expected ${expected} distinct primaries)"; exit 1; \
+    fi; \
+    gpg --with-colons --list-keys \
+      | awk -F: '/^pub:/{p=1} p && /^fpr:/{print $10; p=0}' | sort -u > /tmp/keyring-primaries; \
+    if ! diff -q /tmp/pinned-primaries /tmp/keyring-primaries >/dev/null; then \
+        echo "KEYRING CONTAINS KEYS OUTSIDE THE PINNED SET"; exit 1; \
+    fi; \
+    gpg --verify --status-fd 1 SHA256SUMS.asc SHA256SUMS 2>/dev/null > /tmp/gpg-status || true; \
     bad=$(grep -c '^\[GNUPG:\] BADSIG' /tmp/gpg-status || true); \
-    good=$(grep -c '^\[GNUPG:\] GOODSIG' /tmp/gpg-status || true); \
-    echo "Pinned signatures: good=${good}, bad=${bad} (need ${REQUIRED_QUORUM} good, 0 bad)"; \
-    [ "${bad}" -eq 0 ] || { echo "BAD SIGNATURE FROM PINNED KEY"; exit 1; }; \
-    [ "${good}" -ge "${REQUIRED_QUORUM}" ] || { echo "INSUFFICIENT QUORUM"; exit 1; }
+    signers=$(awk '/^\[GNUPG:\] NEWSIG/{g=0} /^\[GNUPG:\] GOODSIG/{g=1} /^\[GNUPG:\] VALIDSIG/{if(g)print $NF; g=0}' /tmp/gpg-status \
+      | grep -Ex '[0-9A-F]{40}' | sort -u | comm -12 - /tmp/pinned-primaries | wc -l); \
+    skipped=$(grep -cE '^\[GNUPG:\] (EXPKEYSIG|REVKEYSIG)' /tmp/gpg-status || true); \
+    echo "Distinct pinned signers: ${signers}, bad: ${bad}, uncounted (expired/revoked key): ${skipped} (need ${REQUIRED_QUORUM}, 0)"; \
+    if [ "${bad}" -ne 0 ]; then echo "BAD SIGNATURE FROM PINNED KEY"; exit 1; fi; \
+    if [ "${signers}" -lt "${REQUIRED_QUORUM}" ]; then echo "INSUFFICIENT QUORUM"; exit 1; fi
 
 RUN cp SHA256SUMS /sha256sums
 RUN grep $(cat /tarball-name) /sha256sums | sha256sum -c
