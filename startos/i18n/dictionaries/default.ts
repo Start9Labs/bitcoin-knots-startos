@@ -421,7 +421,7 @@ const dict = {
   // actions/activaterdts.ts + init/consensusrules.ts
   'I acknowledge': 3000,
   'Activate RDTS': 3002,
-  'This version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork ("RDTS") network upgrade, which fixes critical vulnerabilities in long-standing network design. To avoid applying this upgrade by accident, this version asks for explicit confirmation. Important: because this upgrade already has broad community support, skipping this update or reverting to an older software version does not reject it. Running outdated software after any network upgrade may leave your node vulnerable to displaying fake or fraudulent transactions. To effectively reject this upgrade, you need to run alternative software designed to split away from the upgraded network. Learn more at https://bitcoinknots.org/learn/2026-rdts. If you are not ready to adopt the RDTS upgrade, you can alternatively switch to the "Bitcoin Knots (pre-RDTS)" version available in the Start9 marketplace, which is the same version of Bitcoin Knots without RDTS support. Note: if this node already synced past the RDTS activation range before enforcement was enabled, the affected blocks are automatically re-validated under the RDTS rules at the next start — this can take a while and, in the event of a chain split, works to move your node onto the RDTS-valid chain (reaching it also requires peers on that chain).': 3004,
+  'This version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork ("RDTS") network upgrade, which fixes critical vulnerabilities in long-standing network design. To avoid applying this upgrade by accident, this version asks for explicit confirmation. Important: because this upgrade already has broad community support, skipping this update or reverting to an older software version does not reject it. Running outdated software after any network upgrade may leave your node vulnerable to displaying fake or fraudulent transactions. To effectively reject this upgrade, you need to run alternative software designed to split away from the upgraded network. Learn more at https://bitcoinknots.org/learn/2026-rdts. If you are not ready to adopt the RDTS upgrade, you can alternatively switch to the "Bitcoin Knots (pre-RDTS)" version available in the Start9 marketplace, which is the same version of Bitcoin Knots without RDTS support.': 3004,
   'Please acknowledge': 3005,
   'Please confirm your understanding that this version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork (RDTS) consensus rules.': 3007,
 
@@ -433,17 +433,6 @@ const dict = {
   '${count} invalid chain branch(es) inherited from the previous bitcoind flavor could not be reconsidered: this pruned node no longer stores the blocks needed to reorganize onto them. If the node appears stuck on the wrong chain, run Reindex Blockchain (on a pruned node this re-downloads the chain).': 3229,
   'Chain Recovery Failed': 3230,
   'Clearing invalid-block verdicts inherited from the previous bitcoind flavor failed; it will be retried at the next restart. Error: ${error}': 3231,
-  'RDTS Re-validation Started': 3232,
-  'RDTS (BIP-110) enforcement is active but this chain advanced past the RDTS-applicable range without it, so blocks from height ${height} are being re-validated under the RDTS rules. This can take from minutes to many hours, and it may reorganize this node onto a different chain — during a chain split that reorg can be deep. If you run dependent services, especially Lightning (LND, Core Lightning), check them afterward: a deep enough reorg can force-close channels. A notification follows when it completes.': 3233,
-  'RDTS Re-validation Complete': 3234,
-  'All blocks from height ${height} have been re-validated under the RDTS (BIP-110) consensus rules. The node is following the best RDTS-valid chain.': 3235,
-  'RDTS Re-validation Requires Reindex': 3236,
-  'RDTS (BIP-110) enforcement was enabled after this pruned node had already synced past the RDTS-applicable range, and the blocks needed to re-validate that range have been pruned away. Until the chain is re-validated, this node may be following a chain that violates RDTS. Run the Reindex Blockchain action — on a pruned node this re-downloads and re-validates the entire chain under the active rules.': 3237,
-  "This node's chainstate was bootstrapped from a UTXO snapshot (assumeutxo) whose background validation has not yet finished, so the RDTS-applicable block range cannot be re-validated in place yet. No action is required: the re-validation runs automatically at the first restart after background validation completes. To force a full rebuild now instead, run the Reindex Blockchain action.": 3238,
-  'RDTS (BIP-110) enforcement needs the blockchain re-validated, and this node cannot replay the affected range in place.': 3239,
-  'RDTS Re-validation Failed': 3240,
-  'RDTS Re-validation Pending': 3243,
-  'Re-validating the RDTS-applicable block range failed; it will be retried at the next restart. Error: ${error}': 3241,
 } as const
 
 /**

@@ -12,7 +12,7 @@
 
 An enhanced Bitcoin full node implementation with additional policy controls for mempool filtering and spam prevention. See the [upstream repo](https://github.com/bitcoinknots/bitcoin) for general Bitcoin Knots documentation.
 
-This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos), allowing users to switch between flavors while preserving blockchain data and dependent service connections. Because the shared datadir also carries bitcoind's persisted per-block validity verdicts across a switch, the package runs a chain-recovery pass at startup so a flavor switch during a BIP-110 (RDTS) chain split lands the node on the chain the running flavor considers valid — see [Chain-Split Recovery](#chain-split-recovery).
+This package shares the `bitcoind` package ID with [Bitcoin Core](https://github.com/Start9Labs/bitcoin-core-startos), allowing users to switch between flavors while preserving blockchain data and dependent service connections. Because the shared datadir also carries bitcoind's persisted per-block validity verdicts across a switch, the package records which consensus rules produced them so a flavor switch during a BIP-110 (RDTS) chain split lands the node on the chain the running flavor considers valid — see [Chain-Split Recovery](#chain-split-recovery).
 
 ---
 
@@ -49,11 +49,11 @@ The custom Dockerfile cross-compiles Bitcoin Knots with ZMQ support and adds run
 
 Three additional containers are used:
 
-| Container | Image                              | Purpose                                       |
-| --------- | ---------------------------------- | --------------------------------------------- |
+| Container | Image                                     | Purpose                                       |
+| --------- | ----------------------------------------- | --------------------------------------------- |
 | `proxy`   | `ghcr.io/start9labs/btc-rpc-proxy:v0.5.0` | RPC proxy for pruned nodes                    |
-| `python`  | `python` (Alpine)                  | Runs `rpcauth.py` to generate RPC credentials |
-| `i2pd`    | `purplei2p/i2pd`                   | Embedded I2P daemon (when enabled)            |
+| `python`  | `python` (Alpine)                         | Runs `rpcauth.py` to generate RPC credentials |
+| `i2pd`    | `purplei2p/i2pd`                          | Embedded I2P daemon (when enabled)            |
 
 ## Volume and Data Layout
 
@@ -64,9 +64,9 @@ Three additional containers are used:
 
 StartOS-specific files on the `main` volume:
 
-| File         | Purpose                                                                                                                                         |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking, chain-recovery flags and the `rdtsEnforcedLastRun` enforcement marker) |
+| File         | Purpose                                                                                                                                            |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking, the chain-recovery flag and the `rdtsEnforcedLastRun` enforcement marker) |
 
 Blockchain data directories (`blocks/`, `chainstate/`, `indexes/`) reside on the `main` volume alongside the standard `bitcoin.conf` and `.cookie` files.
 
@@ -222,21 +222,16 @@ bitcoind persists a validity verdict for every block it has evaluated (`CBlockIn
 - a non-enforcing flavor inherits RDTS-driven `BLOCK_FAILED_VALID` marks and refuses the majority chain;
 - the enforcing flavor inherits cache-valid verdicts for blocks that were never checked against RDTS and keeps building on an RDTS-invalid chain.
 
-The package closes the gap with three cooperating pieces (all in `startos/forkRecovery.ts` + the `chain-recovery` oneshot in `startos/main.ts`):
+**The second direction is the binary's job**: the Knots release this package pins (≥ `29.4.knots20260508`) re-validates the RDTS-applicable range itself when it starts on a datadir that advanced without enforcement, so the package does nothing for it.
 
-1. **A durable enforcement marker.** `store.json` records `rdtsEnforcedLastRun` — whether the binary that last advanced this datadir enforced RDTS (asked from the node itself via `getdeploymentinfo`; the `reduced_data` key is present exactly when enforcement is enabled). Every flavor updates it each start. This is the package-level equivalent of the `NeedsRedownload()` marker SegWit had and BIP-110 lacks.
-2. **Transition detection.** At each start (after RPC is ready), the oneshot compares the marker to the running binary. An off/unknown→on transition queues `revalidateFromRdts`; an on/unknown→off transition queues `reconsiderInvalidTips` (an unknown marker — a legacy datadir last advanced by a package version that predates it — is treated conservatively on both sides; the reconsider pass is a free no-op when there are no invalid tips). Cross-flavor migrations set the same flags deterministically at switch time as a belt-and-suspenders path, and flags are materialized _before_ the marker is updated so a crash between writes re-detects rather than loses the transition. All flavors carry both flags in their store shape so a switch never strips a pending flag.
-3. **The remedies** (each idempotent, each a no-op when there is nothing to fix):
-   - `reconsiderInvalidTips` — `getchaintips` → `reconsiderblock` every `invalid` tip. Clears the verdict on the block, its ancestors, and descendants (persisted); reconnection re-validates fully, so genuinely-invalid branches re-flag themselves. Tips whose fork point lies below `pruneheight` are skipped (reorganizing onto them would hit a fatal disconnect on pruned data) and reported.
-   - `revalidateAgainstRdts` — replay from the anchor height: `getblockhash(anchor)` → `invalidateblock` → `reconsiderblock`. The anchor is min(961,632 — the mandatory-signaling window start, node-derived `max_activation_height − 2×2016`, node-reported first-enforced height). Every re-connected block passes through `ConnectBlock`, where all three RDTS rule classes are enforced (signaling and output-size unconditionally; script rules because the release's `assumevalid` point, height 912,683, is below the range). Gates first: a below-anchor chain with no invalid branch reaching into the range is a silent no-op, while a below-anchor chain _with_ one (a previously interrupted replay) is recovered by reconsidering those branches — with notifications; pruned-past-anchor datadirs get a warning plus a critical task pointing at **Reindex Blockchain** (on a pruned node: a full re-download); a not-yet-validated assumeutxo chainstate only gets a notification that re-validation is pending, since it runs automatically once background validation completes. The `requires-reindex` outcomes keep the store flag set so the check repeats each start until resolved.
+**The first direction has to be the package's job**, because the destination binary — Bitcoin Core or pre-RDTS Knots — has no concept of RDTS and cannot recognize the verdicts it inherits as foreign. Two cooperating pieces close it (`startos/forkRecovery.ts` + the `chain-recovery` oneshot in `startos/main.ts`):
 
-Notifications accompany every consequential outcome (verdicts cleared, replay started/completed/failed, reindex required). Peering is the one thing the package cannot fix: after verdicts are corrected the node still needs peers serving the intended chain, which the user docs call out.
+1. **A durable enforcement marker.** `store.json` records `rdtsEnforcedLastRun` — whether the binary that last advanced this datadir enforced RDTS (asked from the node itself via `getdeploymentinfo`; the `reduced_data` key is present exactly when enforcement is enabled). Every flavor updates it each start. This flavor never acts on the marker itself — it always enforces — but it **must keep writing it**, because that write is the only thing that tells Core / pre-RDTS Knots, on the next switch away from here, that the verdicts they inherit are RDTS verdicts. This is the package-level equivalent of the `NeedsRedownload()` marker SegWit had and BIP-110 lacks.
+2. **The remedy, run by the flavor being switched _to_.** `reconsiderInvalidTips` — `getchaintips` → `reconsiderblock` every `invalid` tip. Clears the verdict on the block, its ancestors, and descendants (persisted); reconnection re-validates fully, so genuinely-invalid branches re-flag themselves, making it a no-op when there is nothing to fix. Tips whose fork point lies below `pruneheight` are skipped (reorganizing onto them would hit a fatal disconnect on pruned data) and reported. It is queued two ways: the `migrations.other` `down` edges in `startos/versions/current.ts` set `reconsiderInvalidTips` at switch time, and the destination's own marker comparison catches the same transition independently — the flag is written _before_ the marker is updated so a crash between the writes re-detects rather than loses the transition. All flavors carry the flag in their store shape so a switch never strips a pending one.
 
-**Maintainer invariants** (re-verify on every pinned-release bump):
+Notifications accompany every consequential outcome (verdicts cleared, some branches unrecoverable, failure). Peering is the one thing the package cannot fix: after verdicts are corrected the node still needs peers serving the intended chain, which the user docs call out.
 
-- Official Knots binaries are `RDTS_CONSENT=RUNTIME_WARN` → enforcement is binary-level, never config-level. If a future release changes consent semantics, revisit the marker logic.
-- The release's default `assumevalid` height must stay below the RDTS-applicable range (else the replay's script-rule re-checks weaken to the same trust assumption as assumevalid itself).
-- The anchor constant `RDTS_FIRST_APPLICABLE_HEIGHT` (961,632) must match the release's deployment params (`max_activation_height` 965,664, window 2,016).
+**Maintainer invariant** (re-verify on every pinned-release bump): official Knots binaries are `RDTS_CONSENT=RUNTIME_WARN` → enforcement is binary-level, never config-level. If a future release changes consent semantics, or drops the self-re-validation this package now relies on, revisit the marker logic.
 
 ## Backups and Restore
 

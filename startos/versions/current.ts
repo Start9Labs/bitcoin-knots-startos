@@ -43,56 +43,30 @@ const mempoolReset = {
 }
 
 /**
- * Chain-split recovery flags (see startos/forkRecovery.ts), set on every
- * cross-flavor sidegrade and consumed by the destination flavor's
- * chain-recovery oneshot at next start (clean no-ops when there is nothing
- * to fix). The shared datadir carries each flavor's persisted per-block
- * verdicts across a switch, so:
+ * Chain-split recovery flag (see startos/forkRecovery.ts), set on every
+ * sidegrade out of this enforcing flavor and consumed by the destination
+ * flavor's chain-recovery oneshot at next start (a clean no-op when there is
+ * nothing to fix). The shared datadir carries this flavor's persisted
+ * per-block verdicts across the switch, so RDTS-driven invalid verdicts must
+ * be reconsidered or they pin Core / pre-RDTS Knots to a stale chain across a
+ * split. The destination's own rdtsEnforcedLastRun marker detects the same
+ * transition independently; setting the flag here makes the switch case
+ * deterministic even if a prior run never recorded a marker.
  *
- * - Entering this (enforcing) flavor: if the chain advanced past the
- *   RDTS-applicable range without enforcement, that range must be
- *   re-validated (the publicly disclosed BIP-110 late-upgrade
- *   validation gap). The shipped
- *   RUNTIME_WARN binary enforces from its first start, so the switch
- *   itself is the enforcement transition. The oneshot's store marker
- *   (rdtsEnforcedLastRun) detects the same transition independently;
- *   setting the flag here makes the switch case deterministic even if a
- *   prior run never recorded a marker.
- * - Leaving for a non-enforcing flavor: RDTS-driven invalid verdicts must
- *   be reconsidered so they cannot pin Core / pre-RDTS Knots to a stale
- *   chain across a split.
+ * The inverse direction needs nothing: the Knots release this flavor pins
+ * re-validates the RDTS-applicable range itself when it starts on a datadir
+ * that advanced without enforcement.
  */
-const enteringRdtsFlavor = { revalidateFromRdts: true }
 const leavingRdtsFlavor = { reconsiderInvalidTips: true }
 
 export const current = VersionInfo.of({
-  version: '#knots:29.3.1:17',
+  version: '#knots:29.4:0',
   releaseNotes: {
-    en_US: `Fixes on-demand fetching of pruned blocks, and repairs the UTXO snapshot download.
-
-A pruned node keeps only recent blocks, so this package bundles a proxy that fetches any older block from the peer-to-peer network the moment something asks for it — that is what lets a Lightning node, Electrum server or block explorer work against a pruned node. The proxy was running, but the fetching itself was never switched on, so any request for a block older than your prune depth simply failed. LND, for one, could never finish building its channel graph. Those requests are now served as intended. The fetch is also cheaper: a block is pulled from a few peers rather than all of them at once. Unpruned nodes are unaffected — they never run the proxy.
-
-The "Download UTXO Snapshot (assumeutxo)" action has also been repaired. Every attempt failed the instant it started, reporting a missing file that had nothing to do with the address you entered — the program the action used to fetch the snapshot was no longer shipped with the service. Downloads now start as intended, and a URL that answers with an error page is reported as a failed download rather than saved as though it were a snapshot. The action is also sturdier around it: a download that stops moving is abandoned rather than leaving the action stuck on "Download in progress", a failure now tells you what went wrong instead of only that it failed, and the snapshot file — around 11 GB — is deleted once Bitcoin has absorbed it.`,
-    es_ES: `Corrige la obtención bajo demanda de bloques podados y repara la descarga de la instantánea UTXO.
-
-Un nodo podado solo conserva los bloques recientes, por lo que este paquete incluye un proxy que descarga cualquier bloque más antiguo de la red entre pares en cuanto algo lo solicita: eso es lo que permite que un nodo Lightning, un servidor Electrum o un explorador de bloques funcionen contra un nodo podado. El proxy estaba en marcha, pero esa descarga nunca llegó a activarse, así que cualquier petición de un bloque anterior a tu profundidad de poda fallaba sin más. LND, por ejemplo, nunca lograba terminar de construir su grafo de canales. Esas peticiones ya se atienden como corresponde. La descarga también es más económica: un bloque se solicita a unos pocos pares en lugar de a todos a la vez. Los nodos sin podar no se ven afectados: nunca ejecutan el proxy.
-
-También se ha reparado la acción "Descargar instantánea UTXO (assumeutxo)". Todos los intentos fallaban nada más empezar, informando de un archivo inexistente que nada tenía que ver con la dirección introducida: el programa que la acción usaba para descargar la instantánea ya no venía incluido en el servicio. Las descargas ahora arrancan como corresponde, y una URL que responde con una página de error se notifica como descarga fallida en lugar de guardarse como si fuera una instantánea. La acción también es más robusta a su alrededor: una descarga que deja de avanzar se abandona en lugar de dejar la acción atascada en "Descarga en progreso", un fallo ahora te dice qué salió mal y no solo que falló, y el archivo de la instantánea —unos 11 GB— se elimina en cuanto Bitcoin lo ha absorbido.`,
-    de_DE: `Behebt das bedarfsgesteuerte Nachladen beschnittener Blöcke und repariert den Download des UTXO-Snapshots.
-
-Ein beschnittener Knoten behält nur die jüngsten Blöcke, deshalb bringt dieses Paket einen Proxy mit, der jeden älteren Block in dem Moment aus dem Peer-to-Peer-Netz nachlädt, in dem etwas ihn anfordert — genau das lässt einen Lightning-Knoten, einen Electrum-Server oder einen Block-Explorer mit einem beschnittenen Knoten arbeiten. Der Proxy lief zwar, das Nachladen selbst war aber nie eingeschaltet, sodass jede Anfrage nach einem Block jenseits deiner Prune-Tiefe schlicht fehlschlug. LND etwa konnte seinen Kanalgraphen nie fertig aufbauen. Diese Anfragen werden jetzt wie vorgesehen bedient. Das Nachladen ist außerdem sparsamer: Ein Block wird von einigen wenigen Gegenstellen geholt statt von allen gleichzeitig. Unbeschnittene Knoten sind nicht betroffen — sie starten den Proxy nie.
-
-Außerdem wurde die Aktion „UTXO-Snapshot herunterladen (assumeutxo)" repariert. Jeder Versuch schlug sofort fehl und meldete eine fehlende Datei, die nichts mit der eingegebenen Adresse zu tun hatte — das Programm, mit dem die Aktion den Snapshot holte, wurde nicht mehr mit dem Dienst ausgeliefert. Downloads starten jetzt wie vorgesehen, und eine URL, die mit einer Fehlerseite antwortet, wird als fehlgeschlagener Download gemeldet, statt als Snapshot gespeichert zu werden. Auch drumherum ist die Aktion robuster: Ein Download, der nicht mehr vorankommt, wird abgebrochen, statt die Aktion bei „Download läuft" hängen zu lassen, ein Fehlschlag nennt jetzt die Ursache statt nur zu melden, dass er fehlschlug, und die Snapshot-Datei — rund 11 GB — wird gelöscht, sobald Bitcoin sie aufgenommen hat.`,
-    pl_PL: `Naprawia pobieranie na żądanie bloków usuniętych przez przycinanie oraz pobieranie migawki UTXO.
-
-Węzeł z włączonym przycinaniem przechowuje tylko najnowsze bloki, dlatego pakiet zawiera proxy, które pobiera każdy starszy blok z sieci peer-to-peer w chwili, gdy coś go zażąda — to właśnie pozwala węzłowi Lightning, serwerowi Electrum czy eksploratorowi bloków działać na przyciętym węźle. Proxy działało, ale samo pobieranie nigdy nie zostało włączone, więc każde żądanie bloku starszego niż twoja głębokość przycinania po prostu kończyło się błędem. LND na przykład nigdy nie potrafił dokończyć budowy swojego grafu kanałów. Te żądania są już obsługiwane zgodnie z założeniem. Samo pobieranie jest też tańsze: blok jest ściągany od kilku węzłów zamiast od wszystkich naraz. Węzłów bez przycinania to nie dotyczy — nigdy nie uruchamiają proxy.
-
-Naprawiono również akcję „Pobierz migawkę UTXO (assumeutxo)". Każda próba kończyła się błędem natychmiast po uruchomieniu, zgłaszając brakujący plik niemający nic wspólnego z podanym adresem — program, którym akcja pobierała migawkę, przestał być dostarczany razem z usługą. Pobieranie zaczyna się teraz zgodnie z założeniem, a adres URL zwracający stronę błędu jest zgłaszany jako nieudane pobranie, zamiast zostać zapisany tak, jakby był migawką. Sama akcja jest też odporniejsza: pobieranie, które przestaje postępować, zostaje przerwane, zamiast zostawiać akcję zablokowaną na „Pobieranie w toku", niepowodzenie podaje teraz przyczynę, a nie tylko sam fakt błędu, a plik migawki — około 11 GB — jest usuwany, gdy tylko Bitcoin go wchłonie.`,
-    fr_FR: `Corrige la récupération à la demande des blocs élagués et répare le téléchargement de l'instantané UTXO.
-
-Un nœud élagué ne conserve que les blocs récents ; ce paquet embarque donc un proxy qui récupère n'importe quel bloc plus ancien sur le réseau pair-à-pair dès que quelque chose le demande — c'est ce qui permet à un nœud Lightning, un serveur Electrum ou un explorateur de blocs de fonctionner avec un nœud élagué. Le proxy tournait, mais cette récupération n'a jamais été activée : toute demande d'un bloc antérieur à votre profondeur d'élagage échouait purement et simplement. LND, par exemple, ne parvenait jamais à terminer la construction de son graphe de canaux. Ces demandes sont désormais servies comme prévu. La récupération est aussi moins coûteuse : un bloc est demandé à quelques pairs plutôt qu'à tous à la fois. Les nœuds non élagués ne sont pas concernés : ils n'exécutent jamais le proxy.
-
-L'action « Télécharger l'instantané UTXO (assumeutxo) » a également été réparée. Chaque tentative échouait dès son lancement en signalant un fichier introuvable sans rapport avec l'adresse saisie : le programme que l'action utilisait pour récupérer l'instantané n'était plus livré avec le service. Les téléchargements démarrent désormais comme prévu, et une URL qui répond par une page d'erreur est signalée comme un téléchargement échoué au lieu d'être enregistrée comme s'il s'agissait d'un instantané. L'action est aussi plus robuste autour : un téléchargement qui n'avance plus est abandonné au lieu de laisser l'action bloquée sur « Téléchargement en cours », un échec indique désormais ce qui a mal tourné et non plus seulement qu'il a échoué, et le fichier d'instantané — environ 11 Go — est supprimé une fois que Bitcoin l'a absorbé.`,
+    en_US: `Update to Bitcoin Knots v29.4.knots20260508`,
+    es_ES: `Actualización a Bitcoin Knots v29.4.knots20260508`,
+    de_DE: `Aktualisierung auf Bitcoin Knots v29.4.knots20260508`,
+    pl_PL: `Aktualizacja do Bitcoin Knots v29.4.knots20260508`,
+    fr_FR: `Mise à jour vers Bitcoin Knots v29.4.knots20260508`,
   },
   migrations: {
     up: async ({ effects }) => {},
@@ -101,17 +75,17 @@ L'action « Télécharger l'instantané UTXO (assumeutxo) » a également été 
     // major, not per Core `:N`. Range-keyed `migrations.other` requires
     // StartOS ≥ 0.4.0-beta.9 (Start9Labs/start-os#3214).
     //
-    // Intentional asymmetry: there is no `^#knotsprerdts` key here for the
+    // Intentional asymmetry: there is no `^#knotsprerdts` key for the
     // pre-RDTS Knots sibling (B). The B↔C migration belt lives on B's own
-    // `^#knots` entry (its `down` edge, B→C, sets revalidateFromRdts), which
-    // fires because this flavor satisfies B's `canMigrateTo`; the runtime
-    // rdtsEnforcedLastRun marker double-covers it. Not a gap — no mirror key.
+    // `^#knots` entry (its `up` edge, C→B, sets reconsiderInvalidTips),
+    // which fires because this flavor satisfies B's `canMigrateTo`; the
+    // runtime rdtsEnforcedLastRun marker double-covers it. Not a gap — no
+    // mirror key.
     other: {
       ['^28']: {
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, enteringRdtsFlavor)
         },
         // Knots → Core
         down: async ({ effects }) => {
@@ -123,7 +97,6 @@ L'action « Télécharger l'instantané UTXO (assumeutxo) » a également été 
         // Core → Knots
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, enteringRdtsFlavor)
         },
         // Knots → Core
         down: async ({ effects }) => {
@@ -137,7 +110,6 @@ L'action « Télécharger l'instantané UTXO (assumeutxo) » a également été 
         // Core 30 deliberately preserved for downgrade.
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, enteringRdtsFlavor)
           await rm('/media/startos/volumes/main/indexes/coinstatsindex', {
             recursive: true,
             force: true,
@@ -155,7 +127,6 @@ L'action « Télécharger l'instantané UTXO (assumeutxo) » a également été 
         // coinstatsindex (same reason as 30.x).
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, mempoolReset)
-          await storeJson.merge(effects, enteringRdtsFlavor)
           await rm('/media/startos/volumes/main/fee_estimates.dat', {
             force: true,
           }).catch(console.error)
@@ -178,10 +149,6 @@ L'action « Télécharger l'instantané UTXO (assumeutxo) » a également été 
       ['^#knotsrdts:29.3']: {
         up: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, { consensusrules: 'rdts' })
-          // Also queue the RDTS re-validation: nothing proves the retired
-          // build enforced RDTS over this datadir's whole history, and the
-          // check self-clears when the chain never advanced unenforced.
-          await storeJson.merge(effects, enteringRdtsFlavor)
         },
       },
     },
