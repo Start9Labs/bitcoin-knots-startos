@@ -62,11 +62,51 @@ const leavingRdtsFlavor = { reconsiderInvalidTips: true }
 export const current = VersionInfo.of({
   version: '#knots:29.4:0',
   releaseNotes: {
-    en_US: `Update to Bitcoin Knots v29.4.knots20260508`,
-    es_ES: `Actualización a Bitcoin Knots v29.4.knots20260508`,
-    de_DE: `Aktualisierung auf Bitcoin Knots v29.4.knots20260508`,
-    pl_PL: `Aktualizacja do Bitcoin Knots v29.4.knots20260508`,
-    fr_FR: `Mise à jour vers Bitcoin Knots v29.4.knots20260508`,
+    en_US: `Update to Bitcoin Knots v29.4.knots20260508
+
+Separately, three hardening changes from a community security audit.
+
+The check that verifies the signatures on an upstream release now counts distinct signers rather than signatures. Because it counted signatures, one release key signing several times could satisfy a quorum meant to require several independent people — so the tolerance the check advertised was not the tolerance it enforced. Nothing about the releases this package builds changes: each is signed by more than enough separate people to pass either way.
+
+When another service asks to adjust this node's configuration, it can now reach only the handful of settings such a service has any business setting, instead of the entire configuration file. Previously such a request could also carry settings that never appeared on the screen where you approve it.
+
+And an RPC password handed over by another service must now be at least twenty characters. That field is filled in by the service requesting access and you cannot edit it, so nothing was stopping a careless one from choosing something guessable.`,
+    es_ES: `Actualización a Bitcoin Knots v29.4.knots20260508
+
+Aparte de lo anterior, tres mejoras de robustez surgidas de una auditoría de seguridad de la comunidad.
+
+La comprobación que verifica las firmas de una versión oficial ahora cuenta firmantes distintos en lugar de firmas. Como contaba firmas, una sola clave de publicación que firmara varias veces podía satisfacer un quórum pensado para exigir varias personas independientes, de modo que la tolerancia que anunciaba la comprobación no era la que realmente aplicaba. Nada cambia en las versiones que compila este paquete: cada una está firmada por bastantes más personas distintas de las necesarias para pasarla en cualquiera de los dos casos.
+
+Cuando otro servicio solicita ajustar la configuración de este nodo, ahora solo puede llegar al puñado de ajustes que a tal servicio le corresponde tocar, en vez de a todo el archivo de configuración. Antes, esa solicitud también podía llevar ajustes que nunca aparecían en la pantalla donde usted la aprueba.
+
+Además, una contraseña RPC facilitada por otro servicio debe tener ahora al menos veinte caracteres. Ese campo lo rellena el servicio que solicita el acceso y usted no puede editarlo, así que nada impedía que uno descuidado eligiera algo fácil de adivinar.`,
+    de_DE: `Aktualisierung auf Bitcoin Knots v29.4.knots20260508
+
+Davon unabhängig: drei Härtungsänderungen aus einem Sicherheitsaudit der Community.
+
+Die Prüfung der Signaturen einer Upstream-Veröffentlichung zählt jetzt unterschiedliche Signierende statt Signaturen. Da sie Signaturen zählte, konnte ein einzelner Veröffentlichungsschlüssel durch mehrfaches Signieren ein Quorum erfüllen, das mehrere unabhängige Personen verlangen sollte — die Toleranz, die die Prüfung angab, war also nicht die, die sie durchsetzte. An den Veröffentlichungen, die dieses Paket baut, ändert sich nichts: Jede ist von mehr als genug verschiedenen Personen signiert, um so oder so zu bestehen.
+
+Wenn ein anderer Dienst darum bittet, die Konfiguration dieses Knotens anzupassen, erreicht er jetzt nur noch die wenigen Einstellungen, die einen solchen Dienst überhaupt etwas angehen, statt der gesamten Konfigurationsdatei. Zuvor konnte eine solche Anfrage auch Einstellungen enthalten, die auf dem Bildschirm, auf dem Sie sie bestätigen, nie auftauchten.
+
+Und ein von einem anderen Dienst übergebenes RPC-Passwort muss nun mindestens zwanzig Zeichen lang sein. Dieses Feld füllt der anfragende Dienst aus und Sie können es nicht ändern — nichts hielt also einen nachlässigen Dienst davon ab, etwas leicht Erratbares zu wählen.`,
+    pl_PL: `Aktualizacja do Bitcoin Knots v29.4.knots20260508
+
+Niezależnie od powyższego: trzy zmiany wzmacniające, wynikające ze społecznościowego audytu bezpieczeństwa.
+
+Kontrola weryfikująca podpisy wydania upstream liczy teraz odrębnych sygnatariuszy, a nie podpisy. Ponieważ liczyła podpisy, jeden klucz wydania podpisujący kilkakrotnie mógł spełnić kworum pomyślane tak, by wymagać kilku niezależnych osób — deklarowana odporność kontroli nie była więc tą, którą faktycznie egzekwowała. W wydaniach budowanych przez ten pakiet nic się nie zmienia: każde jest podpisane przez znacznie więcej odrębnych osób, niż potrzeba do jej przejścia w obu wariantach.
+
+Gdy inna usługa prosi o zmianę konfiguracji tego węzła, może teraz sięgnąć wyłącznie po tę garstkę ustawień, które takiej usługi w ogóle dotyczą, zamiast po cały plik konfiguracyjny. Wcześniej takie żądanie mogło nieść również ustawienia, które nigdy nie pojawiały się na ekranie zatwierdzania.
+
+Hasło RPC przekazane przez inną usługę musi mieć teraz co najmniej dwadzieścia znaków. To pole wypełnia usługa prosząca o dostęp i nie można go edytować, więc nic nie powstrzymywało nieostrożnej usługi przed wybraniem czegoś łatwego do odgadnięcia.`,
+    fr_FR: `Mise à jour vers Bitcoin Knots v29.4.knots20260508
+
+Par ailleurs, trois renforcements issus d'un audit de sécurité communautaire.
+
+La vérification des signatures d'une version amont compte désormais des signataires distincts plutôt que des signatures. Comme elle comptait les signatures, une seule clé de publication signant plusieurs fois pouvait satisfaire un quorum censé exiger plusieurs personnes indépendantes : la tolérance annoncée par la vérification n'était donc pas celle qu'elle appliquait. Rien ne change pour les versions que ce paquet construit : chacune est signée par bien plus de personnes distinctes qu'il n'en faut pour passer dans les deux cas.
+
+Lorsqu'un autre service demande à modifier la configuration de ce nœud, il n'atteint plus que la poignée de réglages qui le concernent réellement, au lieu de l'ensemble du fichier de configuration. Auparavant, une telle demande pouvait aussi porter des réglages qui n'apparaissaient jamais sur l'écran où vous la validez.
+
+Enfin, un mot de passe RPC fourni par un autre service doit désormais compter au moins vingt caractères. Ce champ est rempli par le service qui demande l'accès et vous ne pouvez pas le modifier : rien n'empêchait donc un service négligent de choisir quelque chose de facile à deviner.`,
   },
   migrations: {
     up: async ({ effects }) => {},
