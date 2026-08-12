@@ -180,8 +180,10 @@ export const shape = z
     natpmp: iniBoolean,
     // Set on the way in and cleared on the way out, never enforced: the
     // RUNTIME_WARN build enforces RDTS regardless and only warns when the
-    // option is absent, so a user who prefers the warning may delete it.
-    consensusrules: z.literal('rdts').optional().catch(undefined),
+    // option is absent, so a user who prefers the warning may delete it —
+    // `.optional()` keeps absence valid, so the catch repairs a malformed
+    // value rather than resurrecting a deliberate deletion.
+    consensusrules: z.literal('rdts').optional().catch('rdts'),
     maxuploadtarget: iniNumber,
   })
   .loose()
