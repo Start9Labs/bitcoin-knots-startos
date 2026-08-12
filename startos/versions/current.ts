@@ -194,5 +194,5 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
     },
   },
 })
-  .satisfies('29.4:5')
-  .satisfies('28.4:18')
+  .satisfies('29.4:6')
+  .satisfies('28.4:19')
