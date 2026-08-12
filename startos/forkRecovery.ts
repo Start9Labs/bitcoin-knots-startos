@@ -109,9 +109,9 @@ const cliJson = async <T>(
  * the RUNTIME_WARN Knots release, which enforces on mainnet from first start —
  * and absent on builds that never define it (Bitcoin Core; the pre-RDTS Knots
  * release that predates the deployment). Presence is thus a valid enforcement
- * signal for the RDTS build and does NOT depend on `consensusrules` (that
- * option only silences the binary's consent warning; it does not gate
- * enforcement, and this package no longer writes it). Never-enforcing
+ * signal for the RDTS build and does NOT depend on `consensusrules` (this
+ * package pins that option to silence the binary's warning; it does not gate
+ * enforcement and records nothing about user intent). Never-enforcing
  * flavors MUST hardcode false — they cannot derive it. Keying on presence,
  * never the deployment's `active` field, is deliberate: a fresh RDTS-flavor
  * install before the opt-in task is resolved still enforces and must read as

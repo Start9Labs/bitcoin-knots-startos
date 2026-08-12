@@ -1,16 +1,12 @@
 import { activateRDTS } from '../actions/activaterdts'
-import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 
 export const taskRdtsOptIn = sdk.setupOnInit(async (effects) => {
-  // `consensusrules=rdts` was this flavor's consent record until the split
-  // made it meaningless — the opt-in now lives in the store, which no other
-  // flavor carries. Cleared here rather than in a migration so every arrival
-  // path is covered; merge only writes when the file actually changes.
-  await bitcoinConfFile.merge(effects, { raw: { consensusrules: undefined } })
-
+  // The opt-in lives in the store, not in `consensusrules` — that option is
+  // pinned by the file model to keep the binary quiet and says nothing about
+  // what the user agreed to. No other flavor carries this key.
   const store = await storeJson.read().const(effects)
   if (!store?.rdtsAcknowledged) {
     await sdk.action.createOwnTask(effects, activateRDTS, 'critical', {
