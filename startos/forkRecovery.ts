@@ -113,7 +113,7 @@ const cliJson = async <T>(
  * option records consent and silences a warning; it does not gate
  * enforcement). Never-enforcing flavors MUST hardcode false — they cannot
  * derive it. Keying on presence, never the deployment's `active` field, is
- * deliberate: a fresh RDTS-flavor install before "Activate RDTS" is
+ * deliberate: a fresh RDTS-flavor install before its opt-in task is
  * acknowledged still enforces and must read as such.
  */
 export async function isRdtsEnforcing(
