@@ -2,7 +2,7 @@
   <img src="icon.png" alt="Bitcoin Knots Logo" width="21%">
 </p>
 
-# Bitcoin Knots on StartOS
+# Bitcoin Knots (RDTS) on StartOS
 
 > **Upstream docs:** <https://bitcoinknots.org/>
 >
@@ -66,7 +66,7 @@ StartOS-specific files on the `main` volume:
 
 | File         | Purpose                                                                                                                                            |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking, the chain-recovery flag and the `rdtsEnforcedLastRun` enforcement marker) |
+| `store.json` | Persistent StartOS state (reindex flags, sync status, snapshot tracking, the chain-recovery flag, the `rdtsEnforcedLastRun` enforcement marker and the `rdtsAcknowledged` opt-in) |
 
 Blockchain data directories (`blocks/`, `chainstate/`, `indexes/`) reside on the `main` volume alongside the standard `bitcoin.conf` and `.cookie` files.
 
@@ -80,9 +80,9 @@ Blockchain data directories (`blocks/`, `chainstate/`, `indexes/`) reside on the
 6. Bitcoin Knots begins syncing the blockchain (Initial Block Download)
 7. When sync completes, a **Sync Complete** notification is posted to the StartOS notifications panel. The notification fires once after initial sync, and again whenever a reindex (Reindex Blockchain / Reindex Chainstate) completes.
 
-> **RDTS activation (critical task):** On install — and until RDTS is activated — StartOS raises a **critical task** titled _Activate RDTS_ (created at init while `consensusrules` is not yet `rdts`). It asks you to acknowledge that this version of Bitcoin Knots will eventually enforce the BIP-110 Reduced Data Temporary Softfork (RDTS) consensus rules; acknowledging writes `consensusrules=rdts` to `bitcoin.conf`. Skipping or reverting to older software does not reject the upgrade. To remain on pre-RDTS consensus rules, install the **Bitcoin Knots (pre-RDTS)** flavor instead, which ships the last pre-RDTS Knots release (`29.3.knots20260507`) and has no such gate. See <https://bitcoinknots.org/learn/2026-rdts>.
+> **RDTS chain opt-in (critical task):** On install — and until it is resolved — StartOS raises a **critical task** titled _RDTS Chain Opt-In_ (created at init while `store.json`'s `rdtsAcknowledged` is unset). BIP-110 did not carry the network: it split at block 961,632 in August 2026, and this flavor follows the resulting chain, which produces a block roughly once every day or two and shares no replay protection with the original. The task says so and asks the user to confirm the switch deliberately. To follow the chain the rest of the network follows, install **Bitcoin Core** or the **Bitcoin Knots (pre-RDTS)** flavor instead, the latter shipping the last pre-RDTS Knots release (`29.3.knots20260507`) with no such gate. See <https://start9.com/bip110/>.
 >
-> Enforcement-model precision (matters for development): the official Knots release binaries this package ships are built with `RDTS_CONSENT=RUNTIME_WARN` (upstream `contrib/guix/libexec/build.sh`), so the binary **enforces RDTS on mainnet from its first start regardless of `consensusrules`** — the config option records user _consent_ (and silences an hourly warning); it is not an enforcement toggle. Never derive "is this node enforcing" from `bitcoin.conf`; the chain-recovery oneshot asks the node itself (`getdeploymentinfo` — the `reduced_data` deployment is present exactly when enforcement is enabled).
+> Enforcement-model precision (matters for development): the official Knots release binaries this package ships are built with `RDTS_CONSENT=RUNTIME_WARN` (upstream `contrib/guix/libexec/build.sh`), so the binary **enforces RDTS on mainnet from its first start regardless of `consensusrules`** — that option only recorded user _consent_ and silenced the binary's periodic consent warning; it was never an enforcement toggle. The opt-in is a package-level gate now (`rdtsAcknowledged`), so `consensusrules=rdts` is **set on the way in and cleared on the way out**, never enforced: written by `seedFiles` on install, by this version's `up`, and by each Core→Knots `up`; removed by each Knots→Core `down`, since no other flavor understands the key. Its only job is to stop the binary warning on every start. Do not read it as consent, do not expose it as a setting, and do not enforce it — nothing re-stamps it, so a user who would rather see the warning can delete it and it stays deleted. Never derive "is this node enforcing" from `bitcoin.conf`; the chain-recovery oneshot asks the node itself (`getdeploymentinfo` — the `reduced_data` deployment is present exactly when enforcement is enabled).
 
 ## Default Networking
 
@@ -213,7 +213,7 @@ These actions operate on the **selected wallet** (default `coin`). Use **Select 
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | **Auto-Configure**         | Automatically configure Bitcoin Knots for dependent services (prefills all config)                                            | Any          |
 | **Create RPC Credentials** | Create RPC credentials with a provided username/password for dependent services                                               | Any          |
-| **Activate RDTS**          | Acknowledge the BIP-110 RDTS upgrade; writes `consensusrules=rdts`. Surfaced as a critical task on install until acknowledged | Any          |
+| **RDTS Chain Opt-In**      | Confirm the move onto the RDTS chain; sets `rdtsAcknowledged` in `store.json`. Surfaced as a critical task on install until resolved | Any          |
 
 ## Chain-Split Recovery
 

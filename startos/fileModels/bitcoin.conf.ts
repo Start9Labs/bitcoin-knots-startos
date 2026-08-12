@@ -178,7 +178,12 @@ export const shape = z
       .catch(undefined),
     peerblockfilters: iniBoolean,
     natpmp: iniBoolean,
-    consensusrules: z.literal('rdts').optional().catch(undefined),
+    // Set on the way in and cleared on the way out, never enforced: the
+    // RUNTIME_WARN build enforces RDTS regardless and only warns when the
+    // option is absent, so a user who prefers the warning may delete it —
+    // `.optional()` keeps absence valid, so the catch repairs a malformed
+    // value rather than resurrecting a deliberate deletion.
+    consensusrules: z.literal('rdts').optional().catch('rdts'),
     maxuploadtarget: iniNumber,
   })
   .loose()
@@ -506,7 +511,6 @@ export const fullConfigSpec = sdk.InputSpec.of({
   }),
 
   // === OTHER ===
-  consensusrules: Value.hidden(z.literal('rdts').optional().catch(undefined)),
   softwareexpiry: Value.number({
     name: i18n('Software Expiry'),
     description: i18n(
@@ -933,7 +937,6 @@ function fileToForm(
     zmqpubrawtx,
     zmqpubsequence,
     // Other
-    consensusrules,
     softwareexpiry,
     txindex,
     coinstatsindex,
@@ -1002,7 +1005,6 @@ function fileToForm(
     minrelaymaturity,
 
     // Other - with transforms
-    consensusrules,
     softwareexpiry,
     zmqEnabled: !!(
       zmqpubhashblock &&
@@ -1107,7 +1109,6 @@ function formToFile(
     minrelaycoinblocks,
     minrelaymaturity,
     // Other
-    consensusrules,
     softwareexpiry,
     prune,
     wallet,
@@ -1191,7 +1192,6 @@ function formToFile(
     discardfee: wallet?.discardfee ?? undefined,
 
     // Other
-    consensusrules,
     softwareexpiry,
     txindex: prune ? false : (txindex ?? undefined),
     coinstatsindex: coinstatsindex ?? undefined,

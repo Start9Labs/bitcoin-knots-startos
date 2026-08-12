@@ -3,7 +3,7 @@ import { long, short, torDescription } from './i18n'
 
 export const manifest = setupManifest({
   id: 'bitcoind',
-  title: 'Bitcoin Knots',
+  title: 'Bitcoin Knots (RDTS)',
   license: 'MIT',
   donationUrl: null,
   packageRepo: 'https://github.com/Start9Labs/bitcoin-knots-startos/tree/29.x',
