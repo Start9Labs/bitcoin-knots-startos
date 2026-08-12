@@ -64,6 +64,8 @@ export const current = VersionInfo.of({
   releaseNotes: {
     en_US: `Update to Bitcoin Knots v29.4.knots20260508
 
+This service is now called Bitcoin Knots (RDTS), and its marketplace description says which chain it follows. The name is the only thing that changes about an existing install.
+
 The RDTS opt-in now describes what actually happened. BIP-110 did not carry the network: in August 2026, at block 961,632, the nodes enforcing it split onto a chain of their own, and this version follows that chain. The confirmation asked of you on install — and again now, because what there is to agree to has changed — says so plainly: switching here from Bitcoin Core or Bitcoin Knots (pre-RDTS) moves your node to a different blockchain and network; that chain produces a block only about once every day or two, so deposits will not confirm and dependent services such as Lightning will stall; a hard fork to a new proof-of-work algorithm is planned for 1 September 2026 to restore normal block production; and the two chains share no replay protection, so a transaction broadcast on one can be replayed on the other.
 
 Your acknowledgement is now kept in the package's own state instead of as consensusrules=rdts in bitcoin.conf, and that line is removed from existing configurations. It never controlled anything — this build enforces RDTS either way — and it no longer records anything meaningful.
@@ -76,6 +78,8 @@ When another service asks to adjust this node's configuration, it can now reach 
 
 And an RPC password handed over by another service must now be at least twenty characters. That field is filled in by the service requesting access and you cannot edit it, so nothing was stopping a careless one from choosing something guessable.`,
     es_ES: `Actualización a Bitcoin Knots v29.4.knots20260508
+
+Este servicio pasa a llamarse Bitcoin Knots (RDTS), y su descripción en el mercado indica qué cadena sigue. En una instalación existente, el nombre es lo único que cambia.
 
 La adhesión a RDTS ahora describe lo que realmente ocurrió. BIP-110 no arrastró consigo a la red: en agosto de 2026, en el bloque 961.632, los nodos que lo aplicaban se separaron en una cadena propia, y esta versión sigue esa cadena. La confirmación que se te pide al instalar —y de nuevo ahora, porque ha cambiado aquello con lo que estás de acuerdo— lo dice sin rodeos: cambiar aquí desde Bitcoin Core o Bitcoin Knots (pre-RDTS) traslada tu nodo a otra cadena de bloques y a otra red; esa cadena produce un bloque solo cada uno o dos días, así que los depósitos no se confirmarán y los servicios dependientes, como Lightning, se quedarán bloqueados; está previsto un hard fork a un nuevo algoritmo de prueba de trabajo el 1 de septiembre de 2026 para restablecer la producción normal de bloques; y las dos cadenas no tienen protección contra repetición, por lo que una transacción difundida en una puede repetirse en la otra.
 
@@ -90,6 +94,8 @@ Cuando otro servicio solicita ajustar la configuración de este nodo, ahora solo
 Además, una contraseña RPC facilitada por otro servicio debe tener ahora al menos veinte caracteres. Ese campo lo rellena el servicio que solicita el acceso y usted no puede editarlo, así que nada impedía que uno descuidado eligiera algo fácil de adivinar.`,
     de_DE: `Aktualisierung auf Bitcoin Knots v29.4.knots20260508
 
+Dieser Dienst heißt jetzt Bitcoin Knots (RDTS), und seine Marktplatz-Beschreibung nennt die Kette, der er folgt. An einer bestehenden Installation ändert sich sonst nichts als der Name.
+
 Der RDTS-Beitritt beschreibt jetzt, was tatsächlich geschehen ist. BIP-110 hat das Netzwerk nicht mitgenommen: Im August 2026 spalteten sich die Knoten, die ihn durchsetzen, bei Block 961.632 auf eine eigene Kette ab, und diese Version folgt dieser Kette. Die Bestätigung, um die du bei der Installation gebeten wirst — und jetzt erneut, weil sich geändert hat, wozu du zustimmst —, sagt es klar: Ein Wechsel hierher von Bitcoin Core oder Bitcoin Knots (pre-RDTS) setzt deinen Knoten auf eine andere Blockchain und in ein anderes Netzwerk; diese Kette bringt nur etwa alle ein bis zwei Tage einen Block hervor, sodass Einzahlungen nicht bestätigt werden und abhängige Dienste wie Lightning stehen bleiben; für den 1. September 2026 ist ein Hard Fork auf einen neuen Proof-of-Work-Algorithmus geplant, der die normale Blockproduktion wiederherstellen soll; und die beiden Ketten haben keinen Replay-Schutz, sodass eine auf der einen gesendete Transaktion auf der anderen wiederholt werden kann.
 
 Deine Bestätigung wird jetzt im eigenen Zustand des Pakets gehalten statt als consensusrules=rdts in der bitcoin.conf, und diese Zeile wird aus bestehenden Konfigurationen entfernt. Sie hat nie etwas gesteuert — dieser Build setzt RDTS ohnehin durch — und hält nun auch nichts Aussagekräftiges mehr fest.
@@ -103,6 +109,8 @@ Wenn ein anderer Dienst darum bittet, die Konfiguration dieses Knotens anzupasse
 Und ein von einem anderen Dienst übergebenes RPC-Passwort muss nun mindestens zwanzig Zeichen lang sein. Dieses Feld füllt der anfragende Dienst aus und Sie können es nicht ändern — nichts hielt also einen nachlässigen Dienst davon ab, etwas leicht Erratbares zu wählen.`,
     pl_PL: `Aktualizacja do Bitcoin Knots v29.4.knots20260508
 
+Ta usługa nazywa się teraz Bitcoin Knots (RDTS), a jej opis w sklepie mówi, za którym łańcuchem podąża. W istniejącej instalacji zmienia się wyłącznie nazwa.
+
 Przystąpienie do RDTS opisuje teraz to, co faktycznie się wydarzyło. BIP-110 nie pociągnął za sobą sieci: w sierpniu 2026 roku, na bloku 961 632, węzły go egzekwujące odłączyły się na własny łańcuch, a ta wersja podąża właśnie za nim. Potwierdzenie, o które prosimy przy instalacji — i ponownie teraz, bo zmieniło się to, na co się zgadzasz — mówi wprost: przejście tutaj z Bitcoin Core albo Bitcoin Knots (pre-RDTS) przenosi twój węzeł na inny łańcuch bloków i do innej sieci; ten łańcuch wytwarza blok mniej więcej raz na dobę lub dwie, więc wpłaty nie będą się potwierdzać, a usługi zależne, takie jak Lightning, staną; na 1 września 2026 roku planowany jest hard fork na nowy algorytm proof-of-work, który ma przywrócić normalną produkcję bloków; oba łańcuchy nie mają zaś ochrony przed powtórzeniem, więc transakcja rozgłoszona na jednym może zostać powtórzona na drugim.
 
 Twoje potwierdzenie jest teraz przechowywane we własnym stanie pakietu, a nie jako consensusrules=rdts w bitcoin.conf, a ta linia jest usuwana z istniejących konfiguracji. Nigdy niczym nie sterowała — ta kompilacja egzekwuje RDTS tak czy inaczej — i nie zapisuje już niczego istotnego.
@@ -115,6 +123,8 @@ Gdy inna usługa prosi o zmianę konfiguracji tego węzła, może teraz sięgną
 
 Hasło RPC przekazane przez inną usługę musi mieć teraz co najmniej dwadzieścia znaków. To pole wypełnia usługa prosząca o dostęp i nie można go edytować, więc nic nie powstrzymywało nieostrożnej usługi przed wybraniem czegoś łatwego do odgadnięcia.`,
     fr_FR: `Mise à jour vers Bitcoin Knots v29.4.knots20260508
+
+Ce service s'appelle désormais Bitcoin Knots (RDTS), et sa description dans la boutique indique quelle chaîne il suit. Sur une installation existante, seul le nom change.
 
 L'adhésion à RDTS décrit désormais ce qui s'est réellement passé. BIP-110 n'a pas entraîné le réseau : en août 2026, au bloc 961 632, les nœuds qui l'appliquaient se sont séparés sur une chaîne à eux, et cette version suit cette chaîne. La confirmation qui vous est demandée à l'installation — et de nouveau maintenant, car ce à quoi vous consentez a changé — le dit clairement : basculer ici depuis Bitcoin Core ou Bitcoin Knots (pre-RDTS) déplace votre nœud sur une autre chaîne de blocs et sur un autre réseau ; cette chaîne ne produit un bloc que tous les un à deux jours environ, de sorte que les dépôts ne seront pas confirmés et que les services qui en dépendent, comme Lightning, resteront bloqués ; un hard fork vers un nouvel algorithme de preuve de travail est prévu le 1er septembre 2026 pour rétablir une production normale de blocs ; et les deux chaînes n'ont aucune protection contre le rejeu, si bien qu'une transaction diffusée sur l'une peut être rejouée sur l'autre.
 

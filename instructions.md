@@ -1,4 +1,4 @@
-# Bitcoin Knots
+# Bitcoin Knots (RDTS)
 
 ## Documentation
 

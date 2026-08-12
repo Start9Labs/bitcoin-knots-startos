@@ -2,7 +2,7 @@
   <img src="icon.png" alt="Bitcoin Knots Logo" width="21%">
 </p>
 
-# Bitcoin Knots on StartOS
+# Bitcoin Knots (RDTS) on StartOS
 
 > **Upstream docs:** <https://bitcoinknots.org/>
 >
