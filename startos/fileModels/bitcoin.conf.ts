@@ -75,9 +75,6 @@ export const shape = z
     rpcthreads: iniNumber,
     rpcworkqueue: iniNumber,
     deprecatedrpc: z.literal('create_bdb').catch('create_bdb'),
-    // Pinned, not a consent record: the RUNTIME_WARN build enforces RDTS
-    // either way, but warns on every start unless the option is present.
-    consensusrules: z.literal('rdts').catch('rdts'),
 
     // Mempool
     persistmempool: iniBoolean,
@@ -181,6 +178,10 @@ export const shape = z
       .catch(undefined),
     peerblockfilters: iniBoolean,
     natpmp: iniBoolean,
+    // Set on the way in and cleared on the way out, never enforced: the
+    // RUNTIME_WARN build enforces RDTS regardless and only warns when the
+    // option is absent, so a user who prefers the warning may delete it.
+    consensusrules: z.literal('rdts').optional().catch(undefined),
     maxuploadtarget: iniNumber,
   })
   .loose()
@@ -1142,7 +1143,6 @@ function formToFile(
     bind: `0.0.0.0:${peerPortInternal}`,
     whitebind: `0.0.0.0:${peerPortLocal}`,
     deprecatedrpc: 'create_bdb',
-    consensusrules: 'rdts',
     rpcauth: raw?.rpcauth?.filter((a) => !!a) as string[] | undefined,
     whitelist: raw?.whitelist?.filter((a) => !!a) as string[] | undefined,
     externalip: raw?.externalip?.filter((a) => !!a) as string[] | undefined,

@@ -1,5 +1,5 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
-import { readFile, rm, writeFile } from 'fs/promises'
+import { rm } from 'fs/promises'
 import { bitcoinConfFile } from '../fileModels/bitcoin.conf'
 import { storeJson } from '../fileModels/store.json'
 /**
@@ -60,26 +60,14 @@ const mempoolReset = {
 const leavingRdtsFlavor = { reconsiderInvalidTips: true }
 
 /**
- * Strip `consensusrules=rdts` on the way out to Core.
- *
- * This cannot go through bitcoinConfFile: the key is an enforced field here,
- * so every merge re-stamps it (fileModels/bitcoin.conf). Core does not declare
- * the key, and the SDK's `.loose()` keeps unknown keys in `raw` and re-emits
- * them, so without this the line follows the user across and Core logs
- * "Ignoring unknown configuration value consensusrules" on every start.
- * Cosmetic — Core starts fine either way (verified against the 31.0 release
- * binary) — so it never fails the switch.
+ * `consensusrules=rdts` acknowledges the upgrade to the binary and nothing
+ * else: the RUNTIME_WARN build enforces RDTS with or without it, and only
+ * warns when it is missing. The package sets it on arrival and clears it on
+ * departure — no other flavor understands the key — but never enforces it, so
+ * a user who would rather see the warning can delete it and it stays deleted.
  */
-const stripConsensusRules = async () => {
-  const path = '/media/startos/volumes/main/bitcoin.conf'
-  const conf = await readFile(path, 'utf8').catch(() => null)
-  if (conf === null) return
-  const stripped = conf
-    .split('\n')
-    .filter((line) => !/^\s*consensusrules\s*=/i.test(line))
-    .join('\n')
-  if (stripped !== conf) await writeFile(path, stripped).catch(console.error)
-}
+const setConsensusRules = { raw: { consensusrules: 'rdts' as const } }
+const clearConsensusRules = { raw: { consensusrules: undefined } }
 
 export const current = VersionInfo.of({
   version: '#knots:29.4:1',
@@ -90,7 +78,7 @@ This service is now called Bitcoin Knots (RDTS), and its marketplace description
 
 The RDTS opt-in now describes what actually happened. BIP-110 did not carry the network: in August 2026, at block 961,632, the nodes enforcing it split onto a chain of their own, and this version follows that chain. The confirmation asked of you on install — and again now, because what there is to agree to has changed — says so plainly: switching here from Bitcoin Core or Bitcoin Knots (pre-RDTS) moves your node to a different blockchain and network; that chain produces a block only about once every day or two, so deposits will not confirm and dependent services such as Lightning will stall; a hard fork to a new proof-of-work algorithm is planned for 1 September 2026 to restore normal block production; and the two chains share no replay protection, so a transaction broadcast on one can be replayed on the other.
 
-Your acknowledgement is now kept in the package's own state rather than in bitcoin.conf. The consensusrules=rdts line stays, pinned by the package because the binary logs a warning on every start without it — it never controlled anything and no longer records your consent. Switching to Bitcoin Core removes it again.
+Your acknowledgement is now kept in the package's own state rather than in bitcoin.conf. The consensusrules=rdts line is still written, because the binary logs a warning on every start without it, and it is removed again if you switch to Bitcoin Core. It never controlled anything and no longer records your consent — delete it yourself if you would rather see the warning, and nothing here will put it back.
 
 Separately, three hardening changes from a community security audit.
 
@@ -105,7 +93,7 @@ Este servicio pasa a llamarse Bitcoin Knots (RDTS), y su descripción en el merc
 
 La adhesión a RDTS ahora describe lo que realmente ocurrió. BIP-110 no arrastró consigo a la red: en agosto de 2026, en el bloque 961.632, los nodos que lo aplicaban se separaron en una cadena propia, y esta versión sigue esa cadena. La confirmación que se te pide al instalar —y de nuevo ahora, porque ha cambiado aquello con lo que estás de acuerdo— lo dice sin rodeos: cambiar aquí desde Bitcoin Core o Bitcoin Knots (pre-RDTS) traslada tu nodo a otra cadena de bloques y a otra red; esa cadena produce un bloque solo cada uno o dos días, así que los depósitos no se confirmarán y los servicios dependientes, como Lightning, se quedarán bloqueados; está previsto un hard fork a un nuevo algoritmo de prueba de trabajo el 1 de septiembre de 2026 para restablecer la producción normal de bloques; y las dos cadenas no tienen protección contra repetición, por lo que una transacción difundida en una puede repetirse en la otra.
 
-Tu confirmación se guarda ahora en el estado propio del paquete y no en bitcoin.conf. La línea consensusrules=rdts se mantiene, fijada por el paquete porque sin ella el binario registra un aviso en cada arranque: nunca controló nada y ya no registra tu consentimiento. Al cambiar a Bitcoin Core se elimina de nuevo.
+Tu confirmación se guarda ahora en el estado propio del paquete y no en bitcoin.conf. La línea consensusrules=rdts se sigue escribiendo, porque sin ella el binario registra un aviso en cada arranque, y se elimina de nuevo si cambias a Bitcoin Core. Nunca controló nada y ya no registra tu consentimiento: bórrala tú si prefieres ver el aviso, que nada aquí volverá a ponerla.
 
 Aparte de lo anterior, tres mejoras de robustez surgidas de una auditoría de seguridad de la comunidad.
 
@@ -120,7 +108,7 @@ Dieser Dienst heißt jetzt Bitcoin Knots (RDTS), und seine Marktplatz-Beschreibu
 
 Der RDTS-Beitritt beschreibt jetzt, was tatsächlich geschehen ist. BIP-110 hat das Netzwerk nicht mitgenommen: Im August 2026 spalteten sich die Knoten, die ihn durchsetzen, bei Block 961.632 auf eine eigene Kette ab, und diese Version folgt dieser Kette. Die Bestätigung, um die du bei der Installation gebeten wirst — und jetzt erneut, weil sich geändert hat, wozu du zustimmst —, sagt es klar: Ein Wechsel hierher von Bitcoin Core oder Bitcoin Knots (pre-RDTS) setzt deinen Knoten auf eine andere Blockchain und in ein anderes Netzwerk; diese Kette bringt nur etwa alle ein bis zwei Tage einen Block hervor, sodass Einzahlungen nicht bestätigt werden und abhängige Dienste wie Lightning stehen bleiben; für den 1. September 2026 ist ein Hard Fork auf einen neuen Proof-of-Work-Algorithmus geplant, der die normale Blockproduktion wiederherstellen soll; und die beiden Ketten haben keinen Replay-Schutz, sodass eine auf der einen gesendete Transaktion auf der anderen wiederholt werden kann.
 
-Deine Bestätigung wird jetzt im eigenen Zustand des Pakets gehalten statt in der bitcoin.conf. Die Zeile consensusrules=rdts bleibt, vom Paket fest gesetzt, weil das Programm sonst bei jedem Start eine Warnung protokolliert — gesteuert hat sie nie etwas, und deine Zustimmung hält sie nicht mehr fest. Beim Wechsel zu Bitcoin Core wird sie wieder entfernt.
+Deine Bestätigung wird jetzt im eigenen Zustand des Pakets gehalten statt in der bitcoin.conf. Die Zeile consensusrules=rdts wird weiterhin geschrieben, weil das Programm sonst bei jedem Start eine Warnung protokolliert, und beim Wechsel zu Bitcoin Core wieder entfernt. Gesteuert hat sie nie etwas, und deine Zustimmung hält sie nicht mehr fest — lösche sie selbst, wenn dir die Warnung lieber ist; hier setzt sie nichts erneut.
 
 Davon unabhängig: drei Härtungsänderungen aus einem Sicherheitsaudit der Community.
 
@@ -135,7 +123,7 @@ Ta usługa nazywa się teraz Bitcoin Knots (RDTS), a jej opis w sklepie mówi, z
 
 Przystąpienie do RDTS opisuje teraz to, co faktycznie się wydarzyło. BIP-110 nie pociągnął za sobą sieci: w sierpniu 2026 roku, na bloku 961 632, węzły go egzekwujące odłączyły się na własny łańcuch, a ta wersja podąża właśnie za nim. Potwierdzenie, o które prosimy przy instalacji — i ponownie teraz, bo zmieniło się to, na co się zgadzasz — mówi wprost: przejście tutaj z Bitcoin Core albo Bitcoin Knots (pre-RDTS) przenosi twój węzeł na inny łańcuch bloków i do innej sieci; ten łańcuch wytwarza blok mniej więcej raz na dobę lub dwie, więc wpłaty nie będą się potwierdzać, a usługi zależne, takie jak Lightning, staną; na 1 września 2026 roku planowany jest hard fork na nowy algorytm proof-of-work, który ma przywrócić normalną produkcję bloków; oba łańcuchy nie mają zaś ochrony przed powtórzeniem, więc transakcja rozgłoszona na jednym może zostać powtórzona na drugim.
 
-Twoje potwierdzenie jest teraz przechowywane we własnym stanie pakietu, a nie w bitcoin.conf. Linia consensusrules=rdts pozostaje, ustawiana na stałe przez pakiet, bo bez niej program zapisuje ostrzeżenie przy każdym starcie — nigdy niczym nie sterowała i nie zapisuje już twojej zgody. Przy przejściu na Bitcoin Core jest usuwana.
+Twoje potwierdzenie jest teraz przechowywane we własnym stanie pakietu, a nie w bitcoin.conf. Linia consensusrules=rdts nadal jest zapisywana, bo bez niej program wypisuje ostrzeżenie przy każdym starcie, i znika ponownie przy przejściu na Bitcoin Core. Nigdy niczym nie sterowała i nie zapisuje już twojej zgody — usuń ją sam, jeśli wolisz widzieć ostrzeżenie; nic jej tutaj nie przywróci.
 
 Niezależnie od powyższego: trzy zmiany wzmacniające, wynikające ze społecznościowego audytu bezpieczeństwa.
 
@@ -150,7 +138,7 @@ Ce service s'appelle désormais Bitcoin Knots (RDTS), et sa description dans la 
 
 L'adhésion à RDTS décrit désormais ce qui s'est réellement passé. BIP-110 n'a pas entraîné le réseau : en août 2026, au bloc 961 632, les nœuds qui l'appliquaient se sont séparés sur une chaîne à eux, et cette version suit cette chaîne. La confirmation qui vous est demandée à l'installation — et de nouveau maintenant, car ce à quoi vous consentez a changé — le dit clairement : basculer ici depuis Bitcoin Core ou Bitcoin Knots (pre-RDTS) déplace votre nœud sur une autre chaîne de blocs et sur un autre réseau ; cette chaîne ne produit un bloc que tous les un à deux jours environ, de sorte que les dépôts ne seront pas confirmés et que les services qui en dépendent, comme Lightning, resteront bloqués ; un hard fork vers un nouvel algorithme de preuve de travail est prévu le 1er septembre 2026 pour rétablir une production normale de blocs ; et les deux chaînes n'ont aucune protection contre le rejeu, si bien qu'une transaction diffusée sur l'une peut être rejouée sur l'autre.
 
-Votre confirmation est maintenant conservée dans l'état propre du paquet plutôt que dans bitcoin.conf. La ligne consensusrules=rdts demeure, fixée par le paquet car sans elle le programme consigne un avertissement à chaque démarrage : elle n'a jamais rien commandé et n'enregistre plus votre consentement. Elle est retirée si vous basculez vers Bitcoin Core.
+Votre confirmation est maintenant conservée dans l'état propre du paquet plutôt que dans bitcoin.conf. La ligne consensusrules=rdts continue d'être écrite, car sans elle le programme consigne un avertissement à chaque démarrage, et elle est retirée si vous basculez vers Bitcoin Core. Elle n'a jamais rien commandé et n'enregistre plus votre consentement : supprimez-la vous-même si vous préférez voir l'avertissement, rien ici ne la remettra.
 
 Par ailleurs, trois renforcements issus d'un audit de sécurité communautaire.
 
@@ -161,7 +149,9 @@ Lorsqu'un autre service demande à modifier la configuration de ce nœud, il n'a
 Enfin, un mot de passe RPC fourni par un autre service doit désormais compter au moins vingt caractères. Ce champ est rempli par le service qui demande l'accès et vous ne pouvez pas le modifier : rien n'empêchait donc un service négligent de choisir quelque chose de facile à deviner.`,
   },
   migrations: {
-    up: async ({ effects }) => {},
+    up: async ({ effects }) => {
+      await bitcoinConfFile.merge(effects, setConsensusRules)
+    },
     down: IMPOSSIBLE,
     // Keyed by Core major series as caret ranges — one entry per Core
     // major, not per Core `:N`. Range-keyed `migrations.other` requires
@@ -177,25 +167,35 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
       ['^28']: {
         // Core → Knots
         up: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, mempoolReset)
+          await bitcoinConfFile.merge(effects, {
+            ...mempoolReset,
+            ...setConsensusRules,
+          })
         },
         // Knots → Core
         down: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, mempoolReset)
+          await bitcoinConfFile.merge(effects, {
+            ...mempoolReset,
+            ...clearConsensusRules,
+          })
           await storeJson.merge(effects, leavingRdtsFlavor)
-          await stripConsensusRules()
         },
       },
       ['^29']: {
         // Core → Knots
         up: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, mempoolReset)
+          await bitcoinConfFile.merge(effects, {
+            ...mempoolReset,
+            ...setConsensusRules,
+          })
         },
         // Knots → Core
         down: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, mempoolReset)
+          await bitcoinConfFile.merge(effects, {
+            ...mempoolReset,
+            ...clearConsensusRules,
+          })
           await storeJson.merge(effects, leavingRdtsFlavor)
-          await stripConsensusRules()
         },
       },
       ['^30']: {
@@ -203,7 +203,10 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
         // path; Knots 29 only reads the old indexes/coinstats/ path, which
         // Core 30 deliberately preserved for downgrade.
         up: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, mempoolReset)
+          await bitcoinConfFile.merge(effects, {
+            ...mempoolReset,
+            ...setConsensusRules,
+          })
           await rm('/media/startos/volumes/main/indexes/coinstatsindex', {
             recursive: true,
             force: true,
@@ -211,9 +214,11 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
         },
         // Knots → Core
         down: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, mempoolReset)
+          await bitcoinConfFile.merge(effects, {
+            ...mempoolReset,
+            ...clearConsensusRules,
+          })
           await storeJson.merge(effects, leavingRdtsFlavor)
-          await stripConsensusRules()
         },
       },
       ['^31']: {
@@ -221,7 +226,10 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
         // CURRENT_FEES_FILE_VERSION 149900 → 309900; ≤30 hard-fails) and
         // coinstatsindex (same reason as 30.x).
         up: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, mempoolReset)
+          await bitcoinConfFile.merge(effects, {
+            ...mempoolReset,
+            ...setConsensusRules,
+          })
           await rm('/media/startos/volumes/main/fee_estimates.dat', {
             force: true,
           }).catch(console.error)
@@ -232,9 +240,11 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
         },
         // Knots → Core
         down: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, mempoolReset)
+          await bitcoinConfFile.merge(effects, {
+            ...mempoolReset,
+            ...clearConsensusRules,
+          })
           await storeJson.merge(effects, leavingRdtsFlavor)
-          await stripConsensusRules()
         },
       },
       // `#knotsrdts` (the "Bitcoin Knots plus BIP-110" build) is being
@@ -244,7 +254,9 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
       // flavor. No `down` — `#knotsrdts` is being de-listed, so the inverse
       // path can't be selected by a user.
       ['^#knotsrdts:29.3']: {
-        up: async ({ effects }) => {},
+        up: async ({ effects }) => {
+          await bitcoinConfFile.merge(effects, setConsensusRules)
+        },
       },
     },
   },
