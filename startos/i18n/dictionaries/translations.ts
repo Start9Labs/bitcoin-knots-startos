@@ -416,6 +416,10 @@ export default {
     3102: '(cartera predeterminada)',
     3103: 'La cartera sobre la que operarán todas las acciones de Cartera (Obtener saldo, Obtener dirección, Enviar monedas, Firmar mensaje, Respaldar cartera, etc.). Incluye carteras creadas por servicios dependientes como BTCPay Server/NBXplorer.',
     3104: 'Las acciones de Cartera ahora operarán sobre la cartera: ${wallet}',
+    2915: 'Iniciando el enrutador I2P',
+    2916: 'Construyendo la base de datos de la red',
+    2917: 'No se encontraron pares. El enrutador no pudo contactar con ningún servidor de resiembra, lo que suele significar que este servidor no puede resolver DNS. Revise Sistema > Servidores DNS.',
+    2918: 'El enrutador I2P informó del estado de error ${status}',
   } satisfies LangDict,
   de_DE: {
     // main.ts
@@ -832,6 +836,10 @@ export default {
     3102: '(Standard-Wallet)',
     3103: 'Die Wallet, auf die alle Wallet-Aktionen (Kontostand abrufen, Adresse abrufen, Coins senden, Nachricht signieren, Wallet sichern usw.) angewendet werden. Umfasst auch Wallets, die von abhängigen Diensten wie BTCPay Server/NBXplorer erstellt wurden.',
     3104: 'Wallet-Aktionen werden nun auf folgende Wallet angewendet: ${wallet}',
+    2915: 'I2P-Router wird gestartet',
+    2916: 'Netzwerkdatenbank wird aufgebaut',
+    2917: 'Keine Peers gefunden. Der Router konnte keinen Reseed-Server erreichen, was in der Regel bedeutet, dass dieser Server keine DNS-Namen auflösen kann. Prüfen Sie System > DNS-Server.',
+    2918: 'Der I2P-Router meldete den Fehlerstatus ${status}',
   } satisfies LangDict,
   pl_PL: {
     // main.ts
@@ -1248,6 +1256,10 @@ export default {
     3102: '(portfel domyślny)',
     3103: 'Portfel, na którym będą działać wszystkie akcje Portfela (Sprawdź saldo, Pobierz adres, Wyślij monety, Podpisz wiadomość, Utwórz kopię zapasową itd.). Obejmuje portfele utworzone przez zależne usługi, takie jak BTCPay Server/NBXplorer.',
     3104: 'Akcje Portfela będą teraz działać na portfelu: ${wallet}',
+    2915: 'Uruchamianie routera I2P',
+    2916: 'Budowanie bazy danych sieci',
+    2917: 'Nie znaleziono węzłów. Router nie mógł połączyć się z żadnym serwerem reseed, co zwykle oznacza, że ten serwer nie rozwiązuje nazw DNS. Sprawdź System > Serwery DNS.',
+    2918: 'Router I2P zgłosił status błędu ${status}',
   } satisfies LangDict,
   fr_FR: {
     // main.ts
@@ -1664,5 +1676,9 @@ export default {
     3102: '(portefeuille par défaut)',
     3103: 'Le portefeuille sur lequel opéreront toutes les actions Portefeuille (Obtenir le solde, Obtenir une adresse, Envoyer des fonds, Signer un message, Sauvegarder le portefeuille, etc.). Inclut les portefeuilles créés par des services dépendants comme BTCPay Server/NBXplorer.',
     3104: 'Les actions Portefeuille opéreront désormais sur le portefeuille : ${wallet}',
+    2915: 'Démarrage du routeur I2P',
+    2916: 'Construction de la base de données du réseau',
+    2917: "Aucun pair trouvé. Le routeur n'a pu joindre aucun serveur de réamorçage, ce qui signifie généralement que ce serveur ne peut pas résoudre les noms DNS. Vérifiez Système > Serveurs DNS.",
+    2918: "Le routeur I2P a signalé le statut d'erreur ${status}",
   } satisfies LangDict,
 }
