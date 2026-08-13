@@ -67,95 +67,65 @@ const leavingRdtsFlavor = { reconsiderInvalidTips: true }
  * a user who would rather see the warning can delete it and it stays deleted.
  */
 const setConsensusRules = { raw: { consensusrules: 'rdts' as const } }
-const clearConsensusRules = { raw: { consensusrules: undefined } }
+
+/**
+ * `maxtipage` has no arrival half — the file model pins it — but the flavors
+ * we hand off to parse unknown keys through rather than dropping them, so it
+ * must be removed here: left behind, a node on their chain would call itself
+ * synced up to two weeks late.
+ */
+const clearFlavorKeys = {
+  raw: { consensusrules: undefined, maxtipage: undefined },
+}
 
 export const current = VersionInfo.of({
-  version: '#knots:29.4:1',
+  version: '#knots:29.4:2',
   releaseNotes: {
-    en_US: `Update to Bitcoin Knots v29.4.knots20260508
+    en_US: `Two fixes for how this version behaves on the RDTS chain, both from the same cause: Bitcoin treats itself as still syncing whenever its most recent block is more than 24 hours old, and this chain produces a block only about once every day or two.
 
-This service is now called Bitcoin Knots (RDTS), and its marketplace description says which chain it follows. The name is the only thing that changes about an existing install.
+Your node was not seeing unconfirmed transactions. While Bitcoin considers itself to be syncing it ignores the transactions its peers offer it, so a node fully caught up with the RDTS chain kept an empty mempool between blocks and incoming payments stayed invisible until the next block arrived. Bitcoin is now told to treat a block up to 14 days old as current, which on this chain it comfortably is, and transactions flow again.
 
-The RDTS opt-in now describes what actually happened. BIP-110 did not carry the network: in August 2026, at block 961,632, the nodes enforcing it split onto a chain of their own, and this version follows that chain. The confirmation asked of you on install — and again now, because what there is to agree to has changed — says so plainly: switching here from Bitcoin Core or Bitcoin Knots (pre-RDTS) moves your node to a different blockchain and network; that chain produces a block only about once every day or two, so deposits will not confirm and dependent services such as Lightning will stall; a hard fork to a new proof-of-work algorithm is planned for 1 September 2026 to restore normal block production; and the two chains share no replay protection, so a transaction broadcast on one can be replayed on the other.
+The Blockchain Sync health check could also report "Syncing blocks…" forever on a node that was already fully caught up, sitting just under 100% while it held every block the chain had. It now reports fully synced when no chain the node considers valid sits ahead of the one it is following. A node that is genuinely behind still shows its sync progress as before.
 
-Your acknowledgement is now kept in the package's own state rather than in bitcoin.conf. The consensusrules=rdts line is still written, because the binary logs a warning on every start without it, and it is removed again if you switch to Bitcoin Core. It never controlled anything and no longer records your consent — delete it yourself if you would rather see the warning, and nothing here will put it back.
+Three things that were waiting on that check work again as a result: the Sync Complete notification, the release of the extra database cache used during initial sync — freeing that memory on nodes where it had been held indefinitely — and the hiding of the Download UTXO Snapshot action once syncing is finished.`,
+    es_ES: `Dos correcciones sobre el comportamiento de esta versión en la cadena RDTS, ambas con la misma causa: Bitcoin se considera en sincronización siempre que su bloque más reciente tiene más de 24 horas, y esta cadena produce un bloque solo cada uno o dos días.
 
-Separately, three hardening changes from a community security audit.
+Tu nodo no veía las transacciones sin confirmar. Mientras Bitcoin se considera en sincronización, ignora las transacciones que le ofrecen sus pares, así que un nodo completamente al día con la cadena RDTS mantenía la mempool vacía entre bloques y los pagos entrantes quedaban invisibles hasta que llegaba el siguiente bloque. Ahora se le indica a Bitcoin que trate como actual un bloque de hasta 14 días, cosa que en esta cadena se cumple de sobra, y las transacciones vuelven a circular.
 
-The check that verifies the signatures on an upstream release now counts distinct signers rather than signatures. Because it counted signatures, one release key signing several times could satisfy a quorum meant to require several independent people — so the tolerance the check advertised was not the tolerance it enforced. Nothing about the releases this package builds changes: each is signed by more than enough separate people to pass either way.
+La comprobación de estado Sincronización de la cadena también podía indicar «Sincronizando bloques…» indefinidamente en un nodo que ya estaba completamente al día, quedándose justo por debajo del 100 % mientras tenía todos los bloques que existían en la cadena. Ahora indica sincronización completa cuando ninguna cadena que el nodo considere válida está por delante de la que sigue. Un nodo que va realmente atrasado sigue mostrando su progreso como antes.
 
-When another service asks to adjust this node's configuration, it can now reach only the handful of settings such a service has any business setting, instead of the entire configuration file. Previously such a request could also carry settings that never appeared on the screen where you approve it.
+Como consecuencia vuelven a funcionar tres cosas que dependían de esa comprobación: la notificación de Sincronización completa, la liberación de la caché de base de datos adicional que se usa durante la sincronización inicial —lo que libera esa memoria en los nodos donde se mantenía indefinidamente— y la ocultación de la acción Descargar instantánea UTXO una vez terminada la sincronización.`,
+    de_DE: `Zwei Korrekturen zum Verhalten dieser Version auf der RDTS-Kette, beide mit derselben Ursache: Bitcoin betrachtet sich als noch synchronisierend, solange sein jüngster Block älter als 24 Stunden ist, und diese Kette bringt nur etwa alle ein bis zwei Tage einen Block hervor.
 
-And an RPC password handed over by another service must now be at least twenty characters. That field is filled in by the service requesting access and you cannot edit it, so nothing was stopping a careless one from choosing something guessable.`,
-    es_ES: `Actualización a Bitcoin Knots v29.4.knots20260508
+Dein Knoten sah keine unbestätigten Transaktionen. Solange Bitcoin sich als synchronisierend betrachtet, ignoriert es die Transaktionen, die seine Gegenstellen ihm anbieten — ein mit der RDTS-Kette vollständig aufgeholter Knoten hielt zwischen den Blöcken also einen leeren Mempool, und eingehende Zahlungen blieben unsichtbar, bis der nächste Block eintraf. Bitcoin wird nun angewiesen, einen bis zu 14 Tage alten Block als aktuell zu behandeln, was auf dieser Kette mit großem Abstand zutrifft, und Transaktionen fließen wieder.
 
-Este servicio pasa a llamarse Bitcoin Knots (RDTS), y su descripción en el mercado indica qué cadena sigue. En una instalación existente, el nombre es lo único que cambia.
+Auch die Zustandsprüfung „Blockchain-Synchronisierung" konnte auf einem bereits vollständig aufgeholten Knoten dauerhaft „Blöcke werden synchronisiert…" melden und blieb knapp unter 100 %, während der Knoten jeden Block hielt, den die Kette hatte. Sie meldet jetzt vollständige Synchronisierung, wenn keine vom Knoten als gültig angesehene Kette vor derjenigen liegt, der er folgt. Ein Knoten, der tatsächlich zurückliegt, zeigt seinen Fortschritt weiterhin wie bisher.
 
-La adhesión a RDTS ahora describe lo que realmente ocurrió. BIP-110 no arrastró consigo a la red: en agosto de 2026, en el bloque 961.632, los nodos que lo aplicaban se separaron en una cadena propia, y esta versión sigue esa cadena. La confirmación que se te pide al instalar —y de nuevo ahora, porque ha cambiado aquello con lo que estás de acuerdo— lo dice sin rodeos: cambiar aquí desde Bitcoin Core o Bitcoin Knots (pre-RDTS) traslada tu nodo a otra cadena de bloques y a otra red; esa cadena produce un bloque solo cada uno o dos días, así que los depósitos no se confirmarán y los servicios dependientes, como Lightning, se quedarán bloqueados; está previsto un hard fork a un nuevo algoritmo de prueba de trabajo el 1 de septiembre de 2026 para restablecer la producción normal de bloques; y las dos cadenas no tienen protección contra repetición, por lo que una transacción difundida en una puede repetirse en la otra.
+Dadurch funktionieren drei Dinge wieder, die auf diese Prüfung warteten: die Benachrichtigung „Synchronisierung abgeschlossen", die Freigabe des zusätzlichen Datenbank-Caches für die Erstsynchronisierung — was diesen Speicher auf Knoten freigibt, auf denen er unbegrenzt gehalten wurde — und das Ausblenden der Aktion „UTXO-Schnappschuss herunterladen", sobald die Synchronisierung beendet ist.`,
+    pl_PL: `Dwie poprawki zachowania tej wersji na łańcuchu RDTS, obie o tej samej przyczynie: Bitcoin uznaje się za wciąż synchronizujący, dopóki jego najnowszy blok ma więcej niż 24 godziny, a ten łańcuch wytwarza blok mniej więcej raz na dobę lub dwie.
 
-Tu confirmación se guarda ahora en el estado propio del paquete y no en bitcoin.conf. La línea consensusrules=rdts se sigue escribiendo, porque sin ella el binario registra un aviso en cada arranque, y se elimina de nuevo si cambias a Bitcoin Core. Nunca controló nada y ya no registra tu consentimiento: bórrala tú si prefieres ver el aviso, que nada aquí volverá a ponerla.
+Twój węzeł nie widział niepotwierdzonych transakcji. Dopóki Bitcoin uznaje się za synchronizujący, ignoruje transakcje oferowane mu przez węzły partnerskie, więc węzeł w pełni nadążający za łańcuchem RDTS utrzymywał między blokami pustą mempoolę, a przychodzące płatności pozostawały niewidoczne aż do nadejścia kolejnego bloku. Bitcoin dostaje teraz polecenie, by traktować jako bieżący blok sprzed maksymalnie 14 dni, co na tym łańcuchu jest spełnione z dużym zapasem, i transakcje znów napływają.
 
-Aparte de lo anterior, tres mejoras de robustez surgidas de una auditoría de seguridad de la comunidad.
+Kontrola stanu Synchronizacja łańcucha również mogła w nieskończoność pokazywać „Synchronizowanie bloków…" na węźle już w pełni nadążającym, zatrzymując się tuż poniżej 100%, choć węzeł miał każdy blok, który istniał w łańcuchu. Teraz zgłasza pełną synchronizację, gdy żaden łańcuch uznawany przez węzeł za prawidłowy nie wyprzedza tego, za którym węzeł podąża. Węzeł faktycznie zaległy nadal pokazuje swój postęp jak dotychczas.
 
-La comprobación que verifica las firmas de una versión oficial ahora cuenta firmantes distintos en lugar de firmas. Como contaba firmas, una sola clave de publicación que firmara varias veces podía satisfacer un quórum pensado para exigir varias personas independientes, de modo que la tolerancia que anunciaba la comprobación no era la que realmente aplicaba. Nada cambia en las versiones que compila este paquete: cada una está firmada por bastantes más personas distintas de las necesarias para pasarla en cualquiera de los dos casos.
+Dzięki temu znów działają trzy rzeczy, które czekały na tę kontrolę: powiadomienie o zakończeniu synchronizacji, zwolnienie dodatkowej pamięci podręcznej bazy danych używanej podczas synchronizacji początkowej — co uwalnia tę pamięć na węzłach, gdzie była trzymana bez końca — oraz ukrycie akcji Pobierz migawkę UTXO po zakończeniu synchronizacji.`,
+    fr_FR: `Deux corrections sur le comportement de cette version sur la chaîne RDTS, toutes deux dues à la même cause : Bitcoin se considère en cours de synchronisation tant que son bloc le plus récent date de plus de 24 heures, et cette chaîne ne produit un bloc que tous les un à deux jours environ.
 
-Cuando otro servicio solicita ajustar la configuración de este nodo, ahora solo puede llegar al puñado de ajustes que a tal servicio le corresponde tocar, en vez de a todo el archivo de configuración. Antes, esa solicitud también podía llevar ajustes que nunca aparecían en la pantalla donde usted la aprueba.
+Votre nœud ne voyait pas les transactions non confirmées. Tant que Bitcoin se considère en cours de synchronisation, il ignore les transactions que lui proposent ses pairs : un nœud parfaitement à jour avec la chaîne RDTS conservait donc un mempool vide entre les blocs, et les paiements entrants restaient invisibles jusqu'à l'arrivée du bloc suivant. Bitcoin reçoit désormais l'instruction de considérer comme actuel un bloc vieux de 14 jours au plus, ce qui est largement le cas sur cette chaîne, et les transactions circulent de nouveau.
 
-Además, una contraseña RPC facilitada por otro servicio debe tener ahora al menos veinte caracteres. Ese campo lo rellena el servicio que solicita el acceso y usted no puede editarlo, así que nada impedía que uno descuidado eligiera algo fácil de adivinar.`,
-    de_DE: `Aktualisierung auf Bitcoin Knots v29.4.knots20260508
+La vérification d'état Synchronisation de la chaîne pouvait elle aussi indiquer « Synchronisation des blocs… » indéfiniment sur un nœud pourtant déjà à jour, en restant juste en dessous de 100 % alors qu'il détenait tous les blocs existant sur la chaîne. Elle signale maintenant une synchronisation complète lorsque aucune chaîne considérée comme valide par le nœud ne se trouve devant celle qu'il suit. Un nœud réellement en retard affiche toujours sa progression comme auparavant.
 
-Dieser Dienst heißt jetzt Bitcoin Knots (RDTS), und seine Marktplatz-Beschreibung nennt die Kette, der er folgt. An einer bestehenden Installation ändert sich sonst nichts als der Name.
-
-Der RDTS-Beitritt beschreibt jetzt, was tatsächlich geschehen ist. BIP-110 hat das Netzwerk nicht mitgenommen: Im August 2026 spalteten sich die Knoten, die ihn durchsetzen, bei Block 961.632 auf eine eigene Kette ab, und diese Version folgt dieser Kette. Die Bestätigung, um die du bei der Installation gebeten wirst — und jetzt erneut, weil sich geändert hat, wozu du zustimmst —, sagt es klar: Ein Wechsel hierher von Bitcoin Core oder Bitcoin Knots (pre-RDTS) setzt deinen Knoten auf eine andere Blockchain und in ein anderes Netzwerk; diese Kette bringt nur etwa alle ein bis zwei Tage einen Block hervor, sodass Einzahlungen nicht bestätigt werden und abhängige Dienste wie Lightning stehen bleiben; für den 1. September 2026 ist ein Hard Fork auf einen neuen Proof-of-Work-Algorithmus geplant, der die normale Blockproduktion wiederherstellen soll; und die beiden Ketten haben keinen Replay-Schutz, sodass eine auf der einen gesendete Transaktion auf der anderen wiederholt werden kann.
-
-Deine Bestätigung wird jetzt im eigenen Zustand des Pakets gehalten statt in der bitcoin.conf. Die Zeile consensusrules=rdts wird weiterhin geschrieben, weil das Programm sonst bei jedem Start eine Warnung protokolliert, und beim Wechsel zu Bitcoin Core wieder entfernt. Gesteuert hat sie nie etwas, und deine Zustimmung hält sie nicht mehr fest — lösche sie selbst, wenn dir die Warnung lieber ist; hier setzt sie nichts erneut.
-
-Davon unabhängig: drei Härtungsänderungen aus einem Sicherheitsaudit der Community.
-
-Die Prüfung der Signaturen einer Upstream-Veröffentlichung zählt jetzt unterschiedliche Signierende statt Signaturen. Da sie Signaturen zählte, konnte ein einzelner Veröffentlichungsschlüssel durch mehrfaches Signieren ein Quorum erfüllen, das mehrere unabhängige Personen verlangen sollte — die Toleranz, die die Prüfung angab, war also nicht die, die sie durchsetzte. An den Veröffentlichungen, die dieses Paket baut, ändert sich nichts: Jede ist von mehr als genug verschiedenen Personen signiert, um so oder so zu bestehen.
-
-Wenn ein anderer Dienst darum bittet, die Konfiguration dieses Knotens anzupassen, erreicht er jetzt nur noch die wenigen Einstellungen, die einen solchen Dienst überhaupt etwas angehen, statt der gesamten Konfigurationsdatei. Zuvor konnte eine solche Anfrage auch Einstellungen enthalten, die auf dem Bildschirm, auf dem Sie sie bestätigen, nie auftauchten.
-
-Und ein von einem anderen Dienst übergebenes RPC-Passwort muss nun mindestens zwanzig Zeichen lang sein. Dieses Feld füllt der anfragende Dienst aus und Sie können es nicht ändern — nichts hielt also einen nachlässigen Dienst davon ab, etwas leicht Erratbares zu wählen.`,
-    pl_PL: `Aktualizacja do Bitcoin Knots v29.4.knots20260508
-
-Ta usługa nazywa się teraz Bitcoin Knots (RDTS), a jej opis w sklepie mówi, za którym łańcuchem podąża. W istniejącej instalacji zmienia się wyłącznie nazwa.
-
-Przystąpienie do RDTS opisuje teraz to, co faktycznie się wydarzyło. BIP-110 nie pociągnął za sobą sieci: w sierpniu 2026 roku, na bloku 961 632, węzły go egzekwujące odłączyły się na własny łańcuch, a ta wersja podąża właśnie za nim. Potwierdzenie, o które prosimy przy instalacji — i ponownie teraz, bo zmieniło się to, na co się zgadzasz — mówi wprost: przejście tutaj z Bitcoin Core albo Bitcoin Knots (pre-RDTS) przenosi twój węzeł na inny łańcuch bloków i do innej sieci; ten łańcuch wytwarza blok mniej więcej raz na dobę lub dwie, więc wpłaty nie będą się potwierdzać, a usługi zależne, takie jak Lightning, staną; na 1 września 2026 roku planowany jest hard fork na nowy algorytm proof-of-work, który ma przywrócić normalną produkcję bloków; oba łańcuchy nie mają zaś ochrony przed powtórzeniem, więc transakcja rozgłoszona na jednym może zostać powtórzona na drugim.
-
-Twoje potwierdzenie jest teraz przechowywane we własnym stanie pakietu, a nie w bitcoin.conf. Linia consensusrules=rdts nadal jest zapisywana, bo bez niej program wypisuje ostrzeżenie przy każdym starcie, i znika ponownie przy przejściu na Bitcoin Core. Nigdy niczym nie sterowała i nie zapisuje już twojej zgody — usuń ją sam, jeśli wolisz widzieć ostrzeżenie; nic jej tutaj nie przywróci.
-
-Niezależnie od powyższego: trzy zmiany wzmacniające, wynikające ze społecznościowego audytu bezpieczeństwa.
-
-Kontrola weryfikująca podpisy wydania upstream liczy teraz odrębnych sygnatariuszy, a nie podpisy. Ponieważ liczyła podpisy, jeden klucz wydania podpisujący kilkakrotnie mógł spełnić kworum pomyślane tak, by wymagać kilku niezależnych osób — deklarowana odporność kontroli nie była więc tą, którą faktycznie egzekwowała. W wydaniach budowanych przez ten pakiet nic się nie zmienia: każde jest podpisane przez znacznie więcej odrębnych osób, niż potrzeba do jej przejścia w obu wariantach.
-
-Gdy inna usługa prosi o zmianę konfiguracji tego węzła, może teraz sięgnąć wyłącznie po tę garstkę ustawień, które takiej usługi w ogóle dotyczą, zamiast po cały plik konfiguracyjny. Wcześniej takie żądanie mogło nieść również ustawienia, które nigdy nie pojawiały się na ekranie zatwierdzania.
-
-Hasło RPC przekazane przez inną usługę musi mieć teraz co najmniej dwadzieścia znaków. To pole wypełnia usługa prosząca o dostęp i nie można go edytować, więc nic nie powstrzymywało nieostrożnej usługi przed wybraniem czegoś łatwego do odgadnięcia.`,
-    fr_FR: `Mise à jour vers Bitcoin Knots v29.4.knots20260508
-
-Ce service s'appelle désormais Bitcoin Knots (RDTS), et sa description dans la boutique indique quelle chaîne il suit. Sur une installation existante, seul le nom change.
-
-L'adhésion à RDTS décrit désormais ce qui s'est réellement passé. BIP-110 n'a pas entraîné le réseau : en août 2026, au bloc 961 632, les nœuds qui l'appliquaient se sont séparés sur une chaîne à eux, et cette version suit cette chaîne. La confirmation qui vous est demandée à l'installation — et de nouveau maintenant, car ce à quoi vous consentez a changé — le dit clairement : basculer ici depuis Bitcoin Core ou Bitcoin Knots (pre-RDTS) déplace votre nœud sur une autre chaîne de blocs et sur un autre réseau ; cette chaîne ne produit un bloc que tous les un à deux jours environ, de sorte que les dépôts ne seront pas confirmés et que les services qui en dépendent, comme Lightning, resteront bloqués ; un hard fork vers un nouvel algorithme de preuve de travail est prévu le 1er septembre 2026 pour rétablir une production normale de blocs ; et les deux chaînes n'ont aucune protection contre le rejeu, si bien qu'une transaction diffusée sur l'une peut être rejouée sur l'autre.
-
-Votre confirmation est maintenant conservée dans l'état propre du paquet plutôt que dans bitcoin.conf. La ligne consensusrules=rdts continue d'être écrite, car sans elle le programme consigne un avertissement à chaque démarrage, et elle est retirée si vous basculez vers Bitcoin Core. Elle n'a jamais rien commandé et n'enregistre plus votre consentement : supprimez-la vous-même si vous préférez voir l'avertissement, rien ici ne la remettra.
-
-Par ailleurs, trois renforcements issus d'un audit de sécurité communautaire.
-
-La vérification des signatures d'une version amont compte désormais des signataires distincts plutôt que des signatures. Comme elle comptait les signatures, une seule clé de publication signant plusieurs fois pouvait satisfaire un quorum censé exiger plusieurs personnes indépendantes : la tolérance annoncée par la vérification n'était donc pas celle qu'elle appliquait. Rien ne change pour les versions que ce paquet construit : chacune est signée par bien plus de personnes distinctes qu'il n'en faut pour passer dans les deux cas.
-
-Lorsqu'un autre service demande à modifier la configuration de ce nœud, il n'atteint plus que la poignée de réglages qui le concernent réellement, au lieu de l'ensemble du fichier de configuration. Auparavant, une telle demande pouvait aussi porter des réglages qui n'apparaissaient jamais sur l'écran où vous la validez.
-
-Enfin, un mot de passe RPC fourni par un autre service doit désormais compter au moins vingt caractères. Ce champ est rempli par le service qui demande l'accès et vous ne pouvez pas le modifier : rien n'empêchait donc un service négligent de choisir quelque chose de facile à deviner.`,
+Trois choses qui attendaient cette vérification fonctionnent de nouveau : la notification de fin de synchronisation, la libération du cache de base de données supplémentaire utilisé pendant la synchronisation initiale — ce qui libère cette mémoire sur les nœuds où elle était conservée indéfiniment — et le masquage de l'action Télécharger un instantané UTXO une fois la synchronisation terminée.`,
   },
   migrations: {
-    up: async ({ effects }) => {
-      await bitcoinConfFile.merge(effects, setConsensusRules)
-    },
+    up: async ({ effects }) => {},
     down: IMPOSSIBLE,
     // Keyed by Core major series as caret ranges — one entry per Core
     // major, not per Core `:N`. Range-keyed `migrations.other` requires
     // StartOS ≥ 0.4.0-beta.9 (Start9Labs/start-os#3214).
+    //
+    // Sidegrade edges belong on whichever version is current: without them
+    // this version has no path off the flavor at all.
     //
     // Intentional asymmetry: there is no `^#knotsprerdts` key for the
     // pre-RDTS Knots sibling (B). The B↔C migration belt lives on B's own
@@ -176,7 +146,7 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, {
             ...mempoolReset,
-            ...clearConsensusRules,
+            ...clearFlavorKeys,
           })
           await storeJson.merge(effects, leavingRdtsFlavor)
         },
@@ -193,7 +163,7 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, {
             ...mempoolReset,
-            ...clearConsensusRules,
+            ...clearFlavorKeys,
           })
           await storeJson.merge(effects, leavingRdtsFlavor)
         },
@@ -216,7 +186,7 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, {
             ...mempoolReset,
-            ...clearConsensusRules,
+            ...clearFlavorKeys,
           })
           await storeJson.merge(effects, leavingRdtsFlavor)
         },
@@ -242,7 +212,7 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
         down: async ({ effects }) => {
           await bitcoinConfFile.merge(effects, {
             ...mempoolReset,
-            ...clearConsensusRules,
+            ...clearFlavorKeys,
           })
           await storeJson.merge(effects, leavingRdtsFlavor)
         },

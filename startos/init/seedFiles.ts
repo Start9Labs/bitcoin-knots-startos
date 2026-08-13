@@ -4,6 +4,7 @@ import {
   defaultDatacarriercost,
   defaultDbbatchsize,
   defaultDbcache,
+  defaultMaxtipage,
   diskUsage,
   minPrune,
 } from '../fileModels/bitcoin.conf'
@@ -33,9 +34,14 @@ export const seedFiles = sdk.setupOnInit(async (effects, kind) => {
         // Acknowledges RDTS to the binary, which otherwise warns on every
         // start. Not enforced — see versions/current.ts.
         consensusrules: 'rdts',
+        maxtipage: defaultMaxtipage,
       },
     })
   } else {
-    await bitcoinConfFile.merge(effects, {})
+    // Not install-only: this is what puts maxtipage on datadirs that predate
+    // it, so no version migration has to carry the value.
+    await bitcoinConfFile.merge(effects, {
+      raw: { maxtipage: defaultMaxtipage },
+    })
   }
 })

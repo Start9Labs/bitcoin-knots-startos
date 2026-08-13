@@ -248,11 +248,17 @@ Notifications accompany every consequential outcome (verdicts cleared, some bran
 | Check               | Method                                                                                 | Messages                                                                                       |
 | ------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | **RPC**             | Waits for `.cookie` file, then port-listening check on `8332` (or `58332` when pruned) | Ready: "The Bitcoin RPC Interface is ready"                                                    |
-| **Blockchain Sync** | `bitcoin-cli getblockchaininfo` (polled every 30 s; 5 s during startup/failure)        | Shows percentage during IBD; "Bitcoin is fully synced" when complete                           |
+| **Blockchain Sync** | `bitcoin-cli getblockchaininfo`, plus `getchaintips` when it reports IBD (polled every 30 s; 5 s during startup/failure) | Shows percentage while behind; "Bitcoin is fully synced" when caught up                        |
 | **I2P**             | I2PControl API (auth + router info)                                                    | "Inbound and outbound connections" or "Outbound connections only" based on `i2pacceptincoming` |
 | **Tor**             | Tor install/running status                                                             | "Inbound and outbound" when an onion address is published; otherwise "Outbound only"           |
 | **Clearnet**        | Checks published IP addresses                                                          | "Inbound and outbound" when an IP address is published; otherwise "Outbound only"              |
 | **RPC Proxy**       | Port listening (when pruned)                                                           | Ready: "The Bitcoin RPC Proxy is ready"                                                        |
+
+`initialblockdownload` only means the tip is older than `-maxtipage`, which this flavor
+pins at 14 days, so it also clears while a fresh sync is still that far out. Blockchain
+Sync takes it as a fast path only when few blocks are in flight, then asks `getchaintips`
+whether a tip that is neither `active` nor `invalid` sits above the active one — the
+majority chain does not qualify, having been rejected at the split.
 
 ## Dependencies
 
@@ -315,6 +321,7 @@ Where our permanent default overrides upstream, the input spec's `default` and t
 7. **5-minute shutdown timeout** — SIGTERM allows 300 seconds for graceful database flush
 8. **Embedded I2P enabled by default** — a bundled `i2pd` daemon provides the I2P SAM proxy, with `i2pacceptincoming=true`; inbound I2P connections work out of the box with no user configuration. Can be disabled via Peer Settings
 9. **CJDNS not supported** — StartOS provides no CJDNS transport, so `cjdns` is not offered as an `onlynet` option and CJDNS peer connectivity is unavailable; the other three Bitcoin networks (clearnet, Tor, I2P) are fully supported
+10. **`maxtipage` pinned to 14 days** — upstream ignores peers' transactions while it considers itself syncing, so on a chain producing a block every day or two a caught-up node would keep no mempool. Pinned by the file model (`z.literal().catch()`) rather than seeded, so deleting or editing the line restores it on the next write. Core and pre-RDTS Knots parse unknown keys through rather than dropping them, so each Knots→Core `down` migration removes it alongside `consensusrules`
 
 ## What Is Unchanged from Upstream
 
@@ -388,7 +395,7 @@ actions:
   - remove-wallet
 health_checks:
   - rpc: port_listening 8332 (or 58332 pruned), after .cookie file exists
-  - sync-progress: bitcoin-cli_getblockchaininfo (30s trigger; 5s during starting/failure)
+  - sync-progress: bitcoin-cli_getblockchaininfo + getchaintips (30s trigger; 5s during starting/failure)
   - i2p: port_listening / status
   - tor: install/running status + onion address check
   - clearnet: published IP address check
