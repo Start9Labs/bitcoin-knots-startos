@@ -51,7 +51,7 @@ Three additional containers are used:
 
 | Container | Image                                     | Purpose                                       |
 | --------- | ----------------------------------------- | --------------------------------------------- |
-| `proxy`   | `ghcr.io/start9labs/btc-rpc-proxy:v0.5.0` | RPC proxy for pruned nodes                    |
+| `proxy`   | `ghcr.io/start9labs/btc-rpc-proxy:v0.5.1` | RPC proxy for pruned nodes                    |
 | `python`  | `python` (Alpine)                         | Runs `rpcauth.py` to generate RPC credentials |
 | `i2pd`    | `purplei2p/i2pd`                          | Embedded I2P daemon (when enabled)            |
 
@@ -137,6 +137,7 @@ The proxy also serves blocks bitcoind has already pruned. Its config sets `defau
 - Only `getblock` verbosity 0 and 1 are intercepted; verbosity 2 is forwarded unchanged and still fails on a pruned block. It could not be answered faithfully anyway — the per-input `fee` fields need undo data a pruned node no longer has.
 - Peers are dialed directly on clearnet, through `tor_proxy` for `.onion`, and through `i2p_proxy` for `.b32.i2p`. That last one points at i2pd's SOCKS proxy, which `i2pd.conf` enables on loopback by default; when the i2pd daemon isn't running the key is omitted and I2P-only peers are unusable.
 - `max_peer_concurrency` caps how many peers are asked for the same block at once. The first valid answer wins, so leaving it unset pulls every block from every eligible peer.
+- The daemon runs with `-vv`. The proxy's verbosity counter starts at `Critical`, a level it has no call sites for, so at the default it cannot report a failure at all; `-vv` reaches its `error!` and `warn!` sites without the per-request `debug!` line, which would log every RPC call with its params.
 
 ## Network Access and Interfaces
 
@@ -348,7 +349,7 @@ package_id: bitcoind
 flavor: knots
 image: custom Dockerfile (built from Bitcoin Knots source)
 additional_images:
-  - ghcr.io/start9labs/btc-rpc-proxy:v0.5.0 (pruned node RPC proxy)
+  - ghcr.io/start9labs/btc-rpc-proxy:v0.5.1 (pruned node RPC proxy)
   - python (Alpine, RPC credential generation)
   - purplei2p/i2pd (embedded I2P)
 architectures: [x86_64, aarch64, riscv64]
