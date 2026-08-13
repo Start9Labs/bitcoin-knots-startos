@@ -246,14 +246,14 @@ Notifications accompany every consequential outcome (verdicts cleared, some bran
 
 ## Health Checks
 
-| Check               | Method                                                                                 | Messages                                                                                       |
-| ------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **RPC**             | Waits for `.cookie` file, then port-listening check on `8332` (or `58332` when pruned) | Ready: "The Bitcoin RPC Interface is ready"                                                    |
+| Check               | Method                                                                                                                   | Messages                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| **RPC**             | Waits for `.cookie` file, then port-listening check on `8332` (or `58332` when pruned)                                   | Ready: "The Bitcoin RPC Interface is ready"                                                    |
 | **Blockchain Sync** | `bitcoin-cli getblockchaininfo`, plus `getchaintips` when it reports IBD (polled every 30 s; 5 s during startup/failure) | Shows percentage while behind; "Bitcoin is fully synced" when caught up                        |
-| **I2P**             | I2PControl API (auth + router info)                                                    | "Inbound and outbound connections" or "Outbound connections only" based on `i2pacceptincoming` |
-| **Tor**             | Tor install/running status                                                             | "Inbound and outbound" when an onion address is published; otherwise "Outbound only"           |
-| **Clearnet**        | Checks published IP addresses                                                          | "Inbound and outbound" when an IP address is published; otherwise "Outbound only"              |
-| **RPC Proxy**       | Port listening (when pruned)                                                           | Ready: "The Bitcoin RPC Proxy is ready"                                                        |
+| **I2P**             | I2PControl `RouterInfo` API (unauthenticated)                                                                            | "Inbound and outbound connections" or "Outbound connections only" based on `i2pacceptincoming` |
+| **Tor**             | Tor install/running status                                                                                               | "Inbound and outbound" when an onion address is published; otherwise "Outbound only"           |
+| **Clearnet**        | Checks published IP addresses                                                                                            | "Inbound and outbound" when an IP address is published; otherwise "Outbound only"              |
+| **RPC Proxy**       | Port listening (when pruned)                                                                                             | Ready: "The Bitcoin RPC Proxy is ready"                                                        |
 
 `initialblockdownload` only means the tip is older than `-maxtipage`, which this flavor
 pins at 14 days, so it also clears while a fresh sync is still that far out. Blockchain
