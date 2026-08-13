@@ -76,7 +76,9 @@ The check that verifies the signatures on an upstream release now counts distinc
 
 When another service asks to adjust this node's configuration, it can now reach only the handful of settings such a service has any business setting, instead of the entire configuration file. Previously such a request could also carry settings that never appeared on the screen where you approve it.
 
-And an RPC password handed over by another service must now be at least twenty characters. That field is filled in by the service requesting access and you cannot edit it, so nothing was stopping a careless one from choosing something guessable.`,
+And an RPC password handed over by another service must now be at least twenty characters. That field is filled in by the service requesting access and you cannot edit it, so nothing was stopping a careless one from choosing something guessable.
+
+Separately, the bundled RPC proxy that serves pruned nodes has been updated. It read more of Bitcoin's report on connected peers than it needed, insisting on fields that are not always sent — one of which disappeared in Bitcoin Core 31 and broke block retrieval there outright, including for blocks the node still had on disk. This version was never affected, but the same trap was set. The proxy now reads only what it uses, asks your own node for a block before it looks up peers, and writes its errors to the service log instead of staying silent. Unpruned nodes never run it.`,
     es_ES: `Corrige la obtención bajo demanda de bloques podados y repara la descarga de la instantánea UTXO.
 
 Un nodo podado solo conserva los bloques recientes, por lo que este paquete incluye un proxy que descarga cualquier bloque más antiguo de la red entre pares en cuanto algo lo solicita: eso es lo que permite que un nodo Lightning, un servidor Electrum o un explorador de bloques funcionen contra un nodo podado. El proxy estaba en marcha, pero esa descarga nunca llegó a activarse, así que cualquier petición de un bloque anterior a tu profundidad de poda fallaba sin más. LND, por ejemplo, nunca lograba terminar de construir su grafo de canales. Esas peticiones ya se atienden como corresponde. La descarga también es más económica: un bloque se solicita a unos pocos pares en lugar de a todos a la vez. Los nodos sin podar no se ven afectados: nunca ejecutan el proxy.
@@ -89,7 +91,9 @@ La comprobación que verifica las firmas de una versión oficial ahora cuenta fi
 
 Cuando otro servicio solicita ajustar la configuración de este nodo, ahora solo puede llegar al puñado de ajustes que a tal servicio le corresponde tocar, en vez de a todo el archivo de configuración. Antes, esa solicitud también podía llevar ajustes que nunca aparecían en la pantalla donde usted la aprueba.
 
-Además, una contraseña RPC facilitada por otro servicio debe tener ahora al menos veinte caracteres. Ese campo lo rellena el servicio que solicita el acceso y usted no puede editarlo, así que nada impedía que uno descuidado eligiera algo fácil de adivinar.`,
+Además, una contraseña RPC facilitada por otro servicio debe tener ahora al menos veinte caracteres. Ese campo lo rellena el servicio que solicita el acceso y usted no puede editarlo, así que nada impedía que uno descuidado eligiera algo fácil de adivinar.
+
+Aparte de lo anterior, se ha actualizado el proxy RPC incluido que atiende a los nodos podados. Leía del informe de Bitcoin sobre los pares conectados más de lo que necesitaba y exigía campos que no siempre se envían; uno de ellos desapareció en Bitcoin Core 31 y allí rompió por completo la obtención de bloques, incluidos los que el nodo aún tenía en disco. Esta versión nunca se vio afectada, pero la trampa estaba puesta igualmente. Ahora el proxy lee solo lo que utiliza, pregunta por un bloque a tu propio nodo antes de buscar pares y escribe sus errores en el registro del servicio en lugar de callar. Los nodos sin podar nunca lo ejecutan.`,
     de_DE: `Behebt das bedarfsgesteuerte Nachladen beschnittener Blöcke und repariert den Download des UTXO-Snapshots.
 
 Ein beschnittener Knoten behält nur die jüngsten Blöcke, deshalb bringt dieses Paket einen Proxy mit, der jeden älteren Block in dem Moment aus dem Peer-to-Peer-Netz nachlädt, in dem etwas ihn anfordert — genau das lässt einen Lightning-Knoten, einen Electrum-Server oder einen Block-Explorer mit einem beschnittenen Knoten arbeiten. Der Proxy lief zwar, das Nachladen selbst war aber nie eingeschaltet, sodass jede Anfrage nach einem Block jenseits deiner Prune-Tiefe schlicht fehlschlug. LND etwa konnte seinen Kanalgraphen nie fertig aufbauen. Diese Anfragen werden jetzt wie vorgesehen bedient. Das Nachladen ist außerdem sparsamer: Ein Block wird von einigen wenigen Gegenstellen geholt statt von allen gleichzeitig. Unbeschnittene Knoten sind nicht betroffen — sie starten den Proxy nie.
@@ -102,7 +106,9 @@ Die Prüfung der Signaturen einer Upstream-Veröffentlichung zählt jetzt unters
 
 Wenn ein anderer Dienst darum bittet, die Konfiguration dieses Knotens anzupassen, erreicht er jetzt nur noch die wenigen Einstellungen, die einen solchen Dienst überhaupt etwas angehen, statt der gesamten Konfigurationsdatei. Zuvor konnte eine solche Anfrage auch Einstellungen enthalten, die auf dem Bildschirm, auf dem Sie sie bestätigen, nie auftauchten.
 
-Und ein von einem anderen Dienst übergebenes RPC-Passwort muss nun mindestens zwanzig Zeichen lang sein. Dieses Feld füllt der anfragende Dienst aus und Sie können es nicht ändern — nichts hielt also einen nachlässigen Dienst davon ab, etwas leicht Erratbares zu wählen.`,
+Und ein von einem anderen Dienst übergebenes RPC-Passwort muss nun mindestens zwanzig Zeichen lang sein. Dieses Feld füllt der anfragende Dienst aus und Sie können es nicht ändern — nichts hielt also einen nachlässigen Dienst davon ab, etwas leicht Erratbares zu wählen.
+
+Davon unabhängig wurde der mitgelieferte RPC-Proxy aktualisiert, der beschnittene Knoten bedient. Er las aus Bitcoins Bericht über die verbundenen Gegenstellen mehr, als er brauchte, und bestand auf Feldern, die nicht immer gesendet werden — eines davon fiel in Bitcoin Core 31 weg und legte das Beschaffen von Blöcken dort vollständig lahm, auch für Blöcke, die der Knoten noch auf der Festplatte hatte. Diese Version war nie betroffen, die Falle war aber ebenso gestellt. Der Proxy liest jetzt nur noch, was er verwendet, fragt zuerst deinen eigenen Knoten nach einem Block und schreibt seine Fehler ins Dienstprotokoll, statt zu schweigen. Unbeschnittene Knoten starten ihn nie.`,
     pl_PL: `Naprawia pobieranie na żądanie bloków usuniętych przez przycinanie oraz pobieranie migawki UTXO.
 
 Węzeł z włączonym przycinaniem przechowuje tylko najnowsze bloki, dlatego pakiet zawiera proxy, które pobiera każdy starszy blok z sieci peer-to-peer w chwili, gdy coś go zażąda — to właśnie pozwala węzłowi Lightning, serwerowi Electrum czy eksploratorowi bloków działać na przyciętym węźle. Proxy działało, ale samo pobieranie nigdy nie zostało włączone, więc każde żądanie bloku starszego niż twoja głębokość przycinania po prostu kończyło się błędem. LND na przykład nigdy nie potrafił dokończyć budowy swojego grafu kanałów. Te żądania są już obsługiwane zgodnie z założeniem. Samo pobieranie jest też tańsze: blok jest ściągany od kilku węzłów zamiast od wszystkich naraz. Węzłów bez przycinania to nie dotyczy — nigdy nie uruchamiają proxy.
@@ -115,7 +121,9 @@ Kontrola weryfikująca podpisy wydania upstream liczy teraz odrębnych sygnatari
 
 Gdy inna usługa prosi o zmianę konfiguracji tego węzła, może teraz sięgnąć wyłącznie po tę garstkę ustawień, które takiej usługi w ogóle dotyczą, zamiast po cały plik konfiguracyjny. Wcześniej takie żądanie mogło nieść również ustawienia, które nigdy nie pojawiały się na ekranie zatwierdzania.
 
-Hasło RPC przekazane przez inną usługę musi mieć teraz co najmniej dwadzieścia znaków. To pole wypełnia usługa prosząca o dostęp i nie można go edytować, więc nic nie powstrzymywało nieostrożnej usługi przed wybraniem czegoś łatwego do odgadnięcia.`,
+Hasło RPC przekazane przez inną usługę musi mieć teraz co najmniej dwadzieścia znaków. To pole wypełnia usługa prosząca o dostęp i nie można go edytować, więc nic nie powstrzymywało nieostrożnej usługi przed wybraniem czegoś łatwego do odgadnięcia.
+
+Niezależnie od powyższego zaktualizowano dołączone proxy RPC, które obsługuje węzły z przycinaniem. Czytało z raportu Bitcoina o połączonych węzłach więcej, niż potrzebowało, i wymagało pól, które nie zawsze są wysyłane — jedno z nich zniknęło w Bitcoin Core 31 i całkowicie zepsuło tam pobieranie bloków, również tych, które węzeł wciąż miał na dysku. Tej wersji to nigdy nie dotyczyło, ale pułapka była zastawiona tak samo. Proxy czyta teraz wyłącznie to, z czego korzysta, pyta o blok najpierw twój własny węzeł, a błędy zapisuje w dzienniku usługi zamiast milczeć. Węzły bez przycinania nigdy go nie uruchamiają.`,
     fr_FR: `Corrige la récupération à la demande des blocs élagués et répare le téléchargement de l'instantané UTXO.
 
 Un nœud élagué ne conserve que les blocs récents ; ce paquet embarque donc un proxy qui récupère n'importe quel bloc plus ancien sur le réseau pair-à-pair dès que quelque chose le demande — c'est ce qui permet à un nœud Lightning, un serveur Electrum ou un explorateur de blocs de fonctionner avec un nœud élagué. Le proxy tournait, mais cette récupération n'a jamais été activée : toute demande d'un bloc antérieur à votre profondeur d'élagage échouait purement et simplement. LND, par exemple, ne parvenait jamais à terminer la construction de son graphe de canaux. Ces demandes sont désormais servies comme prévu. La récupération est aussi moins coûteuse : un bloc est demandé à quelques pairs plutôt qu'à tous à la fois. Les nœuds non élagués ne sont pas concernés : ils n'exécutent jamais le proxy.
@@ -128,7 +136,9 @@ La vérification des signatures d'une version amont compte désormais des signat
 
 Lorsqu'un autre service demande à modifier la configuration de ce nœud, il n'atteint plus que la poignée de réglages qui le concernent réellement, au lieu de l'ensemble du fichier de configuration. Auparavant, une telle demande pouvait aussi porter des réglages qui n'apparaissaient jamais sur l'écran où vous la validez.
 
-Enfin, un mot de passe RPC fourni par un autre service doit désormais compter au moins vingt caractères. Ce champ est rempli par le service qui demande l'accès et vous ne pouvez pas le modifier : rien n'empêchait donc un service négligent de choisir quelque chose de facile à deviner.`,
+Enfin, un mot de passe RPC fourni par un autre service doit désormais compter au moins vingt caractères. Ce champ est rempli par le service qui demande l'accès et vous ne pouvez pas le modifier : rien n'empêchait donc un service négligent de choisir quelque chose de facile à deviner.
+
+Par ailleurs, le proxy RPC embarqué qui dessert les nœuds élagués a été mis à jour. Il lisait du rapport de Bitcoin sur les pairs connectés plus que nécessaire et exigeait des champs qui ne sont pas toujours envoyés ; l'un d'eux a disparu dans Bitcoin Core 31 et y a cassé net la récupération des blocs, y compris pour ceux que le nœud avait encore sur disque. Cette version n'a jamais été concernée, mais le piège était tendu de la même façon. Le proxy ne lit désormais que ce dont il se sert, interroge votre propre nœud avant de chercher des pairs, et consigne ses erreurs dans le journal du service au lieu de se taire. Les nœuds non élagués ne l'exécutent jamais.`,
   },
   migrations: {
     up: async ({ effects }) => {},
@@ -216,5 +226,5 @@ Enfin, un mot de passe RPC fourni par un autre service doit désormais compter a
     },
   },
 })
-  .satisfies('29.4:6')
-  .satisfies('28.4:19')
+  .satisfies('29.4:7')
+  .satisfies('28.4:20')
