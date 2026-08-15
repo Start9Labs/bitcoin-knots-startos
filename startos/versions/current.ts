@@ -138,20 +138,13 @@ export const current = VersionInfo.of({
       },
       // #knots ↔ #knotsprerdts. Same data layout; this flavor ships
       // the last pre-RDTS Knots release (20260507). Switching here is
-      // an explicit opt-out of RDTS, so
-      // clear any `consensusrules=rdts` acceptance carried over from
-      // `#knots` — otherwise nothing else in this build would remove
-      // it, and a later switch back to `#knots` would silently skip
-      // the critical-task gate — and queue the invalid-verdict
-      // reconsideration. No `down`: `consensusrules` is already absent
-      // here (`#knots`'s init hook re-prompts on arrival when the key is
-      // missing), and the sibling's own binary re-validates the
-      // RDTS-applicable range on its first start.
+      // an explicit opt-out of RDTS, so queue the invalid-verdict
+      // reconsideration. Any `consensusrules=rdts` carried over is
+      // stripped by the file model on the first write, so there is
+      // nothing to clear here. No `down`: the sibling's own binary
+      // re-validates the RDTS-applicable range on its first start.
       ['^#knots:29.3']: {
         up: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, {
-            raw: { consensusrules: undefined },
-          })
           await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
@@ -162,9 +155,6 @@ export const current = VersionInfo.of({
       // as a destination.
       ['^#knotsrdts:29.3']: {
         up: async ({ effects }) => {
-          await bitcoinConfFile.merge(effects, {
-            raw: { consensusrules: undefined },
-          })
           await storeJson.merge(effects, leavingRdtsFlavor)
         },
       },
