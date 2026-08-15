@@ -178,9 +178,11 @@ export const shape = z
       .catch(undefined),
     peerblockfilters: iniBoolean,
     natpmp: iniBoolean,
-    // Known only so migrations into this flavor can clear it. Not in
-    // `fullConfigSpec` — this build doesn't expose RDTS to the UI.
-    consensusrules: z.literal('rdts').optional().catch(undefined),
+    // Must-be-absent: this build never enforces RDTS, and a switch from
+    // `#knots` can leave the key behind. Coercing it away here means every
+    // write strips it, including on installs that crossed before the
+    // arrival migrations below existed. Not in `fullConfigSpec`.
+    consensusrules: z.undefined().optional().catch(undefined),
     maxuploadtarget: iniNumber,
   })
   .loose()
