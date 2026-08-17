@@ -161,5 +161,5 @@ export const current = VersionInfo.of({
     },
   },
 })
-  .satisfies('29.4:8')
-  .satisfies('28.4:21')
+  .satisfies('29.4:9')
+  .satisfies('28.4:22')
