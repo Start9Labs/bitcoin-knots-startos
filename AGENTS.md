@@ -6,13 +6,14 @@ Develop it inside a StartOS packaging workspace created by `start-cli s9pk init-
 which provides the packaging guide and agent context one level up. If you're reading this in a
 bare clone with no workspace, the full guide is at <https://docs.start9.com/packaging>.
 
-Work this package's `TODO.md` from top to bottom. Keep `README.md` (architecture, for developers and LLMs) and `instructions.md` (end-user docs) in sync with your changes.
+Work this package's `TODO.md` from top to bottom. Keep `README.md` (technical reference for an AI support or administering agent) and `instructions.md` (end-user docs) in sync with your changes.
 
 ## This repo
 
-- **Bitcoin Knots** — a Bitcoin Core fork packaged as `bitcoind` (same package id as Core; the two are drop-in flavors). Multi-branch package: worktrees `29.x` and `29.x-prerdts`.
-- **`.satisfies('29.4:N')` mirrors Bitcoin Core 29.x's current version, and `.satisfies('28.4:N')` mirrors Core 28.x's** — when either Core line releases, bump the matching entry (this branch's own `#knots:` / `#knotsprerdts:` version string is independent). Cross-flavor migrations live in this version file's `migrations.other` map, keyed by whole-series exver caret ranges (`^29`, `^#knots:29.3`, …), not pinned `:N`.
-
-## Inspecting a running install
-
-`start-cli package attach bitcoind -n <subcontainer-name> -- <cmd>` — select the subcontainer by **name** with `-n` (the name passed to `SubContainer.of` in `main.ts`). `-s` matches the internal Guid, not the name.
+- **Multi-branch package.** Each flavor lives on its own branch, checked out as a git worktree under the parent directory — `git worktree list` enumerates them. Consider every maintained worktree for any change, not just the one you are in. Release notes may legitimately differ per branch; structural changes should not.
+- **Package id is `bitcoind`, not `bitcoin-knots`.** Bitcoin Core and both Knots flavors are drop-in flavors of one package; the repo and directory are named after the flavor, but `effects` calls, dependents, and `start-cli` all take `bitcoind`.
+- **`startos/utils.ts`, `startos/manifest`, and the action ids are a public API.** Fifteen sibling packages import host ids and ports from `utils` (`rpcHostId`, `rpcPort`, `peerLocalHostId`, `peerPortLocal`, `zmqHostId`, the zmq ports, `rpccookiefile`), and nine drive `autoconfig` by id. Renaming or moving one breaks their builds or their tasks — grep both registries before you do.
+- **`startos/forkRecovery.ts` is shared with every other bitcoind flavor's repo; only the callers and their comments differ.** A change here needs the same change in the Bitcoin Core repo and the sibling Knots worktree. For the same reason, never drop a key from `store.json`'s shape because this flavor does not act on it: all flavors share one store, and dropping the declaration would discard another flavor's pending state on a switch.
+- **`fullConfigSpec` has three hand-maintained halves and no exhaustiveness check.** A new setting must be added to `shape`, `fileToForm`, and `formToFile` in `startos/fileModels/bitcoin.conf.ts` — TypeScript will not tell you one is missing. Then select it in one of the four config actions' `filter({…})`; a field no action selects is unreachable from the UI.
+- **`consensusrules` is `.optional()` on purpose.** A user who prefers the hourly warning may delete it; the `.catch()` repairs a malformed value rather than resurrecting a deliberate deletion.
+- **Every Wallet-group action gates on `!conf?.raw?.disablewallet`.** A new one must do the same, or it appears on a node with no wallet and fails at the RPC.
