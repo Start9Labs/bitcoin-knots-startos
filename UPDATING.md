@@ -14,7 +14,7 @@ This branch does **not** follow the latest Knots tag. The pin is `29.3.knots2026
    - `VERSION` — the full release string (e.g. `29.3.knots20260507`).
    - `PATH_VERSION` — the major track folder (e.g. `29.x`); only changes when the series rolls.
 2. If upstream rotated release signers, update `PINNED_FINGERPRINTS` in `Dockerfile` and refresh the keys in `assets/release-keys/`.
-3. Knots' `version` string stays put; `.satisfies('29.3:N')` in the current version file tracks Bitcoin Core 29.x's current `:N`. When Core 29.x bumps `:N`, update the `satisfies` argument here to match.
+3. Knots' `version` string stays put; `.satisfies('29.4:N')` in the current version file tracks Bitcoin Core 29.x's current `:N`. When Core 29.x bumps `:N`, update the `satisfies` argument here to match. The current version file also carries `.satisfies('28.4:N')` against Core 28.x — the baseline line every dependent's `versionRange` is written against — so bump that in the same pass.
 4. Cross-flavor migrations with `bitcoin-core-startos` are declared inline in the current Knots version file's `migrations.other` map, keyed by Core version strings. When Bitcoin Core bumps its `:N`, add the matching entries here so the migration path runs.
 
-> Sibling Knots branches (`29.x`, `29.x-prerdts`) share the Bitcoin Core revision suffix tracked by `.satisfies('29.3:N')` — bump one, bump the other in tandem. They do **not** share the upstream release: `29.x` tracks current Knots releases; this branch stays pinned to `29.3.knots20260507`.
+> Sibling Knots branches (`29.x`, `29.x-prerdts`) share the Bitcoin Core revision suffix tracked by `.satisfies('29.4:N')` — bump one, bump the other in tandem. They do **not** share the upstream release: `29.x` tracks current Knots releases; this branch stays pinned to `29.3.knots20260507`.
