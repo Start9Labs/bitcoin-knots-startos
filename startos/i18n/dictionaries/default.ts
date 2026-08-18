@@ -173,7 +173,7 @@ const dict = {
   'Peer Settings': 1253,
   'Edit the Peer settings in bitcoin.conf': 1254,
   'Maximum Connections': 1255,
-  'Set the maximum number of connections to maintain with peers.': 1256,
+  'Set the maximum number of connections to maintain with peers. Bitcoin reserves 11 of these for its own outbound peers; the rest are inbound slots, shared between peers on the internet and services on this server that fetch blocks over P2P, such as Electrs. The minimum keeps enough of them free that one of those services can still claim a slot when the rest are taken. To reduce bandwidth, prefer Max Upload Target (Other Settings), whose limit does not apply to those services, or Blocks Only (Mempool Settings).': 1256,
   'Make Public': 1257,
   'Allow other nodes to find your server on the network.': 1258,
   'IP Address and port of an external I2P daemon SAM bridge (e.g., 192.168.1.1:7656)': 1259,
