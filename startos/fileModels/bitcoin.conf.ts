@@ -34,6 +34,7 @@ const iniNumber = z
     z.string().transform(Number),
     z.number(),
   ])
+  .pipe(z.number())
   .optional()
   .catch(undefined)
 
@@ -178,6 +179,7 @@ export const shape = z
         z.string().transform(Number),
         z.number(),
       ])
+      .pipe(z.number())
       .transform((v) => (v > 0 && v < minPrune ? minPrune : v))
       .catch(0),
     coinstatsindex: iniBoolean,
