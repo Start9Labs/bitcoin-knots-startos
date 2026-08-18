@@ -272,7 +272,7 @@ Six checks at most, and three of them can never report a failure: they describe 
 | Check           | Displayed       | Probes                                                                       | Grace       | Present                                    |
 | --------------- | --------------- | ---------------------------------------------------------------------------- | ----------- | ------------------------------------------ |
 | `bitcoind`      | RPC             | Waits for `.cookie` to appear, then that the RPC port is listening           | SDK default | always                                     |
-| `sync-progress` | Blockchain Sync | `getblockchaininfo`, every 30 s (5 s while starting or failing)              | —           | always                                     |
+| `sync-progress` | Blockchain Sync | `getblockchaininfo` plus `getchaintips`, every 30 s (5 s while starting or failing)              | —           | always                                     |
 | `i2pd`          | I2P             | i2pd's I2PControl `RouterInfo` on loopback                                   | 5 minutes   | while I2P is enabled                       |
 | `i2p`           | I2P             | nothing — a `disabled` placeholder in place of the daemon check              | —           | while I2P is off, or excluded by `onlynet` |
 | `tor`           | Tor             | Tor's installed and running state, and whether an onion address is published | —           | always                                     |
@@ -281,7 +281,7 @@ Six checks at most, and three of them can never report a failure: they describe 
 
 **`bitcoind` failing** means the RPC port never opened. The cookie is deleted at the start of every run and recreated by bitcoind itself, so a check still waiting on it is one where bitcoind is not reaching the point of serving RPC — read the service logs for a startup or database error rather than looking for a networking fault.
 
-**`sync-progress` is a progress meter, not a fault indicator.** It reports a percentage for the whole of the Initial Block Download, which legitimately runs for hours to days, and only succeeds once bitcoind itself clears `initialblockdownload`. It reports `starting` whenever the RPC call fails, which is normal while the node is coming up.
+**`sync-progress` is a progress meter, not a fault indicator.** It reports a percentage for the whole of the Initial Block Download, which legitimately runs for hours to days. `initialblockdownload` alone is not trusted here: `-maxtipage` is pinned to 14 days for this chain, so the flag clears while a fresh sync is still far from the tip. Success therefore needs either that flag clear *and* fewer than ten blocks in flight, or `getchaintips` reporting no non-invalid tip above the active one. It reports `starting` whenever the RPC call fails, which is normal while the node is coming up.
 
 **`i2pd` is the one check written to distinguish "slow" from "never".** Everything reads as starting during the five-minute grace period. Past it, an empty network database means the router never reached a reseed server and will not recover on its own; a reported router error status is surfaced with its number; and a router that has reseeded but built no tunnels yet reports `starting`, because that one does resolve itself.
 
