@@ -42,6 +42,8 @@ Four configuration actions cover the full set of editable `bitcoin.conf` values,
 - **RPC Settings** — RPC threads, work queue, server timeout.
 - **Other Settings** — ZMQ, txindex, block templates, coinstats index, block filters (BIP158/157), pruning, dbcache, wallet master switches, NAT-PMP, max upload target, and more.
 
+Turning on txindex, the coinstats index, or block filters after the chain is already synced starts a rebuild from the first block. The **Index Sync** health check on the Dashboard tracks it, and anything relying on that index — transaction lookups, filter-based wallet scans — stays incomplete until it finishes, even though the node itself reports fully synced.
+
 ### RPC users
 
 - **Generate RPC User Credentials** — create a username/password pair for an external client.
