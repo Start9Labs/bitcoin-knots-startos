@@ -89,3 +89,5 @@ Three things to watch for during an actual split:
 
 - **Wallet actions cover hot-wallet basics only.** Anything beyond the listed actions (coin control, PSBTs, multisig, hardware-wallet flows) needs an external wallet talking to the RPC interface.
 - **Advanced i2pd tuning is not exposed.** Bandwidth class, transit share, floodfill, console, and tunnel limits are baked into the bundled `i2pd.conf`. To change them, edit `i2pd.conf` on the `i2pd` volume directly.
+- **The service log filters the I2P router's routine chatter.** Lines the router still prints carry an `[i2pd]` prefix; Bitcoin's own lines are unprefixed. Real router problems still appear — only known-routine network noise is dropped.
+- **The bundled I2P router runs bandwidth class O.** An update raised it once from the old default L to make inbound I2P reliable; at class O the router also relays somewhat more traffic for the I2P network. Any class — including L — set in `i2pd.conf` on the `i2pd` volume sticks from then on.
