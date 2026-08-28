@@ -79,7 +79,7 @@ const clearFlavorKeys = {
 }
 
 export const current = VersionInfo.of({
-  version: '#knots:29.4:8',
+  version: '#knots:29.4:9',
   releaseNotes: {
     en_US: `- Blocks fetched from the network for another service are kept in memory, up to 64 MiB, so a repeat request is answered without going back out.`,
     es_ES: `- Los bloques obtenidos de la red para otro servicio se mantienen en memoria, hasta 64 MiB, de modo que una petición repetida se responde sin volver a salir.`,
@@ -201,5 +201,5 @@ export const current = VersionInfo.of({
     },
   },
 })
-  .satisfies('29.4:13')
-  .satisfies('28.4:26')
+  .satisfies('29.4:14')
+  .satisfies('28.4:27')
