@@ -1,5 +1,5 @@
 {
-  "name": "bitcoin-knots-startos",
+  "name": "bitcoin-knots-prerdts-startos",
   "scripts": {
     "build": "rm -rf ./javascript && ncc build startos/index.ts -o ./javascript",
     "prettier": "prettier --write startos test",

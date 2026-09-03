@@ -12,7 +12,7 @@
 [Bitcoin Knots](https://github.com/bitcoinknots/bitcoin) is a derivative of Bitcoin Core with a larger set of policy controls and a built-in wallet surface. This flavor follows the same chain as Bitcoin Core: it is Knots without the BIP-110 (RDTS) softfork. Like the other bitcoind flavors it runs with an embedded I2P router beside it and, when pruned, a block-fetching RPC proxy in front.
 
 - **Upstream repo:** <https://github.com/bitcoinknots/bitcoin>
-- **Wrapper repo:** <https://github.com/Start9Labs/bitcoin-knots-startos/tree/29.x-prerdts>
+- **Wrapper repo:** <https://github.com/Start9-Community/bitcoin-knots-prerdts-startos>
 
 ---
 
@@ -297,7 +297,7 @@ Both volumes are copied wholesale — `sdk.Backups.ofVolumes('main', 'i2pd')`. T
 7. **i2pd tuning is not in the StartOS UI.** Log level, bandwidth class, transit share, tunnel limits, and the web console are edited in `i2pd.conf` on the `i2pd` volume. The embedded router relays nothing for the I2P network (`notransit=true`); run the standalone i2pd service if you want to contribute transit capacity.
 8. **Shutdown is allowed five minutes** to flush the databases before SIGKILL.
 9. **The I2P router is emulated on riscv64**, which has no upstream i2pd image.
-10. **This flavor never enforces RDTS.** It follows the same chain as Bitcoin Core; the RDTS flavor is a separate branch and a separate chain.
+10. **This flavor never enforces RDTS.** It follows the same chain as Bitcoin Core; the RDTS flavor is a separate package and a separate chain.
 11. **Every Wallet action disappears when `disablewallet` is on**, and all of them require the service to be running.
 12. **The repo maintains one branch per flavor**, each published as the same `bitcoind` package. Release notes and pinned upstream versions differ between them.
 

@@ -1,24 +1,45 @@
 # Updating the upstream version
 
-The `bitcoind` image is built locally from `Dockerfile`: it downloads the Knots release tarball from `bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/` and verifies `SHA256SUMS.asc` against a pinned 3-of-5 quorum of Knots release signers (keys in `assets/release-keys/`, fingerprints in `PINNED_FINGERPRINTS`). There is no `dockerTag` — the version lives in `buildArgs`. This branch is the **pre-RDTS variant**: it is pinned to the last Bitcoin Knots release without RDTS (`29.3.knots20260507`) and does **not** track newer Knots releases — every release from `29.3.knots20260508` on includes RDTS and belongs on the `29.x` sibling, not here.
+**There will be no further upstream version.** Bitcoin Knots ships RDTS from
+`29.3.knots20260508` on, and the Knots developers have confirmed no further
+non-RDTS release will be cut. `29.3.knots20260507` is the last one, and this
+package is pinned to it permanently.
 
-## Determining the upstream version
+Nothing below is a bump procedure. It is what a rebuild of the pinned release
+still depends on.
 
-This branch does **not** follow the latest Knots tag. The pin is `29.3.knots20260507` — the final release before RDTS shipped in `29.3.knots20260508`. Do not bump `VERSION` to a newer tag; the pin only moves if upstream ever publishes another non-RDTS release (not expected).
+## The pin
 
-- Current pin: `VERSION` build-arg under `images.bitcoind.source.dockerBuild.buildArgs` in `startos/manifest/index.ts` (paired with `PATH_VERSION = '29.x'`).
+`VERSION` build-arg under `images.bitcoind.source.dockerBuild.buildArgs` in
+`startos/manifest/index.ts`, paired with `PATH_VERSION = '29.x'`.
+
+The `bitcoind` image is built locally from `Dockerfile`: it downloads the
+release tarball from `bitcoinknots.org/files/${PATH_VERSION}/${VERSION}/` and
+verifies `SHA256SUMS.asc` against a pinned 3-of-5 quorum of Knots release
+signers (keys in `assets/release-keys/`, fingerprints in
+`PINNED_FINGERPRINTS`). There is no `dockerTag` — the version lives in
+`buildArgs`. If upstream retires that download path or rotates those keys, a
+rebuild breaks and needs `PINNED_FINGERPRINTS` and `assets/release-keys/`
+refreshed.
+
+## The frozen `satisfies` values
+
+The current version file carries `.satisfies('29.4:15')` and
+`.satisfies('28.4:28')` — the Bitcoin Core revisions this package stands in for
+when a dependent's `versionRange` is evaluated. They no longer track Core.
+
+The consequence is worth knowing: as Bitcoin Core keeps bumping its `:N`, a
+dependent that raises its floor past those two revisions stops being
+satisfiable by this package. Dependents drop off one at a time rather than all
+at once, and nothing short of a release fixes it.
 
 ## The i2pd image
 
-The service-log filter's drop list (`startos/i2pdLogFilter.ts`) is transcribed verbatim from the pinned i2pd image's message wording. Bumping the `i2pd` image tag can reword those messages; that fails open — a reworded family passes the filter and the log flood returns — rather than dropping evidence, but it means an i2pd bump owes a re-validation: run `npm test`, then watch a few hours of live service logs and fold any reworded families back into the list (and its test corpus). The filter and its test ship verbatim in the Knots repos — update all three together.
-
-## Applying the bump
-
-1. In `startos/manifest/index.ts`, bump the `bitcoind` image `buildArgs`:
-   - `VERSION` — the full release string (e.g. `29.3.knots20260507`).
-   - `PATH_VERSION` — the major track folder (e.g. `29.x`); only changes when the series rolls.
-2. If upstream rotated release signers, update `PINNED_FINGERPRINTS` in `Dockerfile` and refresh the keys in `assets/release-keys/`.
-3. Knots' `version` string stays put; `.satisfies('29.4:N')` in the current version file tracks Bitcoin Core 29.x's current `:N`. When Core 29.x bumps `:N`, update the `satisfies` argument here to match. The current version file also carries `.satisfies('28.4:N')` against Core 28.x — the baseline line every dependent's `versionRange` is written against — so bump that in the same pass.
-4. Cross-flavor migrations with `bitcoin-core-startos` are declared inline in the current Knots version file's `migrations.other` map, keyed by Core version strings. When Bitcoin Core bumps its `:N`, add the matching entries here so the migration path runs.
-
-> Sibling Knots branches (`29.x`, `29.x-prerdts`) share the Bitcoin Core revision suffix tracked by `.satisfies('29.4:N')` — bump one, bump the other in tandem. They do **not** share the upstream release: `29.x` tracks current Knots releases; this branch stays pinned to `29.3.knots20260507`.
+The service-log filter's drop list (`startos/i2pdLogFilter.ts`) is transcribed
+verbatim from the pinned i2pd image's message wording. Bumping the `i2pd` image
+tag can reword those messages; that fails open — a reworded family passes the
+filter and the log flood returns — rather than dropping evidence, but it means
+an i2pd bump owes a re-validation: run `npm test`, then watch a few hours of
+live service logs and fold any reworded families back into the list (and its
+test corpus). The same filter and test ship in `bitcoin-core-startos`, which
+maintains its own copy.
