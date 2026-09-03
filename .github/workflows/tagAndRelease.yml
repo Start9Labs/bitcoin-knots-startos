@@ -1,9 +1,8 @@
 name: Tag and Release
 
+# The #knots flavor is de-listed; dispatch manually to publish it again.
 on:
-  push:
-    branches: ['29.x']
-    paths-ignore: ['*.md']
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
