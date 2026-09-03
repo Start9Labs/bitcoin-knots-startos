@@ -5,7 +5,7 @@ name: Sync next
 # `next` is created on the first run if the repo does not have one yet.
 on:
   push:
-    branches: ['29.x-prerdts']
+    branches: ['master']
   workflow_dispatch:
 
 jobs:
