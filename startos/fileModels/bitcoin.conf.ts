@@ -190,10 +190,7 @@ export const shape = z
       .catch(undefined),
     peerblockfilters: iniBoolean,
     natpmp: iniBoolean,
-    // Must-be-absent: this build never enforces RDTS, and a switch from
-    // `#knots` can leave the key behind. Coercing it away here means every
-    // write strips it, including on installs that crossed before the
-    // arrival migrations below existed. Not in `fullConfigSpec`.
+    // Must-be-absent: this build logs "Ignoring unknown configuration value" for it on every start.
     consensusrules: z.undefined().optional().catch(undefined),
     maxuploadtarget: iniNumber,
   })

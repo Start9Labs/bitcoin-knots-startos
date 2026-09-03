@@ -416,13 +416,6 @@ export default {
     3103: 'La cartera sobre la que operarán todas las acciones de Cartera (Obtener saldo, Obtener dirección, Enviar monedas, Firmar mensaje, Respaldar cartera, etc.). Incluye carteras creadas por servicios dependientes como BTCPay Server/NBXplorer.',
     3104: 'Las acciones de Cartera ahora operarán sobre la cartera: ${wallet}',
 
-    // Chain Recovery (3200 block)
-    3226: 'Veredictos de cadena restablecidos',
-    3227: 'Se borraron los veredictos de bloques inválidos heredados de la variante de bitcoind instalada anteriormente en ${count} punta(s) de cadena. El nodo ahora sigue la mejor cadena válida bajo las reglas de esta variante; reorganizarse hacia ella puede tardar un tiempo y requiere pares en esa cadena.',
-    3228: 'Algunas cadenas no recuperables',
-    3229: '${count} rama(s) de cadena inválida(s) heredada(s) de la variante anterior de bitcoind no pudieron reconsiderarse: este nodo podado ya no almacena los bloques necesarios para reorganizarse hacia ellas. Si el nodo parece atascado en la cadena equivocada, ejecute Reindexar blockchain (en un nodo podado esto vuelve a descargar la cadena).',
-    3230: 'Recuperación de cadena fallida',
-    3231: 'El borrado de los veredictos de bloques inválidos heredados de la variante anterior de bitcoind falló; se reintentará en el próximo reinicio. Error: ${error}',
     2915: 'Iniciando el enrutador I2P',
     2916: 'Construyendo la base de datos de la red',
     2917: 'No se encontraron pares. El enrutador no pudo contactar con ningún servidor de resiembra, lo que suele significar que este servidor no puede resolver DNS. Revise Sistema > Servidores DNS.',
@@ -843,13 +836,6 @@ export default {
     3103: 'Die Wallet, auf die alle Wallet-Aktionen (Kontostand abrufen, Adresse abrufen, Coins senden, Nachricht signieren, Wallet sichern usw.) angewendet werden. Umfasst auch Wallets, die von abhängigen Diensten wie BTCPay Server/NBXplorer erstellt wurden.',
     3104: 'Wallet-Aktionen werden nun auf folgende Wallet angewendet: ${wallet}',
 
-    // Chain Recovery (3200 block)
-    3226: 'Chain-Urteile zurückgesetzt',
-    3227: 'Von der zuvor installierten bitcoind-Variante geerbte Ungültigkeits-Urteile auf ${count} Chain-Spitze(n) gelöscht. Der Knoten folgt jetzt der besten Chain, die unter den Regeln dieser Variante gültig ist; die Reorganisation dorthin kann eine Weile dauern und braucht Peers auf dieser Chain.',
-    3228: 'Einige Chains nicht wiederherstellbar',
-    3229: '${count} von der vorherigen bitcoind-Variante geerbte(r) ungültige(r) Chain-Zweig(e) konnten nicht überdacht werden: Dieser beschnittene Knoten speichert die für eine Reorganisation dorthin nötigen Blöcke nicht mehr. Wirkt der Knoten auf der falschen Chain festgefahren, führen Sie „Blockchain neu indizieren" aus (auf einem beschnittenen Knoten lädt dies die Chain neu herunter).',
-    3230: 'Chain-Wiederherstellung fehlgeschlagen',
-    3231: 'Das Löschen der von der vorherigen bitcoind-Variante geerbten Ungültigkeits-Urteile ist fehlgeschlagen; beim nächsten Neustart wird es erneut versucht. Fehler: ${error}',
     2915: 'I2P-Router wird gestartet',
     2916: 'Netzwerkdatenbank wird aufgebaut',
     2917: 'Keine Peers gefunden. Der Router konnte keinen Reseed-Server erreichen, was in der Regel bedeutet, dass dieser Server keine DNS-Namen auflösen kann. Prüfen Sie System > DNS-Server.',
@@ -1270,13 +1256,6 @@ export default {
     3103: 'Portfel, na którym będą działać wszystkie akcje Portfela (Sprawdź saldo, Pobierz adres, Wyślij monety, Podpisz wiadomość, Utwórz kopię zapasową itd.). Obejmuje portfele utworzone przez zależne usługi, takie jak BTCPay Server/NBXplorer.',
     3104: 'Akcje Portfela będą teraz działać na portfelu: ${wallet}',
 
-    // Chain Recovery (3200 block)
-    3226: 'Werdykty łańcucha zresetowane',
-    3227: 'Wyczyszczono werdykty nieważności bloków odziedziczone po poprzednio zainstalowanym wariancie bitcoind na ${count} wierzchołku(ach) łańcucha. Węzeł podąża teraz za najlepszym łańcuchem ważnym według reguł tego wariantu; reorganizacja może chwilę potrwać i wymaga peerów na tym łańcuchu.',
-    3228: 'Niektóre łańcuchy nie do odzyskania',
-    3229: '${count} nieważna(e) gałąź(zie) łańcucha odziedziczona(e) po poprzednim wariancie bitcoind nie mogły zostać ponownie rozważone: ten przycięty węzeł nie przechowuje już bloków potrzebnych do reorganizacji na nie. Jeśli węzeł wydaje się utknięty na niewłaściwym łańcuchu, uruchom „Przeindeksuj blockchain" (na przyciętym węźle oznacza to ponowne pobranie łańcucha).',
-    3230: 'Odzyskiwanie łańcucha nie powiodło się',
-    3231: 'Czyszczenie werdyktów nieważności bloków odziedziczonych po poprzednim wariancie bitcoind nie powiodło się; próba zostanie ponowiona przy następnym restarcie. Błąd: ${error}',
     2915: 'Uruchamianie routera I2P',
     2916: 'Budowanie bazy danych sieci',
     2917: 'Nie znaleziono węzłów. Router nie mógł połączyć się z żadnym serwerem reseed, co zwykle oznacza, że ten serwer nie rozwiązuje nazw DNS. Sprawdź System > Serwery DNS.',
@@ -1697,13 +1676,6 @@ export default {
     3103: 'Le portefeuille sur lequel opéreront toutes les actions Portefeuille (Obtenir le solde, Obtenir une adresse, Envoyer des fonds, Signer un message, Sauvegarder le portefeuille, etc.). Inclut les portefeuilles créés par des services dépendants comme BTCPay Server/NBXplorer.',
     3104: 'Les actions Portefeuille opéreront désormais sur le portefeuille : ${wallet}',
 
-    // Chain Recovery (3200 block)
-    3226: 'Verdicts de chaîne réinitialisés',
-    3227: 'Verdicts de blocs invalides hérités de la variante bitcoind précédemment installée effacés sur ${count} pointe(s) de chaîne. Le nœud suit désormais la meilleure chaîne valide selon les règles de cette variante ; la réorganisation peut prendre un certain temps et nécessite des pairs sur cette chaîne.',
-    3228: 'Certaines chaînes non récupérables',
-    3229: "${count} branche(s) de chaîne invalide(s) héritée(s) de la variante bitcoind précédente n'ont pas pu être reconsidérées : ce nœud élagué ne stocke plus les blocs nécessaires pour se réorganiser vers elles. Si le nœud semble bloqué sur la mauvaise chaîne, exécutez « Réindexer la blockchain » (sur un nœud élagué cela retélécharge la chaîne).",
-    3230: 'Échec de la récupération de chaîne',
-    3231: "L'effacement des verdicts de blocs invalides hérités de la variante bitcoind précédente a échoué ; nouvelle tentative au prochain redémarrage. Erreur : ${error}",
     2915: 'Démarrage du routeur I2P',
     2916: 'Construction de la base de données du réseau',
     2917: "Aucun pair trouvé. Le routeur n'a pu joindre aucun serveur de réamorçage, ce qui signifie généralement que ce serveur ne peut pas résoudre les noms DNS. Vérifiez Système > Serveurs DNS.",

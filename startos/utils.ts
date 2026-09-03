@@ -113,6 +113,19 @@ export type GetBlockchainInfo = {
 /** RPC connection args shared by bitcoin-cli and shell-script wrappers.
  *  Pass `wallet` to scope a wallet RPC to a specific wallet — required once
  *  more than one wallet is loaded, or bitcoind fails with error -19. */
+export type ChainTip = {
+  height: number
+  hash: string
+  branchlen: number
+  status:
+    | 'active'
+    | 'invalid'
+    | 'headers-only'
+    | 'valid-headers'
+    | 'valid-fork'
+    | 'unknown'
+}
+
 export function rpcArgs(opts: { prune: boolean; wallet?: string }): string[] {
   return [
     `-conf=${rootDir}/bitcoin.conf`,
